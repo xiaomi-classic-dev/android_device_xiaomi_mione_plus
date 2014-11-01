@@ -27,6 +27,8 @@
 # inherit from msm8660-common
 include device/xiaomi/msm8660-common/BoardConfigCommon.mk
 
+BOARD_HAVE_XIAOMI_MIONE := true
+
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := mione
 
