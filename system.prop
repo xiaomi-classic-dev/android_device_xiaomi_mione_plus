@@ -99,6 +99,5 @@ persist.sys.haptic.tap.normal=0,80,10,-5,5
 persist.sys.haptic.tap.strong=0,120,5,-5,5
 
 # Improves UI responsiveness when copying large amount of data
-# http://review.cyanogenmod.org/8875
 ro.vold.umsdirtyratio=50
 

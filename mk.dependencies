@@ -1,0 +1,18 @@
+[
+ {
+   "repository": "android_vendor_xiaomi_mione_plus",
+   "target_path": "vendor/xiaomi/mione_plus"
+ },
+ {
+   "repository": "android_device_xiaomi_msm8660-common",
+   "target_path": "device/xiaomi/msm8660-common"
+ },
+ {
+   "repository": "android_hardware_qcom_display-legacy-old",
+   "target_path": "hardware/qcom/display-legacy-old"
+ },
+ {
+   "repository": "android_hardware_qcom_media-legacy-old",
+   "target_path": "hardware/qcom/media-legacy-old"
+ }
+]
