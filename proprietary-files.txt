@@ -1,0 +1,212 @@
+
+# Prebuilt libraries that are needed to build open-source libraries
+lib/libacdbloader.so
+lib/libacdbmapper.so
+lib/libaudioalsa.so
+lib/libaudcal.so
+lib/libdiag.so
+lib/libv8.so
+
+# HAL
+lib/hw/camera.msm8660.so
+#lib/hw/gralloc.msm8660.so
+lib/hw/lights.msm8660.so
+# TODO: test sensors
+lib/hw/sensors.msm8660.so
+
+# Graphics and egl
+lib/egl/eglsubAndroid.so
+lib/egl/libEGL_adreno200.so
+lib/egl/libGLESv1_CM_adreno200.so
+lib/egl/libGLESv2_adreno200.so
+lib/egl/libGLESv2S3D_adreno200.so
+#lib/egl/libq3dtools_adreno200.so
+lib/libC2D2.so
+#lib/libc2d2_z180.so
+lib/libOpenVG.so
+lib/libgsl.so
+lib/libsc-a2xx.so
+# related firmware
+etc/firmware/a225_pfp.fw
+etc/firmware/a225_pm4.fw
+etc/firmware/a225p5_pm4.fw
+etc/firmware/yamato_pfp.fw
+etc/firmware/yamato_pm4.fw
+
+# firmware
+etc/firmware/dsps_fluid.mdt
+etc/firmware/dsps_fluid.b03
+etc/firmware/dsps_fluid.b02
+etc/firmware/dsps_fluid.b01
+etc/firmware/dsps_fluid.b00
+
+# wifi firmware
+vendor/firmware/fw_bcm4329.bin
+vendor/firmware/fw_bcm4329_apsta.bin
+vendor/firmware/fw_bcmdhd.bin
+vendor/firmware/fw_bcmdhd_apsta.bin
+vendor/firmware/fw_bcmdhd_p2p.bin
+etc/wifi/bcmdhd.cal
+etc/wifi/nvram.txt
+
+# bluetooth
+lib/libnv.so
+etc/firmware/bcm4329.hcd
+etc/firmware/bcm4330.hcd
+
+# QCOM Script
+# modem, sound, firmware
+etc/init.qcom.modem_links.sh
+etc/init.qcom.post_fs.sh
+
+# onc rpc
+lib/libdsm.so
+lib/liboncrpc.so
+lib/libqueue.so
+
+# qmiproxy
+bin/qmiproxy
+lib/libdsutils.so
+lib/libidl.so
+lib/libqmi.so
+lib/libqmiservices.so
+
+# netmgr
+bin/netmgrd
+lib/libnetmgr.so
+
+# Radio
+lib/libdsi_netctrl.so
+lib/libqdi.so
+lib/libqdp.so
+lib/libril-qc-qmi-1.so
+lib/libril-qcril-hook-oem.so
+lib/libqc-opt.so
+bin/rild
+lib/libril.so
+lib/libreference-ril.so
+
+# Camera
+bin/mm-qcamera-daemon
+bin/v4l2-qcamera-app
+lib/liboemcamera.so
+lib/libgemini.so
+lib/libmmipl.so
+lib/libmmjpeg.so
+lib/libmmmpo.so
+lib/libmmstereo.so
+lib/libmmmpod.so
+lib/libmmrtpdecoder.so
+lib/libmmjps.so
+lib/libmm-color-convertor.so
+lib/libimage-omx-common.so
+lib/libimage-jpeg-enc-omx-comp.so
+lib/libimage-jpeg-dec-omx-comp.so
+lib/libmmcamera_faceproc.so
+lib/libmmcamera_frameproc.so
+lib/libmmcamera_hdr_lib.so
+lib/libmmcamera_image_stab.so
+lib/libmmcamera_interface2.so
+lib/libmmcamera_statsproc31.so
+lib/libmmcamera_wavelet_lib.so
+lib/libmmstillomx.so
+
+# gps
+bin/gpsone_daemon
+lib/libgpsone_bit_api.so
+lib/libgps.utils.so
+
+# thermald
+bin/thermald
+lib/libthermal_mitigation_fusion.so
+lib/libthermal_mitigation.so
+
+# cnd service
+bin/cnd
+lib/libcneqmiutils.so
+lib/libcneutils.so
+lib/libxml.so
+
+# mm-pp-daemon
+bin/mm-pp-daemon
+lib/libmm-abl-oem.so
+lib/libmm-abl.so
+
+# port-bridge
+bin/port-bridge
+
+# misc service
+bin/bridgemgrd
+bin/qmuxd
+bin/rmt_storage
+bin/usbhub
+bin/usbhub_init
+
+# Chromatix
+lib/libchromatix_imx074_default_video.so
+lib/libchromatix_imx074_preview.so
+lib/libchromatix_imx074_video_hd.so
+lib/libchromatix_imx074_zsl.so
+lib/libchromatix_imx091_default_video.so
+lib/libchromatix_imx091_preview.so
+lib/libchromatix_imx091_video_hd.so
+lib/libchromatix_imx105_default_video.so
+lib/libchromatix_imx105_preview.so
+lib/libchromatix_imx105_zsl.so
+lib/libchromatix_imx105p_default_video.so
+lib/libchromatix_imx105p_preview.so
+lib/libchromatix_imx105p_zsl.so
+lib/libchromatix_imx105s_default_video.so
+lib/libchromatix_imx105s_preview.so
+lib/libchromatix_imx105s_zsl.so
+lib/libchromatix_imx132_default_video.so
+lib/libchromatix_imx132_preview.so
+lib/libchromatix_imx132_zsl.so
+lib/libchromatix_mt9e0132_default_video.so
+lib/libchromatix_mt9e0132_preview.so
+lib/libchromatix_mt9e0133_default_video.so
+lib/libchromatix_mt9e0133_preview.so
+lib/libchromatix_mt9e0134_default_video.so
+lib/libchromatix_mt9e0134_preview.so
+lib/libchromatix_mt9e013_default_video.so
+lib/libchromatix_mt9e013_preview.so
+lib/libchromatix_mt9e013_video_hfr.so
+lib/libchromatix_ov2720_default_video.so
+lib/libchromatix_ov2720_hfr.so
+lib/libchromatix_ov2720_preview.so
+lib/libchromatix_ov2720_zsl.so
+lib/libchromatix_ov5647_default_video.so
+lib/libchromatix_ov5647_preview.so
+lib/libchromatix_ov5647_video_hfr.so
+lib/libchromatix_ov8825_default_video.so
+lib/libchromatix_ov8825_preview.so
+lib/libchromatix_ov9726_default_video.so
+lib/libchromatix_ov9726_preview.so
+lib/libchromatix_s5k3h2_default_video.so
+lib/libchromatix_s5k3h2_preview.so
+lib/libchromatix_s5k3h2_zsl.so
+lib/libchromatix_s5k3h2s_default_video.so
+lib/libchromatix_s5k3h2s_preview.so
+lib/libchromatix_s5k3h2s_zsl.so
+lib/libchromatix_s5k3l1yx_default_video.so
+lib/libchromatix_s5k3l1yx_hfr_120fps.so
+lib/libchromatix_s5k3l1yx_hfr_60fps.so
+lib/libchromatix_s5k3l1yx_hfr_90fps.so
+lib/libchromatix_s5k3l1yx_preview.so
+lib/libchromatix_s5k3l1yx_video_hd.so
+lib/libchromatix_s5k3l1yx_zsl.so
+lib/libchromatix_s5k4e1_default_video.so
+lib/libchromatix_s5k4e1_preview.so
+
+# key layout
+usr/keylayout/8660_handset.kl
+usr/keylayout/cyttsp-i2c.kl
+usr/keylayout/ffa-keypad.kl
+usr/keylayout/fluid-keypad.kl
+usr/keylayout/mione-keypad.kl
+
+# more
+lib/libmmparser.so
+lib/libmmosal.so
+lib/libDivxDrm.so
+
