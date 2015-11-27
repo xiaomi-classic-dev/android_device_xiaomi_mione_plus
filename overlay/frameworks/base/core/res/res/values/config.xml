@@ -164,6 +164,12 @@
          Used to decide if there should be a disable option -->
     <bool name="config_intrusiveNotificationLed">true</bool>
 
+    <!-- The RadioAccessFamilies supported by the device.
+         Empty is viewed as "all".  Only used on devices which
+         don't support RIL_REQUEST_GET_RADIO_CAPABILITY
+         format is UMTS|LTE|... -->
+    <string name="config_radio_access_family">GSM|WCDMA</string>
+
     <!-- Is the battery LED intrusive?
          Used to decide if there should be a disable option -->
     <bool name="config_intrusiveBatteryLed">true</bool>
