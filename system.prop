@@ -105,3 +105,5 @@ ro.vold.umsdirtyratio=50
 persist.media.treble_omx=false
 
 debug.hwui.use_buffer_age=false
+
+camera.disable_treble=true
