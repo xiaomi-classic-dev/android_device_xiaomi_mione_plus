@@ -322,3 +322,7 @@ PRODUCT_COPY_FILES += \
 
 # Preserve the legacy Wi-Fi loader capability in images and OTA metadata.
 PRODUCT_PACKAGES += fs_config_files
+
+# The software-codec APEX must resolve legacy vendor graphics dependencies.
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/configs/ld.config.txt:system/etc/swcodec/ld.config.txt
