@@ -27,6 +27,9 @@
 MIONE_PATH := device/xiaomi/mione_plus
 BOARD_VENDOR := xiaomi
 
+# Memfd
+TARGET_HAS_MEMFD_BACKPORT := true
+
 # Bootloader
 TARGET_NO_BOOTLOADER := true
 
