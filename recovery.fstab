@@ -6,5 +6,5 @@
 /dev/block/platform/msm_sdcc.1/by-name/userdata		/data		auto	nosuid,nodev,noatime,nodiratime		defaults	twrp=encryptable=/dev/block/platform/msm_sdcc.1/by-name/extra
 /dev/block/platform/msm_sdcc.1/by-name/cache		/cache		auto	nosuid,nodev,noatime,nodiratime		defaults
 /dev/block/platform/msm_sdcc.1/by-name/misc		/misc		emmc	defaults				defaults
-/dev/block/mmcblk1p1					/sdcard		auto	defaults				defaults	twrp=display="MicroSD";storage;wipeingui;removable
-/dev/block/sda1						/usb-otg	auto	defaults				defaults	twrp=display="USB OTG";storage;wipeingui;removable
+/devices/platform/msm_sdcc.3/mmc_host	/storage/external_sd auto    vfat    defaults    voldmanaged=ext_sd:auto,noemulatedsd
+/devices/platform/msm_hsusb_host.0/usb1	/storage/usbdisk    auto    vfat    defaults    voldmanaged=usb:auto
