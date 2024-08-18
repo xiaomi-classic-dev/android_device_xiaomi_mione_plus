@@ -59,9 +59,6 @@ on post-fs-data
 # InputMethodManagerService
     mkdir /data/system/inputmethod 0755 system system
 
-    # no selinux
-    stop auditd
-
 on charger
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system wait ro barrier=1
     write /sys/module/rpm_resources/enable_low_power/L2_cache 1
