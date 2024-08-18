@@ -10,19 +10,15 @@ import init.qcom.rc
 # most of the following are from boot.img of mioneplus_QDS81
 
 on init
-    export EXTERNAL_STORAGE /storage/sdcard0
-# create mountpoints
-    mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
-    mkdir /mnt/media_rw/usbdisk0 0700 media_rw media_rw
-    mkdir /storage/sdcard0 0700 root root
-    mkdir /storage/usbdisk0 0700 root root
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
     mkdir /vendor/firmware 0775 system system
 
-# for backwards compatibility
-    symlink /storage/sdcard0 /sdcard
-    symlink /storage/sdcard0 /mnt/sdcard
-    symlink /storage/usbdisk0 /usbdisk0
-    symlink /storage/usbdisk0 /mnt/usbdisk0
+on fs
+    setprop ro.crypto.fuse_sdcard true
 
 on boot
     chown system system /sys/class/leds/backlight/brightness
@@ -42,8 +38,7 @@ on boot
 
 on fs
 # mount mmc partitions
-    exec /sbin/dualboot_init ./fstab.mione
-    mount_all ./fstab.mione.patched
+    mount_all ./fstab.mione
     #Setting permissons for misc partition
     chmod 0666 /dev/block/platform/msm_sdcc.1/by-name/misc
 
@@ -66,14 +61,6 @@ on post-fs-data
 
     # no selinux
     stop auditd
-
-service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
-    oneshot
-    disabled
-
-service fuse_usbdisk0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk0 /storage/usbdisk0
-    oneshot
-    disabled
 
 on charger
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system wait ro barrier=1
