@@ -90,10 +90,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dexopt-flags=m=y \
     persist.sys.timezone=Asia/Shanghai
 
-# we don't have selinux now
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.boot.selinux=disabled
-
 # xiaomi mione wifi config
 $(call inherit-product, device/xiaomi/mione_plus/mione_bcm43xx.mk)
 

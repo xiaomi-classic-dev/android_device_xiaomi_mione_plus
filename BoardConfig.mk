@@ -34,9 +34,9 @@ TARGET_BOOTLOADER_BOARD_NAME := mione
 
 # Kernel
 BOARD_KERNEL_BASE := 0x40200000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=mione kgsl.mmutype=gpummu vmalloc=400M
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=mione kgsl.mmutype=gpummu vmalloc=400M androidboot.selinux=permissive
 BOARD_KERNEL_PAGE_SIZE := 2048
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01200000
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
 TARGET_KERNEL_ARCH := arm
 TARGET_KERNEL_CONFIG := mione-user_defconfig
