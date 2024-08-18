@@ -37,9 +37,9 @@ BOARD_KERNEL_BASE := 0x40200000
 BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=mione kgsl.mmutype=gpummu vmalloc=400M
 BOARD_KERNEL_PAGE_SIZE := 2048
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01200000
-
-# Prebuilt Kernel
-TARGET_PREBUILT_KERNEL := device/xiaomi/mione_plus/prebuilt/kernel
+TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
+TARGET_KERNEL_ARCH := arm
+TARGET_KERNEL_CONFIG := mione-user_defconfig
 
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/xiaomi/mione_plus/bluetooth
@@ -69,16 +69,8 @@ BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
 
 # Recovery
 BOARD_RECOVERY_SWIPE := true
-BOARD_NATIVE_DUALBOOT := true
-BOARD_NATIVE_DUALBOOT_SINGLEDATA := true
 BOARD_USES_MMCUTILS := true
 BOARD_HAS_NO_SELECT_BUTTON := true
-TARGET_PREBUILT_RECOVERY_KERNEL := device/xiaomi/mione_plus/recovery/kernel
-BOARD_CUSTOM_GRAPHICS := ../../../device/xiaomi/mione_plus/recovery/graphics.c
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
-BOARD_CUSTOM_RECOVERY_UI := \
-    ../../device/xiaomi/mione_plus/recovery/dualboot.c \
-    ../../device/xiaomi/mione_plus/recovery/recovery_ui.c
 BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/ramdisk/fstab.mione
