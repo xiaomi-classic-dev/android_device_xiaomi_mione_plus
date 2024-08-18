@@ -15,7 +15,7 @@ $(call inherit-product, device/xiaomi/mione_plus/device_mione_plus.mk)
 
 # Setup device specific product configuration.
 PRODUCT_DEVICE := mione_plus
-PRODUCT_NAME := lineage_mione_plus
+PRODUCT_NAME := cm_mione_plus
 PRODUCT_BRAND := Xiaomi
 PRODUCT_MODEL := MI-ONE Plus
 PRODUCT_MANUFACTURER := Xiaomi
