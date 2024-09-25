@@ -57,9 +57,17 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/ramdisk/fstab.mione:root/fstab.mione \
     device/xiaomi/mione_plus/ramdisk/sbin/chargeonlymode:root/sbin/chargeonlymode
 
-# wifi
-PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/configs/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf
+# WiFi
+PRODUCT_PACKAGES += \
+    dhcpcd.conf \
+    hostapd \
+    hostapd_default.conf \
+    wpa_supplicant \
+    wpa_supplicant.conf
+
+# Bluetooth
+PRODUCT_PACKAGES += \
+    bt_vendor.conf
 
 # Input device config
 PRODUCT_COPY_FILES += \
