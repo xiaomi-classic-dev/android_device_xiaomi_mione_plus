@@ -57,6 +57,9 @@ BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := mione
 # NFC
 BOARD_HAVE_NFC := false
 
+# Radio
+BOARD_RIL_CLASS := ../../../device/xiaomi/mione_plus/ril
+
 # Filesystem
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
