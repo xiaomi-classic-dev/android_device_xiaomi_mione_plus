@@ -23,9 +23,8 @@ $(call inherit-product-if-exists, vendor/xiaomi/mione_plus/mione_plus-vendor.mk)
 
 DEVICE_PACKAGE_OVERLAYS += device/xiaomi/mione_plus/overlay
 
-# GPS and Light
+# Light
 PRODUCT_PACKAGES += \
-    gps.mione \
     lights.mione
 
 # gps.conf
