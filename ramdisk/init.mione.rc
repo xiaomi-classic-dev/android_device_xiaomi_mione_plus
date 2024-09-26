@@ -10,11 +10,6 @@ import init.qcom.rc
 # most of the following are from boot.img of mioneplus_QDS81
 
 on init
-    mkdir /mnt/shell/emulated 0700 shell shell
-    mkdir /storage/emulated 0555 root root
-    export EXTERNAL_STORAGE /storage/emulated/legacy
-    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
-    export EMULATED_STORAGE_TARGET /storage/emulated
     mkdir /vendor/firmware 0775 system system
 
 on fs
