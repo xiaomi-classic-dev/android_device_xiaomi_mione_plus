@@ -58,6 +58,7 @@ BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE := mione
 BOARD_HAVE_NFC := false
 
 # Radio
+TARGET_RIL_VARIANT := caf
 BOARD_RIL_CLASS := ../../../device/xiaomi/mione_plus/ril
 
 # Filesystem
