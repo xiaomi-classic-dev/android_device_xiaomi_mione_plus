@@ -22,7 +22,7 @@ public class XiaomiMsm8660RIL extends RIL {
 
     @Override
     protected void
-    processUnsolicited(Parcel p) {
+    processUnsolicited(Parcel p, int type) {
         int dataPosition = p.dataPosition();
         int origResponse = p.readInt();
         int newResponse = origResponse;
@@ -44,7 +44,7 @@ public class XiaomiMsm8660RIL extends RIL {
             p.writeInt(newResponse);
         }
         p.setDataPosition(dataPosition);
-        super.processUnsolicited(p);
+        super.processUnsolicited(p, type);
     }
 
     @Override
