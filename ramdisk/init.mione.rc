@@ -6,10 +6,12 @@
 
 
 import init.qcom.rc
+import init.target.rc
 
 # most of the following are from boot.img of mioneplus_QDS81
 
 on init
+    export LD_SHIM_LIBS "/system/lib/hw/camera.vendor.msm8660.so|libshim_camera.so:/system/lib/hw/sensors.msm8660.so|libshim_camera.so"
     mkdir /vendor/firmware 0775 system system
 
 on fs
