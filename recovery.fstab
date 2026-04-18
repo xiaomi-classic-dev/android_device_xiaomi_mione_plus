@@ -1,10 +1,20 @@
-# device						mount_point	fstype	mount_flags				fs_flags	twrp_flags
+# mount point	fstype	device					[device2]	[length]	[flags]
 
-/dev/block/platform/msm_sdcc.1/by-name/boot		/boot		emmc	defaults				defaults
-/dev/block/platform/msm_sdcc.1/by-name/recovery		/recovery	emmc	defaults				defaults
-/dev/block/platform/msm_sdcc.1/by-name/system		/system		ext4	defaults				defaults
-/dev/block/platform/msm_sdcc.1/by-name/userdata		/data		auto	nosuid,nodev,noatime,nodiratime		defaults	twrp=encryptable=/dev/block/platform/msm_sdcc.1/by-name/extra
-/dev/block/platform/msm_sdcc.1/by-name/cache		/cache		auto	nosuid,nodev,noatime,nodiratime		defaults
-/dev/block/platform/msm_sdcc.1/by-name/misc		/misc		emmc	defaults				defaults
-/devices/platform/msm_sdcc.3/mmc_host	/storage/external_sd auto    vfat    defaults    voldmanaged=ext_sd:auto,noemulatedsd
-/devices/platform/msm_hsusb_host.0/usb1	/storage/usbdisk    auto    vfat    defaults    voldmanaged=usb:auto
+/boot		emmc	/dev/block/platform/msm_sdcc.1/by-name/boot
+/boot1		emmc	/dev/block/platform/msm_sdcc.1/by-name/boot1		flags=backup=1;flashimg;display="Boot 2";backupname="boot1"
+/recovery	emmc	/dev/block/platform/msm_sdcc.1/by-name/recovery
+/system		ext4	/dev/block/platform/msm_sdcc.1/by-name/system		flags=backup=1;wipeingui;mounttodecrypt
+/data		ext4	/dev/block/platform/msm_sdcc.1/by-name/userdata		flags=backup=1;wipeingui;wipeduringfactoryreset;encryptable=footer
+/cache		ext4	/dev/block/platform/msm_sdcc.1/by-name/cache		flags=backup=1;wipeingui;wipeduringfactoryreset
+/external_sd	auto	/dev/block/mmcblk1p1	/dev/block/mmcblk1	flags=storage;removable;wipeingui;display="SD Card";storagename="SD Card"
+/firmware	vfat	/dev/block/platform/msm_sdcc.1/by-name/modem		flags=backup=1;wipeingui;display="Firmware"
+/misc		emmc	/dev/block/platform/msm_sdcc.1/by-name/misc
+/radio		emmc	/dev/block/platform/msm_sdcc.1/by-name/modem		flags=backup=1;flashimg
+/modemst1	emmc	/dev/block/platform/msm_sdcc.1/by-name/modem_st1	flags=backup=1;flashimg;display="Modem ST1";backupname="modemst1"
+/modemst2	emmc	/dev/block/platform/msm_sdcc.1/by-name/modem_st2	flags=backup=1;flashimg;display="Modem ST2";backupname="modemst2"
+/sbl1		emmc	/dev/block/platform/msm_sdcc.1/by-name/sbl1		flags=backup=1;flashimg
+/sbl2		emmc	/dev/block/platform/msm_sdcc.1/by-name/sbl2		flags=backup=1;flashimg
+/sbl3		emmc	/dev/block/platform/msm_sdcc.1/by-name/sbl3		flags=backup=1;flashimg
+/tz		emmc	/dev/block/platform/msm_sdcc.1/by-name/tz		flags=backup=1;flashimg
+/rpm		emmc	/dev/block/platform/msm_sdcc.1/by-name/rpm		flags=backup=1;flashimg
+/aboot		emmc	/dev/block/platform/msm_sdcc.1/by-name/aboot		flags=backup=1;flashimg
