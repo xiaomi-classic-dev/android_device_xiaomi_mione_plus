@@ -101,4 +101,4 @@ PRODUCT_PROPERTY_OVERRIDES += \
 $(call inherit-product, device/xiaomi/mione_plus/mione_bcm43xx.mk)
 
 # dalvik tweak
-$(call inherit-product, frameworks/native/build/phone-xhdpi-1024-dalvik-heap.mk)
+$(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
