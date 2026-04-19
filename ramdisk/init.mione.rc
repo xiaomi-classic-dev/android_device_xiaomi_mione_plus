@@ -6,6 +6,7 @@
 
 
 import init.qcom.rc
+import init.target.rc
 
 # most of the following are from boot.img of mioneplus_QDS81
 
