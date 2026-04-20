@@ -41,6 +41,15 @@ service chrg-usb-sh /system/bin/sh /init.qcom.usb.sh chargemode
     oneshot
 
 # USB compositions
+on property:sys.usb.config=adb
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idVendor 18D1
+    write /sys/class/android_usb/android0/idProduct 4EE7
+    write /sys/class/android_usb/android0/functions adb
+    write /sys/class/android_usb/android0/enable 1
+    start adbd
+    setprop sys.usb.state ${sys.usb.config}
+
 on property:sys.usb.config=diag,adb
     write /sys/class/android_usb/android0/enable 0
     write /sys/class/android_usb/android0/idVendor 05C6
@@ -49,15 +58,16 @@ on property:sys.usb.config=diag,adb
     write /sys/class/android_usb/android0/functions diag,adb
     write /sys/class/android_usb/android0/enable 1
     start adbd
-    setprop sys.usb.state $sys.usb.config
+    setprop sys.usb.state ${sys.usb.config}
 
 on property:sys.usb.config=rndis
+    stop adbd
     write /sys/class/android_usb/android0/enable 0
     write /sys/class/android_usb/android0/idVendor 18D1
     write /sys/class/android_usb/android0/idProduct F00E
     write /sys/class/android_usb/android0/functions rndis
     write /sys/class/android_usb/android0/enable 1
-    setprop sys.usb.state $sys.usb.config
+    setprop sys.usb.state ${sys.usb.config}
 
 on property:sys.usb.config=rndis,adb
     write /sys/class/android_usb/android0/enable 0
@@ -66,16 +76,17 @@ on property:sys.usb.config=rndis,adb
     write /sys/class/android_usb/android0/functions rndis,adb
     write /sys/class/android_usb/android0/enable 1
     start adbd
-    setprop sys.usb.state $sys.usb.config
+    setprop sys.usb.state ${sys.usb.config}
 
 on property:sys.usb.config=mass_storage
+    stop adbd
     write /sys/class/android_usb/android0/enable 0
     write /sys/class/android_usb/android0/idVendor 18D1
     write /sys/class/android_usb/android0/idProduct 9026
     write /sys/class/android_usb/android0/functions mass_storage
     write /sys/class/android_usb/android0/f_mass_storage/inquiry_string -XIAOMI-USBDEVICE
     write /sys/class/android_usb/android0/enable 1
-    setprop sys.usb.state $sys.usb.config
+    setprop sys.usb.state ${sys.usb.config}
 
 on property:sys.usb.config=mass_storage,adb
     write /sys/class/android_usb/android0/enable 0
@@ -85,5 +96,4 @@ on property:sys.usb.config=mass_storage,adb
     write /sys/class/android_usb/android0/f_mass_storage/inquiry_string -XIAOMI-USBDEVICE
     write /sys/class/android_usb/android0/enable 1
     start adbd
-    setprop sys.usb.state $sys.usb.config
-
+    setprop sys.usb.state ${sys.usb.config}
