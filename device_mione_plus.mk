@@ -95,7 +95,8 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dexopt-flags=m=y \
-    persist.sys.timezone=Asia/Shanghai
+    persist.sys.timezone=Asia/Shanghai \
+    ro.sdcardfs.enable=true
 
 # xiaomi mione wifi config
 $(call inherit-product, device/xiaomi/mione_plus/mione_bcm43xx.mk)
