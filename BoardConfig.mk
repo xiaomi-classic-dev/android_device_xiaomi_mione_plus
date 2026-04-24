@@ -45,7 +45,7 @@ TARGET_KERNEL_CONFIG := mione-user_defconfig
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/xiaomi/mione_plus/bluetooth
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
-BOARD_BLUEDROID_VENDOR_CONF := device/xiaomi/mione_plus/bluetooth/vnd_mione_plus.txt
+BOARD_CUSTOM_BT_CONFIG := device/xiaomi/mione_plus/bluetooth/vnd_mione_plus.txt
 
 # Display
 TARGET_SCREEN_WIDTH := 480
