@@ -22,6 +22,7 @@ WIFI_DRIVER_MODULE_PATH := "/system/lib/modules/bcmdhd.ko"
 WIFI_DRIVER_MODULE_ARG  := "firmware_path=/vendor/firmware/fw_bcm4329.bin nvram_path=/system/etc/wifi/nvram.txt"
 WIFI_DRIVER_FW_PATH_STA := "/vendor/firmware/fw_bcm4329.bin"
 WIFI_DRIVER_FW_PATH_AP  := "/vendor/firmware/fw_bcm4329_apsta.bin"
+KERNEL_HAS_FINIT_MODULE := false
 
 WIFI_DRIVER_FW_PATH_P2P := "/vendor/firmware/fw_bcmdhd_p2p.bin"
 
