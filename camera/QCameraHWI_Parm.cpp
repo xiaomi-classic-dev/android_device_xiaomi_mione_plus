@@ -33,7 +33,7 @@
 #include <linux/android_pmem.h>
 #endif
 #include <linux/ioctl.h>
-#include <camera/QCameraParameters.h>
+#include "QCameraParameters.h"
 #include <media/mediarecorder.h>
 #include <gralloc_priv.h>
 
@@ -61,9 +61,8 @@ extern "C" {
 #include <sys/time.h>
 #include <stdlib.h>
 #include <linux/ion.h>
-#include <camera.h>
-#include <cam_fifo.h>
-#include <jpege.h>
+#include "QCamera_Intf.h"
+
 
 } // extern "C"
 
@@ -178,7 +177,7 @@ static int iso_speed_values[] = {
 };
 
 extern int HAL_numOfCameras;
-extern camera_info_t HAL_cameraInfo[MSM_MAX_CAMERA_SENSORS];
+extern qcamera_info_t HAL_cameraInfo[MSM_MAX_CAMERA_SENSORS];
 extern mm_camera_t * HAL_camerahandle[MSM_MAX_CAMERA_SENSORS];
 
 namespace android {

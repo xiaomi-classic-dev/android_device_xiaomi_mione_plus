@@ -275,10 +275,10 @@ typedef struct {
     uint8_t (*is_parm_supported)(mm_camera_t *camera, mm_camera_parm_type_t parm_type);
     /* if the channel is supported */
     uint8_t (*is_ch_supported)(mm_camera_t *camera, mm_camera_channel_type_t ch_type);
-    /* set a parm’s current value */
+    /* set a parmï¿½s current value */
     int32_t (*set_parm)(mm_camera_t *camera, mm_camera_parm_type_t parm_type,
           void* p_value);
-    /* get a parm’s current value */
+    /* get a parmï¿½s current value */
     int32_t (*get_parm)(mm_camera_t *camera, mm_camera_parm_type_t parm_type,
           void* p_value);
     int32_t (*request_buf) (mm_camera_t *camera, mm_camera_reg_buf_t *buf);
@@ -427,7 +427,7 @@ struct mm_camera {
     mm_camera_ops_t *ops;                   // operation interface
     mm_camera_notify_t *evt;                // evt callback interface
     mm_camera_jpeg_t *jpeg_ops;         // jpeg config and encoding interface
-    camera_info_t camera_info;      // postion, mount_angle, etc.
+    qcamera_info_t camera_info;      // postion, mount_angle, etc.
     enum sensor_type_t sensor_type; // BAYER, YUV, JPEG_SOC, etc.
     char video_dev_name[32];           // device node name, e.g. /dev/video1
 };
@@ -451,12 +451,12 @@ uint8_t cam_config_is_parm_supported(
 uint8_t cam_config_is_ch_supported(
   int cam_id,
   mm_camera_channel_type_t ch_type);
-/* set a parm’s current value */
+/* set a parmï¿½s current value */
 int32_t cam_config_set_parm(
   int cam_id,
   mm_camera_parm_type_t parm_type,
   void* p_value);
-/* get a parm’s current value */
+/* get a parmï¿½s current value */
 int32_t cam_config_get_parm(
   int cam_id,
   mm_camera_parm_type_t parm_type,

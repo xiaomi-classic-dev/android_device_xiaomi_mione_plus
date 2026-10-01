@@ -29,7 +29,7 @@
 #ifndef MM_OMX_JPEG_ENCODER_H_
 #define MM_OMX_JPEG_ENCODER_H_
 #include <linux/ion.h>
-#include "camera.h"
+#include "QCamera_Intf.h"
 
 typedef struct omx_jpeg_encode_params_t {
     const cam_ctrl_dimension_t * dimension;
@@ -70,7 +70,7 @@ typedef void (*jpegfragment_callback_t)(uint8_t * buff_ptr,
     uint32_t buff_size, void* user_data);
 typedef void (*jpeg_callback_t)(jpeg_event_t, void *);
 
-void set_callbacks(
+void mione_jpeg_set_callbacks(
     jpegfragment_callback_t fragcallback,
     jpeg_callback_t eventcallback,
     void* userdata,

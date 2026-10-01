@@ -1,0 +1,13 @@
+{
+    global:
+        cam_*;
+        mm_camera_query;
+        mm_camera_get_msm_frame_len;
+        mm_jpeg_encoder_setMainImageQuality;
+        mm_jpeg_encoder_setRotation;
+        mm_jpeg_encoder_get_buffer_offset;
+        mm_jpeg_encoder_setThumbnailQuality;
+        omxJpeg*;
+        mione_jpeg_set_callbacks;
+    local: *;
+};

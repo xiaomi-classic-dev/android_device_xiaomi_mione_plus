@@ -79,7 +79,7 @@ const char *mm_camera_util_get_dev_name(mm_camera_obj_t * my_obj)
 }
 
 /* used for querying the camera_info of the given camera_id */
-static const camera_info_t * mm_camera_cfg_query_camera_info (int8_t camera_id)
+static const qcamera_info_t * mm_camera_cfg_query_camera_info (int8_t camera_id)
 {
     if(camera_id >= MSM_MAX_CAMERA_SENSORS)
         return NULL;
@@ -123,7 +123,7 @@ static uint8_t mm_camera_cfg_is_ch_supported (mm_camera_t * camera,
     return FALSE;
 }
 
-/* set a parm’s current value */
+/* set a parmï¿½s current value */
 static int32_t mm_camera_cfg_set_parm (mm_camera_t * camera,
                                        mm_camera_parm_type_t parm_type,
                                        void *p_value)
@@ -144,7 +144,7 @@ static int32_t mm_camera_cfg_set_parm (mm_camera_t * camera,
     return rc;
 }
 
-/* get a parm’s current value */
+/* get a parmï¿½s current value */
 static int32_t mm_camera_cfg_get_parm (mm_camera_t * camera,
                                        mm_camera_parm_type_t parm_type,
                                        void* p_value)
@@ -742,7 +742,7 @@ uint8_t cam_config_is_ch_supported(
 
 }
 
-/* set a parm’s current value */
+/* set a parmï¿½s current value */
 int32_t cam_config_set_parm(
   int cam_id,
   mm_camera_parm_type_t parm_type,
@@ -756,7 +756,7 @@ int32_t cam_config_set_parm(
   return rc;
 }
 
-/* get a parm’s current value */
+/* get a parmï¿½s current value */
 int32_t cam_config_get_parm(
   int cam_id,
   mm_camera_parm_type_t parm_type,

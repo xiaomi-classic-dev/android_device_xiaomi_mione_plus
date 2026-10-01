@@ -1545,7 +1545,7 @@ encodeData(mm_camera_ch_data_buf_t* recvd_frame,
         /*TBD: Move JPEG handling to the mm-camera library */
         ALOGD("Setting callbacks, initializing encoder and start encoding.");
         ALOGD(" Passing my obj: %x", (unsigned int) this);
-        set_callbacks(snapshot_jpeg_fragment_cb, snapshot_jpeg_cb, this,
+        mione_jpeg_set_callbacks(snapshot_jpeg_fragment_cb, snapshot_jpeg_cb, this,
              mHalCamCtrl->mJpegMemory.camera_memory[0]->data, &mJpegOffset);
 
         if (isLiveSnapshot() || isFullSizeLiveshot()) {

@@ -28,6 +28,8 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#include <dlfcn.h>
+#include <stdbool.h>
 #include "OMX_Types.h"
 #include "OMX_Index.h"
 #include "OMX_Core.h"
@@ -72,6 +74,11 @@ static const color_format_map_t color_format_map[] = {
   {CAMERA_YUV_422_NV61, YCRCBLP_H2V1},
   {CAMERA_YUV_422_NV16, YCBCRLP_H2V1},
 };
+
+static void *libmmstillomx;
+static OMX_ERRORTYPE OMX_APIENTRY (*pOMX_GetHandle)(OMX_HANDLETYPE*, OMX_STRING, OMX_PTR, OMX_CALLBACKTYPE*);
+static OMX_ERRORTYPE OMX_APIENTRY (*pOMX_Init)(void);
+static OMX_ERRORTYPE OMX_APIENTRY (*pOMX_Deinit)(void);
 
 static OMX_HANDLETYPE pHandle;
 static OMX_CALLBACKTYPE callbacks;
@@ -124,7 +131,7 @@ static jpeg_color_format_t get_jpeg_format_from_cam_format(
   return jpg_format;
 }
 static omx_jpeg_buffer_offset bufferoffset1;
-void set_callbacks(
+void mione_jpeg_set_callbacks(
     jpegfragment_callback_t fragcallback,
     jpeg_callback_t eventcallback, void* userdata,
     void* output_buffer,
@@ -261,7 +268,16 @@ int8_t omxJpegOpen()
 {
     ALOGI("%s", __func__);
     pthread_mutex_lock(&jpege_mutex);
-    OMX_ERRORTYPE ret = OMX_GetHandle(&pHandle, "OMX.qcom.image.jpeg.encoder",
+    libmmstillomx = dlopen("libmmstillomx.so", RTLD_NOW);
+    if (!libmmstillomx) { pthread_mutex_unlock(&jpege_mutex); return FALSE; }
+    *(void **)(&pOMX_GetHandle) = dlsym(libmmstillomx, "OMX_GetHandle");
+    *(void **)(&pOMX_Init) = dlsym(libmmstillomx, "OMX_Init");
+    *(void **)(&pOMX_Deinit) = dlsym(libmmstillomx, "OMX_Deinit");
+    if (!pOMX_GetHandle || !pOMX_Init || !pOMX_Deinit) {
+        dlclose(libmmstillomx); libmmstillomx = NULL;
+        pthread_mutex_unlock(&jpege_mutex); return FALSE;
+    }
+    OMX_ERRORTYPE ret = (*pOMX_GetHandle)(&pHandle, "OMX.qcom.image.jpeg.encoder",
       NULL, &callbacks);
     pthread_mutex_unlock(&jpege_mutex);
     return TRUE;
@@ -277,7 +293,7 @@ int8_t omxJpegStart(uint8_t hw_encode_enable)
     callbacks.EventHandler = eventHandler;
     pthread_mutex_init(&lock, NULL);
     pthread_cond_init(&cond, NULL);
-    OMX_Init();
+    (*pOMX_Init)();
     pthread_mutex_unlock(&jpege_mutex);
     return TRUE;
 }
@@ -712,13 +728,14 @@ void omxJpegFinish()
         OMX_FreeBuffer(pHandle, 0, pInBuffers);
         OMX_FreeBuffer(pHandle, 2, pInBuffers1);
         OMX_FreeBuffer(pHandle, 1, pOutBuffers);
-        OMX_Deinit();
+        (*pOMX_Deinit)();
     }
     pthread_mutex_unlock(&jpege_mutex);
 }
 
 void omxJpegClose()
 {
+    if (libmmstillomx) { dlclose(libmmstillomx); libmmstillomx = NULL; }
     ALOGI("%s:", __func__);
 }
 
@@ -742,7 +759,7 @@ void omxJpegAbort()
       OMX_FreeBuffer(pHandle, 0, pInBuffers);
       OMX_FreeBuffer(pHandle, 2, pInBuffers1);
       OMX_FreeBuffer(pHandle, 1, pOutBuffers);
-      OMX_Deinit();
+      (*pOMX_Deinit)();
     }
     pthread_mutex_unlock(&jpege_mutex);
 }
