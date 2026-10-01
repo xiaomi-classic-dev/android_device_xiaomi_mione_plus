@@ -28,6 +28,10 @@ PRODUCT_PACKAGES += \
     gps.mione \
     lights.mione
 
+# MSM8660 power policy
+PRODUCT_PACKAGES += \
+    power.msm8660
+
 # gps.conf
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/gps.conf:system/etc/gps.conf
