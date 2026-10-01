@@ -156,7 +156,7 @@ static struct camera_size_type zsl_picture_sizes[] = {
 
 static camera_size_type default_picture_sizes[] = {
   { 4000, 3000}, // 12MP
-  { 3200, 2400}, // 8MP
+  { 3264, 2448}, // MiOne 8MP sensor, verified against daemon capabilities
   { 2592, 1944}, // 5MP
   { 2048, 1536}, // 3MP QXGA
   { 1920, 1088}, //HD1080
@@ -1055,10 +1055,10 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("power-mode-supported", "true");
     //Set Live shot support
     rc = cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_LIVESHOT_MAIN);
-    if(!rc) {
+    if(!rc || !mFullLiveshotEnabled) {
         ALOGE("%s:LIVESHOT is  not supported", __func__);
         mParameters.set("video-snapshot-supported", "false");
-        mFullLiveshotEnabled = rc;
+        mFullLiveshotEnabled = false;
     } else {
         mParameters.set("video-snapshot-supported", "true");
     }

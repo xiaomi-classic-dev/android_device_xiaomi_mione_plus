@@ -182,7 +182,7 @@ QCameraHardwareInterface(int cameraId, int mode)
                     mFaceDetectOn(0),
                     mDisEnabled(0),
                     mZoomSupported(false),
-                    mFullLiveshotEnabled(true),
+                    mFullLiveshotEnabled(false),
                     mRecordingHint(false),
                     mAppRecordingHint(false),
                     mStatsOn(0), mCurrentHisto(-1), mSendData(false), mStatHeap(NULL),
@@ -236,7 +236,8 @@ QCameraHardwareInterface(int cameraId, int mode)
     property_get("persist.camera.hal.multitouchaf", value, "0");
     mMultiTouch = atoi(value);
 
-    property_get("persist.camera.full.liveshot", value, "1");
+    // MiOne's VFE31 stack uses the video path without full-resolution liveshot.
+    property_get("persist.camera.full.liveshot", value, "0");
     mFullLiveshotEnabled = atoi(value);
 
     property_get("persist.camera.hal.dis", value, "0");
