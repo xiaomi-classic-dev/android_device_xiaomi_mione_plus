@@ -581,14 +581,23 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
                 sizeof(camera_hfr_mode_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_FOCAL_LENGTH:
-        return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_FOCAL_LENGTH,
-                     sizeof(focus_distances_info_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_HORIZONTAL_VIEW_ANGLE:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_HORIZONTAL_VIEW_ANGLE,
-                                                     sizeof(focus_distances_info_t), (void *)parm->p_value);
-    case MM_CAMERA_PARM_VERTICAL_VIEW_ANGLE:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_VERTICAL_VIEW_ANGLE,
-                                                     sizeof(focus_distances_info_t), (void *)parm->p_value);
+    case MM_CAMERA_PARM_VERTICAL_VIEW_ANGLE: {
+        /* The 8x60 daemon uses a 12-byte control payload for these scalar
+         * queries. Keep that wire ABI, but never copy it into a 4-byte float
+         * supplied by the HAL. msm_server_proc_ctrl_cmd copies length bytes. */
+        float wire_value[3] = { 0.0f, 0.0f, 0.0f };
+        uint16_t command = CAMERA_GET_PARM_FOCAL_LENGTH;
+        if (parm->parm_type == MM_CAMERA_PARM_HORIZONTAL_VIEW_ANGLE)
+            command = CAMERA_GET_PARM_HORIZONTAL_VIEW_ANGLE;
+        else if (parm->parm_type == MM_CAMERA_PARM_VERTICAL_VIEW_ANGLE)
+            command = CAMERA_GET_PARM_VERTICAL_VIEW_ANGLE;
+        rc = mm_camera_send_native_ctrl_cmd(my_obj, command,
+                sizeof(wire_value), wire_value);
+        if (rc == 0)
+            memcpy(parm->p_value, wire_value, sizeof(float));
+        return rc;
+    }
     case MM_CAMERA_PARM_FOCUS_DISTANCES:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_FOCUS_DISTANCES,
                      sizeof(focus_distances_info_t), (void *)parm->p_value);
