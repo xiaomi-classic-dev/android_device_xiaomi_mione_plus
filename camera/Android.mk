@@ -25,6 +25,7 @@ LOCAL_CFLAGS := -DDLOPEN_LIBMMCAMERA=1 -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
     -include bionic/libc/include/sys/socket.h
 LOCAL_C_INCLUDES := $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
     $(LOCAL_PATH)/inc $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+    system/media/camera/include \
     $(call project-path-for,qcom-display)/libgralloc \
     $(call project-path-for,qcom-display)/libgenlock \
     $(call project-path-for,qcom-media)/mm-core/inc \
