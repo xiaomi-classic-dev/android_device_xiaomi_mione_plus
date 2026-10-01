@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <telephony/ril.h>
+#ifndef MIONE_TEST_DIR
+#define MIONE_TEST_DIR "/data/local/tmp/mione-userspace"
+#endif
 static int failures, checks, last_event, unsol_count, last_error, complete_count;
 static const void *last_data;
 static size_t last_length;
@@ -16,7 +19,7 @@ static void timer(RIL_TimedCallback cb, void *p, const struct timeval *tv)
 { (void)cb; (void)p; (void)tv; }
 int main(void)
 {
-    void *adapter = dlopen("/data/local/tmp/mione-userspace/libmione_ril_test.so", RTLD_NOW);
+    void *adapter = dlopen(MIONE_TEST_DIR "/libmione_ril_test.so", RTLD_NOW);
     const RIL_RadioFunctions *(*init)(const struct RIL_Env *, int, char **);
     const RIL_RadioFunctions *f;
     void *fake;
@@ -25,10 +28,46 @@ int main(void)
     struct RIL_Env env = {complete, unsol, timer};
     int payload = 42, token = 9, i;
     const int source[] = {1000,1002,1033,1035,1036,1038,1039,1040,1041};
-    const int dest[] = {1000,1002,1033,1035,1037,1002,1038,1039,1040};
-    const int req[] = {1,20,27,105,108,112,113,114,115,116};
-    const int target[] = {1,20,27,105,108,109,110,111,112,113};
-    const int reject[] = {0,106,109,110,111,117,118,119,120,121,122};
+    const int dest[] = {1000,1002,1033,1035,
+        RIL_UNSOL_RESPONSE_IMS_NETWORK_STATE_CHANGED,
+        RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED,
+        RIL_UNSOL_ON_SS, RIL_UNSOL_STK_CC_ALPHA_NOTIFY,
+        RIL_UNSOL_UICC_SUBSCRIPTION_STATUS_CHANGED};
+    const int req[] = {1,20,27,105,108,
+        RIL_REQUEST_IMS_REGISTRATION_STATE, RIL_REQUEST_IMS_SEND_SMS,
+#ifdef RIL_REQUEST_GET_DATA_CALL_PROFILE
+        RIL_REQUEST_GET_DATA_CALL_PROFILE,
+#endif
+        RIL_REQUEST_SET_UICC_SUBSCRIPTION,
+#ifdef RIL_REQUEST_SET_DATA_SUBSCRIPTION
+        RIL_REQUEST_SET_DATA_SUBSCRIPTION,
+#endif
+    };
+    const int target[] = {1,20,27,105,108,109,110,
+#ifdef RIL_REQUEST_GET_DATA_CALL_PROFILE
+        111,
+#endif
+        112,
+#ifdef RIL_REQUEST_SET_DATA_SUBSCRIPTION
+        113,
+#endif
+    };
+    const int reject[] = {0,106,
+        RIL_REQUEST_GET_CELL_INFO_LIST, RIL_REQUEST_SET_UNSOL_CELL_INFO_LIST_RATE,
+        RIL_REQUEST_SET_INITIAL_ATTACH_APN, RIL_REQUEST_SIM_TRANSMIT_APDU_BASIC,
+        RIL_REQUEST_SIM_OPEN_CHANNEL, RIL_REQUEST_SIM_CLOSE_CHANNEL,
+        RIL_REQUEST_SIM_TRANSMIT_APDU_CHANNEL, RIL_REQUEST_NV_READ_ITEM,
+        RIL_REQUEST_NV_WRITE_ITEM, RIL_REQUEST_NV_WRITE_CDMA_PRL,
+        RIL_REQUEST_NV_RESET_CONFIG,
+#ifdef RIL_REQUEST_ALLOW_DATA
+        RIL_REQUEST_ALLOW_DATA, RIL_REQUEST_GET_HARDWARE_CONFIG,
+        RIL_REQUEST_SIM_AUTHENTICATION, RIL_REQUEST_SET_DATA_PROFILE,
+        RIL_REQUEST_SHUTDOWN,
+#endif
+#ifdef RIL_REQUEST_GET_RADIO_CAPABILITY
+        RIL_REQUEST_GET_RADIO_CAPABILITY, RIL_REQUEST_SET_RADIO_CAPABILITY,
+#endif
+    };
     if (!adapter) { puts(dlerror()); return 1; }
     init = dlsym(adapter,"RIL_Init");
     if (!init) return 1;
@@ -36,7 +75,7 @@ int main(void)
     CHECK(f != NULL);
     if (!f) return 1;
     CHECK(f->version == 6); CHECK(last_event == 1002); CHECK(unsol_count == 1);
-    fake = dlopen("/data/local/tmp/mione-userspace/libmione_fake_ril.so", RTLD_NOW);
+    fake = dlopen(MIONE_TEST_DIR "/libmione_fake_ril.so", RTLD_NOW);
     emit = dlsym(fake,"mione_test_emit"); request = dlsym(fake,"mione_test_request");
     if (!emit || !request) return 1;
     for (i=0; i<(int)(sizeof(source)/sizeof(source[0])); ++i) {
