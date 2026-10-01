@@ -23,7 +23,11 @@ WIFI_DRIVER_MODULE_ARG  := "firmware_path=/vendor/firmware/fw_bcm4329.bin nvram_
 WIFI_DRIVER_FW_PATH_STA := "/vendor/firmware/fw_bcm4329.bin"
 WIFI_DRIVER_FW_PATH_AP  := "/vendor/firmware/fw_bcm4329_apsta.bin"
 
+# fw_bcmdhd_p2p.bin is BCM4330b2 firmware. This BCM4329 product has no
+# validated P2P firmware; do not expose the other chip's image to netd.
+ifeq ($(BOARD_MIONE_WIFI_DIRECT),true)
 WIFI_DRIVER_FW_PATH_P2P := "/vendor/firmware/fw_bcmdhd_p2p.bin"
+endif
 
 # new mione device have bcm4330 chip (M1S, M1Syouth)
 WIFI_DRIVER_MODULE_NAME_DHD := bcmdhd
@@ -37,4 +41,3 @@ BOARD_USE_XIAOMI_MIONE_WIFI := true
 
 PRODUCT_PACKAGES += \
     libnetcmdiface
-
