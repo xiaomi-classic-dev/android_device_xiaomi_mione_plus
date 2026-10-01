@@ -29,9 +29,16 @@ static int vendor_request(int request)
     switch (request) {
     case RIL_REQUEST_IMS_REGISTRATION_STATE: return 109;
     case RIL_REQUEST_IMS_SEND_SMS: return 110;
+#ifdef RIL_REQUEST_GET_DATA_CALL_PROFILE
     case RIL_REQUEST_GET_DATA_CALL_PROFILE: return 111;
+#endif
     case RIL_REQUEST_SET_UICC_SUBSCRIPTION: return 112;
+#ifdef RIL_REQUEST_SET_DATA_SUBSCRIPTION
     case RIL_REQUEST_SET_DATA_SUBSCRIPTION: return 113;
+#endif
+    /* Lollipop's ALLOW_DATA uses a different payload from CAF v6's
+     * SET_DATA_SUBSCRIPTION. It must not be translated by number alone.
+     */
     default: return -1;
     }
 }
