@@ -1,0 +1,30 @@
+{
+  "donor_repository": "https://github.com/mifl/android_hardware_qcom_camera (CAF mirror)",
+  "donor_ref": "M8260AAABQNLZA313065",
+  "donor_commit": "b0d4d5aa4c3cbe94f7c43eb4c6d4a57f7d02e7c7",
+  "kernel_public_stock_ref": "micode/mi1",
+  "kernel_public_stock_commit": "d6b55280bc8c1667f5d12538a148bb1edf441ecf",
+  "kernel_qualcomm_tag": "M8260AAABQNLZA313065",
+  "exact_original_camera_commit": "Same Qualcomm release tag as MiCode mi1 kernel; Xiaomi private changes require binary ABI/runtime verification.",
+  "donor_annotated_tag": "b981421ce31c306f18f319ecf2e82aad7efe26a5",
+  "rejected_candidate": "LineageOS cm-10.1 17542ba3: later 8960 protocol/structure changes",
+  "sdk_declarations": {
+    "repository": "https://github.com/LineageOS/android_hardware_qcom_camera",
+    "commit": "17542ba3a82546291a21966b978f533d54e4e058",
+    "used_for": [
+      "QCameraParameters.h",
+      "missing SDK enums, EXIF and event declarations in QCamera_Intf.h",
+      "inc/omx_jpeg_common.h",
+      "inc/omx_jpeg_ext.h",
+      "inc/omx_debug.h"
+    ],
+    "excluded": "Later mm-camera protocol and dimension/capability/focus wire layouts are not imported."
+  },
+  "integration_dependency": {
+    "file": "frameworks/av/media/libstagefright/omx/OMXNodeInstance.cpp",
+    "base_commit": "17f78687c77a7bb724ea838aaaf5925689dee126",
+    "fix": "End Mutex::Autolock lifetime before delete this; preserve locking during component destruction and node invalidation.",
+    "ownership": "Generic KitKat media framework lifecycle fix; camera/device build does not inject or patch OMX sources.",
+    "upgrade_policy": "Reconcile independently with the new framework object lifetime; drop the old change when upstream already provides an equivalent fix."
+  }
+}
