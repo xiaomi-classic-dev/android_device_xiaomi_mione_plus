@@ -279,6 +279,14 @@ int8_t omxJpegOpen()
     }
     OMX_ERRORTYPE ret = (*pOMX_GetHandle)(&pHandle, "OMX.qcom.image.jpeg.encoder",
       NULL, &callbacks);
+    if (ret != OMX_ErrorNone) {
+        ALOGE("%s: OMX_GetHandle failed: 0x%x", __func__, ret);
+        dlclose(libmmstillomx);
+        libmmstillomx = NULL;
+        pHandle = NULL;
+        pthread_mutex_unlock(&jpege_mutex);
+        return FALSE;
+    }
     pthread_mutex_unlock(&jpege_mutex);
     return TRUE;
 }
