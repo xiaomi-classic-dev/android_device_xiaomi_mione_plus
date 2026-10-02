@@ -9,7 +9,6 @@ lib/libv8.so
 
 # HAL
 #lib/hw/gralloc.msm8660.so
-lib/hw/lights.msm8660.so
 # TODO: test sensors
 lib/hw/sensors.msm8660.so
 
@@ -207,4 +206,3 @@ usr/keylayout/mione-keypad.kl
 lib/libmmparser.so
 lib/libmmosal.so
 lib/libDivxDrm.so
-

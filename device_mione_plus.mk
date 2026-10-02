@@ -23,10 +23,6 @@ $(call inherit-product-if-exists, vendor/xiaomi/mione_plus/mione_plus-vendor.mk)
 
 DEVICE_PACKAGE_OVERLAYS += device/xiaomi/mione_plus/overlay
 
-# Light
-PRODUCT_PACKAGES += \
-    lights.mione
-
 # MSM8660 power policy
 PRODUCT_PACKAGES += \
     power.msm8660
