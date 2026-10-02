@@ -54,6 +54,8 @@ on boot
 on fs
 # mount mmc partitions
     mount_all ./fstab.mione
+    # Optional calibration storage; a failed mount must not block Android.
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist wait nosuid nodev barrier=1,data=ordered,nodelalloc
     #Setting permissons for misc partition
     chmod 0666 /dev/block/platform/msm_sdcc.1/by-name/misc
 
