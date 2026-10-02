@@ -131,7 +131,7 @@ static jpeg_color_format_t get_jpeg_format_from_cam_format(
   return jpg_format;
 }
 static omx_jpeg_buffer_offset bufferoffset1;
-void mione_jpeg_set_callbacks(
+void set_callbacks(
     jpegfragment_callback_t fragcallback,
     jpeg_callback_t eventcallback, void* userdata,
     void* output_buffer,

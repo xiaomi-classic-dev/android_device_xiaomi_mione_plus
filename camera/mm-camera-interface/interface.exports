@@ -8,6 +8,6 @@
         mm_jpeg_encoder_get_buffer_offset;
         mm_jpeg_encoder_setThumbnailQuality;
         omxJpeg*;
-        mione_jpeg_set_callbacks;
+        set_callbacks;
     local: *;
 };

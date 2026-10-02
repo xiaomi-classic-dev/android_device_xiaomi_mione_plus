@@ -26,5 +26,20 @@
     "fix": "End Mutex::Autolock lifetime before delete this; preserve locking during component destruction and node invalidation.",
     "ownership": "Generic KitKat media framework lifecycle fix; camera/device build does not inject or patch OMX sources.",
     "upgrade_policy": "Reconcile independently with the new framework object lifetime; drop the old change when upstream already provides an equivalent fix."
+  },
+  "cm12_product_integration": {
+    "hal": "camera.msm8660",
+    "interface": "libmmcamera_interface2",
+    "both_built_from_source": true,
+    "excluded_proprietary_modules": [
+      "camera.vendor.msm8660.so",
+      "libmmcamera_interface2.so (prebuilt)"
+    ],
+    "remaining_vendor_backend": [
+      "mm-qcamera-daemon",
+      "liboemcamera and processing/tuning libraries",
+      "JPEG/OMX engine"
+    ],
+    "protocol_baseline": "Keep the MiCode-matching CAF release and current kernel UAPI, not a later MSM8960 daemon protocol."
   }
 }

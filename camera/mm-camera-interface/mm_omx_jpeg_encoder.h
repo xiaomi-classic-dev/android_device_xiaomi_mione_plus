@@ -70,7 +70,7 @@ typedef void (*jpegfragment_callback_t)(uint8_t * buff_ptr,
     uint32_t buff_size, void* user_data);
 typedef void (*jpeg_callback_t)(jpeg_event_t, void *);
 
-void mione_jpeg_set_callbacks(
+void set_callbacks(
     jpegfragment_callback_t fragcallback,
     jpeg_callback_t eventcallback,
     void* userdata,

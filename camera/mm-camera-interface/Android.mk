@@ -28,7 +28,7 @@ LOCAL_CFLAGS += -include bionic/libc/include/sys/un.h
 
 LOCAL_SRC_FILES := $(MM_CAM_FILES)
 
-LOCAL_MODULE           := libmmcamera_mione
+LOCAL_MODULE           := libmmcamera_interface2
 LOCAL_LDFLAGS := -Wl,--version-script=$(LOCAL_PATH)/interface.exports
 LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/interface.exports
 LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr

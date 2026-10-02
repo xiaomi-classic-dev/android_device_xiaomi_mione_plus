@@ -8,7 +8,6 @@ lib/libdiag.so
 lib/libv8.so
 
 # HAL
-lib/hw/camera.msm8660.so
 #lib/hw/gralloc.msm8660.so
 lib/hw/lights.msm8660.so
 # TODO: test sensors
@@ -106,7 +105,6 @@ lib/libmmcamera_faceproc.so
 lib/libmmcamera_frameproc.so
 lib/libmmcamera_hdr_lib.so
 lib/libmmcamera_image_stab.so
-lib/libmmcamera_interface2.so
 lib/libmmcamera_statsproc31.so
 lib/libmmcamera_wavelet_lib.so
 lib/libmmstillomx.so

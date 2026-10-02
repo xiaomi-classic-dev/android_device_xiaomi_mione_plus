@@ -21,8 +21,10 @@ Existing proprietary camera, sensor and JPEG/OMX libraries remain dependencies.
 
 ## MiOne integration
 
-- Build `camera.msm8660.so` and the isolated `libmmcamera_mione.so`. Do not replace
-  the proprietary `libmmcamera_interface2.so` or `camera.vendor.msm8660.so`.
+- Build `camera.msm8660.so` and `libmmcamera_interface2.so` from this source.
+  The proprietary HAL and interface are excluded from the product and extraction
+  lists. The camera daemon, sensor processing and JPEG engine remain vendor
+  dependencies.
 - Use local SDK headers and the current MiOne kernel's generated UAPI headers;
   no camera headers are exported to other devices.
 - Preserve the stock 32-bit ABI: `mm_camera_t` 68 bytes, `cam_prop_t` 100,
@@ -41,7 +43,7 @@ Existing proprietary camera, sensor and JPEG/OMX libraries remain dependencies.
 
 ### Media framework integration
 
-The KitKat media framework needs an independent lifecycle fix in
+The earlier KitKat media framework needed an independent lifecycle fix in
 `frameworks/av/media/libstagefright/omx/OMXNodeInstance.cpp`.
 KitKat `freeNode()` deletes its own instance.
 The existing security backport kept `Mutex::Autolock` alive across `delete this`,
@@ -84,14 +86,14 @@ directory's `analysis.md` for source links and the migration decision.
 
 ## Build
 
-Use this checkout's Android build environment (Python 2.7 and JDK 6):
+Use this checkout's Android build environment (Python 2.7 and JDK 7):
 
 ```sh
 source build/envsetup.sh
-lunch lineage_mione_plus-userdebug
-make -j8 ONE_SHOT_MAKEFILE=device/xiaomi/mione_plus/camera/Android.mk \
-    camera.msm8660 libmmcamera_mione mione_camera_abi
-make -j8 ONE_SHOT_MAKEFILE=frameworks/av/media/libstagefright/omx/Android.mk \
+lunch cm_mione_plus-userdebug
+mka ONE_SHOT_MAKEFILE=device/xiaomi/mione_plus/camera/Android.mk \
+    camera.msm8660 libmmcamera_interface2 mione_camera_abi
+mka ONE_SHOT_MAKEFILE=frameworks/av/media/libstagefright/omx/Android.mk \
     libstagefright_omx
 ```
 
@@ -118,7 +120,7 @@ adb -s 1374137e shell 'su -c "sh /data/local/tmp/run-probe.sh /data/local/tmp/mi
 ```
 
 Before deployment, close camera clients and back up the installed libraries.
-Install only the two camera libraries and the framework fix, restore root
+Install only the two camera libraries for this CM12.1 build, restore root
 ownership, mode 0644 and `system_file` SELinux context, then restart the media
 service. Read the installed binaries back and compare SHA-256. Restore `/system`
 read-only. No phone reboot or kernel flash is required.
@@ -134,8 +136,8 @@ and `/proc/self/mountinfo` after deployment rather than trusting the shell exit.
 The 2026-10-01 deployment scripts, original binaries, readback hashes and test
 artifacts are in `out/diagnostics/mione-camera-port-20261001`. The deployment
 scripts restrict ADB to serial `1374137e` and verify the expected boot ID.
-Rollback scripts restore the original HAL wrapper and media framework library;
-the isolated interface library is unused by the original wrapper.
+Those historical rollback scripts restore the CM11 HAL wrapper and media library;
+they are not deployment instructions for the current CM12.1 source stack.
 
 ## Verified and remaining coverage
 

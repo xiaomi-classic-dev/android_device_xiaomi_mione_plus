@@ -13,7 +13,7 @@ LOCAL_SRC_FILES := QCameraHAL.cpp QCameraHWI_Parm.cpp QCameraHWI.cpp \
     QCameraHWI_Preview.cpp QCameraHWI_Record.cpp QCameraHWI_Still.cpp \
     QCameraHWI_Mem.cpp QCameraHWI_Display.cpp QCameraStream.cpp \
     QualcommCamera2.cpp QCameraHWI_Rdi.cpp QCameraParameters.cpp
-LOCAL_CFLAGS := -DDLOPEN_LIBMMCAMERA=1 -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
+LOCAL_CFLAGS := -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
     -DNUM_PREVIEW_BUFFERS=4 -DUSE_NEON_CONVERSION \
     -DMSM_CAMERA_BIONIC -DMSM_CAMERA_GCC \
     -DCAMERA_ION_HEAP_ID=ION_CP_MM_HEAP_ID \
@@ -32,7 +32,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
     $(call project-path-for,qcom-media)/mm-core/inc \
     $(call project-path-for,qcom-media)/libstagefrighthw
 LOCAL_SHARED_LIBRARIES := libutils libui libcamera_client liblog libcutils \
-    libmmcamera_mione libgenlock libbinder libdl
+    libmmcamera_interface2 libgenlock libbinder libdl
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
 LOCAL_PATH := $(MIONE_DEVICE_CAMERA_PATH)
