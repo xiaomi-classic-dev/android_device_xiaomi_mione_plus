@@ -24,6 +24,7 @@
 #include <cutils/properties.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <new>
 
 #include "QCameraStream.h"
 
@@ -71,6 +72,8 @@ QCameraStream_record::QCameraStream_record(int cameraId,
   mDebugFps(false)
 {
   mHalCamCtrl = NULL;
+  recordframes = NULL;
+  memset(&mRecordBuf, 0, sizeof(mRecordBuf));
   char value[PROPERTY_VALUE_MAX];
   ALOGV("%s: BEGIN", __func__);
 
@@ -205,23 +208,28 @@ error:
 
 void QCameraStream_record::releaseEncodeBuffer() {
   for(int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
-    if (NO_ERROR !=
+    if (mHalCamCtrl->mRecordingMemory.local_flag[cnt] && NO_ERROR !=
       mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_VIDEO, cnt,
       mCameraId, CAM_SOCK_MSG_TYPE_FD_UNMAPPING))
       ALOGE("%s: Unmapping Video Data Failed", __func__);
 
-    if (mHalCamCtrl->mStoreMetaDataInFrame) {
-      struct encoder_media_buffer_type * packet =
-          (struct encoder_media_buffer_type  *)
-          mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
-      native_handle_delete(const_cast<native_handle_t *>(packet->meta_handle));
+    if (mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]) {
+      void *data = mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
+      if (data && data != MAP_FAILED) {
+        struct encoder_media_buffer_type *packet =
+            (struct encoder_media_buffer_type *)data;
+        if (packet->meta_handle)
+          native_handle_delete(const_cast<native_handle_t *>(packet->meta_handle));
+      }
       mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->release(
         mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]);
 
     }
-    mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->release(
-      mHalCamCtrl->mRecordingMemory.camera_memory[cnt]);
-    close(mHalCamCtrl->mRecordingMemory.fd[cnt]);
+    if (mHalCamCtrl->mRecordingMemory.camera_memory[cnt])
+      mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->release(
+        mHalCamCtrl->mRecordingMemory.camera_memory[cnt]);
+    if (mHalCamCtrl->mRecordingMemory.fd[cnt] >= 0)
+      close(mHalCamCtrl->mRecordingMemory.fd[cnt]);
     mHalCamCtrl->mRecordingMemory.fd[cnt] = -1;
 
 #ifdef USE_ION
@@ -231,8 +239,10 @@ void QCameraStream_record::releaseEncodeBuffer() {
   memset(&mHalCamCtrl->mRecordingMemory, 0, sizeof(mHalCamCtrl->mRecordingMemory));
   //mNumRecordFrames = 0;
   delete[] recordframes;
+  recordframes = NULL;
   if (mRecordBuf.video.video.buf.mp)
     delete[] mRecordBuf.video.video.buf.mp;
+  mRecordBuf.video.video.buf.mp = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -394,6 +404,10 @@ status_t QCameraStream_record::initEncodeBuffers()
 
 
   memset(&mHalCamCtrl->mRecordingMemory, 0, sizeof(mHalCamCtrl->mRecordingMemory));
+  for (int i = 0; i < MM_CAMERA_MAX_NUM_FRAMES; i++) {
+    mHalCamCtrl->mRecordingMemory.main_ion_fd[i] = -1;
+    mHalCamCtrl->mRecordingMemory.fd[i] = -1;
+  }
   memset(&dim, 0, sizeof(cam_ctrl_dimension_t));
   ret = cam_config_get_parm(mCameraId, MM_CAMERA_PARM_DIMENSION, &dim);
   if (MM_CAMERA_OK != ret) {
@@ -414,23 +428,18 @@ status_t QCameraStream_record::initEncodeBuffers()
     ALOGE("%s: lower power camcorder selected", __func__);
     buf_cnt = VIDEO_BUFFER_COUNT_LOW_POWER_CAMCORDER;
   }
-    recordframes = new msm_frame[buf_cnt];
+    recordframes = new (std::nothrow) msm_frame[buf_cnt];
+    if (!recordframes)
+      return NO_MEMORY;
     memset(recordframes,0,sizeof(struct msm_frame) * buf_cnt);
 
-		mRecordBuf.video.video.buf.mp = new mm_camera_mp_buf_t[buf_cnt *
-                                  sizeof(mm_camera_mp_buf_t)];
+		mRecordBuf.video.video.buf.mp = new (std::nothrow) mm_camera_mp_buf_t[buf_cnt];
 		if (!mRecordBuf.video.video.buf.mp) {
 			ALOGE("%s Error allocating memory for mplanar struct ", __func__);
 			return BAD_VALUE;
 		}
 		memset(mRecordBuf.video.video.buf.mp, 0,
 					 buf_cnt * sizeof(mm_camera_mp_buf_t));
-
-    memset(&mHalCamCtrl->mRecordingMemory, 0, sizeof(mHalCamCtrl->mRecordingMemory));
-    for (int i=0; i<MM_CAMERA_MAX_NUM_FRAMES;i++) {
-        mHalCamCtrl->mRecordingMemory.main_ion_fd[i] = -1;
-        mHalCamCtrl->mRecordingMemory.fd[i] = -1;
-    }
 
     mHalCamCtrl->mRecordingMemory.buffer_count = buf_cnt;
 
@@ -439,14 +448,19 @@ status_t QCameraStream_record::initEncodeBuffers()
 
     for (int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
 #ifdef USE_ION
+      // MSM8660 VIDC cannot encode from the EBI camera carveout. Keep
+      // camera-to-encoder frames in the SMI MM heap, even under pressure.
       if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt,
         (0x1 << CAMERA_ION_HEAP_ID), UNCACHED) < 0) {
-        ALOGE("%s ION alloc from mm heap failed\n", __func__);
-        if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt,
-          (0x1 << CAMERA_ION_FALLBACK_HEAP_ID), CACHED) < 0) {
-          ALOGE("%s ION alloc from iommu heap failed as well\n", __func__);
-          return UNKNOWN_ERROR;
+        // Four buffers still cover the encoder's four metadata input slots.
+        // Reduce the normal five-buffer queue instead of mixing memory heaps.
+        if (buf_cnt == VIDEO_BUFFER_COUNT && cnt == VIDEO_BUFFER_COUNT - 1) {
+          ALOGW("%s: MM heap full, recording with %d buffers", __func__, cnt);
+          mHalCamCtrl->mRecordingMemory.buffer_count = cnt;
+          break;
         }
+        ALOGE("%s ION alloc from mm heap failed\n", __func__);
+        return NO_MEMORY;
       }
 #else
 		  mHalCamCtrl->mRecordingMemory.fd[cnt] = open("/dev/pmem_adsp", O_RDWR|O_SYNC);
@@ -458,15 +472,26 @@ status_t QCameraStream_record::initEncodeBuffers()
 		  mHalCamCtrl->mRecordingMemory.camera_memory[cnt] =
 		    mHalCamCtrl->mGetMemory(mHalCamCtrl->mRecordingMemory.fd[cnt],
 		    mHalCamCtrl->mRecordingMemory.size, 1, (void *)this);
+      if (!mHalCamCtrl->mRecordingMemory.camera_memory[cnt] ||
+          !mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->data ||
+          mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->data == MAP_FAILED)
+        return NO_MEMORY;
 
       if (mHalCamCtrl->mStoreMetaDataInFrame) {
         mHalCamCtrl->mRecordingMemory.metadata_memory[cnt] =
           mHalCamCtrl->mGetMemory(-1,
           sizeof(struct encoder_media_buffer_type), 1, (void *)this);
+        if (!mHalCamCtrl->mRecordingMemory.metadata_memory[cnt] ||
+            !mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data ||
+            mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data == MAP_FAILED)
+          return NO_MEMORY;
         struct encoder_media_buffer_type * packet =
           (struct encoder_media_buffer_type  *)
           mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
+        packet->meta_handle = NULL;
         packet->meta_handle = native_handle_create(1, 2); //1 fd, 1 offset and 1 size
+        if (!packet->meta_handle)
+          return NO_MEMORY;
         packet->buffer_type = kMetadataBufferTypeCameraSource;
         native_handle_t * nh = const_cast<native_handle_t *>(packet->meta_handle);
         nh->data[0] = mHalCamCtrl->mRecordingMemory.fd[cnt];
@@ -486,7 +511,11 @@ status_t QCameraStream_record::initEncodeBuffers()
         mHalCamCtrl->sendMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_VIDEO, cnt,
         recordframes[cnt].fd, mHalCamCtrl->mRecordingMemory.size, mCameraId,
         CAM_SOCK_MSG_TYPE_FD_MAPPING))
+      {
         ALOGE("%s: sending mapping data Msg Failed", __func__);
+        return UNKNOWN_ERROR;
+      }
+      mHalCamCtrl->mRecordingMemory.local_flag[cnt] = 1;
 
       ALOGE ("initRecord :  record heap , video buffers  buffer=%lu fd=%d y_off=%d cbcr_off=%d\n",
 		    (unsigned long)recordframes[cnt].buffer, recordframes[cnt].fd, recordframes[cnt].y_off,
@@ -583,4 +612,3 @@ status_t  QCameraStream_record::takeLiveSnapshot(){
 }
 
 }//namespace android
-
