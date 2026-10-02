@@ -32,6 +32,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     power.msm8660
 
+# Translate the shipped CAF v6 RIL contract at the vendor library boundary.
+PRODUCT_PACKAGES += libril_mione
+
 # gps.conf
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/gps.conf:system/etc/gps.conf
