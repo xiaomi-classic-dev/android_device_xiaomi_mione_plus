@@ -1,0 +1,10 @@
+LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione_power_probe
+LOCAL_MODULE_TAGS := tests
+LOCAL_SRC_FILES := power_probe.cpp
+LOCAL_C_INCLUDES := system/core/healthd
+LOCAL_CFLAGS := -Wall -Wextra -Werror
+LOCAL_STATIC_LIBRARIES := libhealthd.mione
+LOCAL_SHARED_LIBRARIES := libhardware libcutils libutils liblog
+include $(BUILD_EXECUTABLE)
