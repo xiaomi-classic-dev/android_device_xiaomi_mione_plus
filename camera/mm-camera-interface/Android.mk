@@ -31,6 +31,7 @@ LOCAL_SRC_FILES := $(MM_CAM_FILES)
 LOCAL_MODULE           := libmmcamera_mione
 LOCAL_LDFLAGS := -Wl,--version-script=$(LOCAL_PATH)/interface.exports
 LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/interface.exports
+LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 LOCAL_PRELINK_MODULE   := false
 LOCAL_SHARED_LIBRARIES := libdl libcutils liblog
 LOCAL_MODULE_TAGS := optional
