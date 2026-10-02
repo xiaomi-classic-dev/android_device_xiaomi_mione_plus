@@ -116,6 +116,11 @@ ifeq ($(TARGET_BUILD_VARIANT),userdebug)
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mass_storage,adb \
     service.adb.root=1
+
+# Trust the build host's public key so unattended debugging needs no prompt.
+# adbd reads /adb_keys while retaining normal RSA authentication.
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/configs/adb_keys:root/adb_keys
 endif
 
 # xiaomi mione wifi config
