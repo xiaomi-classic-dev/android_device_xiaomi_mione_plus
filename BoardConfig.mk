@@ -29,9 +29,6 @@ include device/xiaomi/msm8660-common/BoardConfigCommon.mk
 
 BOARD_HAVE_XIAOMI_MIONE := true
 
-# Legacy vendor daemons are non-PIE; keep the exception limited to this device.
-LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := device/xiaomi/mione_plus/include
-
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := mione
 
