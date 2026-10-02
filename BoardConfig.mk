@@ -31,6 +31,7 @@ BOARD_HAVE_XIAOMI_MIONE := true
 
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := mione
+TARGET_LDPRELOAD := libmione_cnd_shim.so
 
 # Kernel
 BOARD_KERNEL_BASE := 0x40200000
