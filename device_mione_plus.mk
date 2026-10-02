@@ -50,6 +50,8 @@ PRODUCT_PACKAGES += \
     calibrator \
     hostapd
 
+PRODUCT_PACKAGES += libmione_cnd_shim
+
 # Ramdisk files
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/ramdisk/init.mione.rc:root/init.mione.rc \
