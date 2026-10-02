@@ -11,4 +11,6 @@ for FILE in `egrep -v '(^#|^$)' proprietary-files.txt`; do
   adb pull /system/$FILE $BASE/$FILE
 done
 
+python3 "$BASE/../tools/patch-isp-poll.py" "$BASE/lib/liboemcamera.so" || exit 1
+
 ./setup-makefiles.sh
