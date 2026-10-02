@@ -48,6 +48,9 @@ BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
 BOARD_BLUEDROID_VENDOR_CONF := device/xiaomi/mione_plus/bluetooth/vnd_mione_plus.txt
 
+BOARD_SEPOLICY_DIRS += device/xiaomi/mione_plus/sepolicy
+BOARD_SEPOLICY_UNION += mione_bdaddr.te
+
 # Display
 TARGET_SCREEN_WIDTH := 480
 TARGET_SCREEN_HEIGHT := 854
