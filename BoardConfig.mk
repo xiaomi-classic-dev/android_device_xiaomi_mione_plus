@@ -75,3 +75,7 @@ BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/ramdisk/fstab.mione
 RECOVERY_FSTAB_VERSION := 2
+
+# Legacy Qualcomm HAL1, built against the MiOne camera ABI.
+BOARD_MIONE_SOURCE_CAMERA := true
+USE_DEVICE_SPECIFIC_CAMERA := true

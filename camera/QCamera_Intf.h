@@ -33,6 +33,16 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <inttypes.h>
+#include <media/msm_camera.h>
+#include <linux/videodev2.h>
+#include <linux/msm_ion.h>
+#ifndef TRUE
+#define TRUE 1
+#define FALSE 0
+#endif
+#define CACHED ION_FLAG_CACHED
+#define UNCACHED 0
+typedef struct { float min_fps; float max_fps; } cam_sensor_fps_range_t;
 
 #define PAD_TO_WORD(a)               (((a)+3)&~3)
 #define PAD_TO_2K(a)                 (((a)+2047)&~2047)
@@ -43,6 +53,51 @@
 #define CEILING16(X) (((X) + 0x000F) & 0xFFF0)
 #define CEILING4(X)  (((X) + 0x0003) & 0xFFFC)
 #define CEILING2(X)  (((X) + 0x0001) & 0xFFFE)
+
+/* No sharpness for default */
+#define CAMERA_MIN_SHARPNESS   0
+#define CAMERA_DEF_SHARPNESS   10
+#define CAMERA_MAX_SHARPNESS   30
+#define CAMERA_SHARPNESS_STEP  5
+
+/* No saturation for default */
+#define CAMERA_MIN_SATURATION  0
+#define CAMERA_DEF_SATURATION  5
+#define CAMERA_MAX_SATURATION  10
+#define CAMERA_SATURATION_STEP 1
+
+#define CAMERA_MIN_BRIGHTNESS  0
+#define CAMERA_DEF_BRIGHTNESS  3
+#define CAMERA_MAX_BRIGHTNESS  6
+#define CAMERA_BRIGHTNESS_STEP 1
+
+#define CAMERA_MIN_CONTRAST    0
+#define CAMERA_DEF_CONTRAST    5
+#define CAMERA_MAX_CONTRAST    10
+#define CAMERA_CONTRAST_STEP   1
+
+/* No hue for default. */
+#define CAMERA_MIN_HUE         0
+#define CAMERA_DEF_HUE         0
+#define CAMERA_MAX_HUE         300
+#define CAMERA_HUE_STEP        60
+
+#define CAMERA_MIN_ZOOM  0
+#define CAMERA_DEF_ZOOM  0
+#define CAMERA_MAX_ZOOM  0x31
+#define CAMERA_ZOOM_STEP 0x3
+
+#define ANDROID_FB0 "/dev/graphics/fb0"
+#define LE_FB0 "/dev/fb0"
+
+// Events common to encoder and decoder
+#define JPEG_EVENT_DONE      0
+#define JPEG_EVENT_WARNING   1
+#define JPEG_EVENT_ERROR     2
+#define JPEG_EVENT_ABORTED   3
+// Events specific to encoder
+#define JPEG_EVENT_THUMBNAIL_DROPPED 4
+
 
 #define MAX_ROI 2
 #define MAX_NUM_PARM 5
@@ -157,7 +212,7 @@ typedef struct {
   int8_t camera_id;
   cam_position_t position;
   uint32_t sensor_mount_angle;
-}camera_info_t;
+}qcamera_info_t;
 
 typedef struct {
   camera_mode_t mode;
@@ -925,5 +980,520 @@ int exif_set_tag(exif_info_obj_t    obj,
                  exif_tag_id_t      tag_id,
                  exif_tag_entry_t  *p_entry);
 
+
+/* Public SDK declarations recovered from the CAF-derived CM10.1 tree.
+ * The control enums and wire structures above remain the stock release ABI. */
+/*
+ * the APP event related defines
+*/
+typedef enum {
+  MM_CAMERA_STATS_EVT_HISTO,
+  MM_CAMERA_STATS_EVT_MAX
+} mm_camera_stats_event_type_t;
+
+typedef enum {
+  MM_CAMERA_INFO_EVT_ROI,
+  MM_CAMERA_INFO_FLASH_FRAME_IDX,
+  MM_CAMERA_INFO_EVT_MAX
+} mm_camera_info_event_type_t;
+
+/* !!WARNING: PLAESE BE VERY CAREFUL!!
+ * v4l2_event payload has a limitation of 64 bytes.
+ * This makes that the whole mm_camera_event_t size
+ * cannot go beyond 64 bytes.
+ */
+typedef struct {
+  mm_camera_event_type_t event_type;
+  /* the union size cannot go beyond 64 bytes. need RFC */
+  union {
+    mm_camera_ch_event_t ch;
+    mm_camera_ctrl_event_t ctrl;
+    mm_camera_stats_event_t stats;
+    mm_camera_info_event_t info;
+  } e;
+} mm_camera_event_t;
+
+/* Auto focus mode, used for CAMERA_PARM_AF_MODE */
+typedef enum {
+  AF_MODE_UNCHANGED = -1,
+  AF_MODE_NORMAL    = 0,
+  AF_MODE_MACRO,
+  AF_MODE_AUTO,
+  AF_MODE_CAF,
+  AF_MODE_INFINITY,
+  AF_MODE_MAX
+} isp3a_af_mode_t;
+
+typedef struct {
+  uint32_t  in1_w;
+  uint32_t  out1_w;
+  uint32_t  in1_h;
+  uint32_t  out1_h;
+  uint32_t  in2_w;
+  uint32_t  out2_w;
+  uint32_t  in2_h;
+  uint32_t  out2_h;
+  uint8_t update_flag;
+} common_crop_t;
+
+typedef enum {
+  LED_MODE_OFF,
+  LED_MODE_AUTO,
+  LED_MODE_ON,
+  LED_MODE_TORCH,
+
+  /*new mode above should be added above this line*/
+  LED_MODE_MAX
+} led_mode_t;
+
+typedef struct {
+  int is_checking_af_retry;
+  int is_moving;
+} af_actuator_status_t;
+
+typedef struct{
+  int aec_index_for_zsl;
+  int zsl_flash_enable;
+} aec_info_for_flash_t;
+
+typedef struct video_dis_param_ctrl_t {
+  uint32_t dis_enable;       /* DIS feature: 1 = enable, 0 = disable.
+                               when enable, caller makes sure w/h are 10% more. */
+  uint32_t video_rec_width;  /* video frame width for recording */
+  uint32_t video_rec_height; /* video frame height for recording */
+  uint32_t output_cbcr_offset;
+} video_dis_param_ctrl_t;
+
+typedef enum camera_rotation_type {
+  ROT_NONE               = 0,
+  ROT_CLOCKWISE_90       = 1,
+  ROT_CLOCKWISE_180      = 6,
+  ROT_CLOCKWISE_270      = 7,
+} camera_rotation_type;
+
+typedef struct video_rotation_param_ctrl_t {
+  camera_rotation_type rotation; /* 0 degree = rot disable. */
+} video_rotation_param_ctrl_t;
+
+enum focus_distance_index{
+  FOCUS_DISTANCE_NEAR_INDEX,  /* 0 */
+  FOCUS_DISTANCE_OPTIMAL_INDEX,
+  FOCUS_DISTANCE_FAR_INDEX,
+  FOCUS_DISTANCE_MAX_INDEX
+};
+
+typedef struct {
+  float focus_distance[FOCUS_DISTANCE_MAX_INDEX];
+} focus_distances_info_t;
+
+typedef enum msm_st_frame_packing cam_3d_frame_format_t;
+
+typedef struct {
+  cam_frame_type_t frame_type;
+  cam_3d_frame_format_t format;
+}camera_3d_frame_t;
+
+typedef enum {
+    CAMERA_BESTSHOT_OFF = 0,
+    CAMERA_BESTSHOT_AUTO = 1,
+    CAMERA_BESTSHOT_LANDSCAPE = 2,
+    CAMERA_BESTSHOT_SNOW,
+    CAMERA_BESTSHOT_BEACH,
+    CAMERA_BESTSHOT_SUNSET,
+    CAMERA_BESTSHOT_NIGHT,
+    CAMERA_BESTSHOT_PORTRAIT,
+    CAMERA_BESTSHOT_BACKLIGHT,
+    CAMERA_BESTSHOT_SPORTS,
+    CAMERA_BESTSHOT_ANTISHAKE,
+    CAMERA_BESTSHOT_FLOWERS,
+    CAMERA_BESTSHOT_CANDLELIGHT,
+    CAMERA_BESTSHOT_FIREWORKS,
+    CAMERA_BESTSHOT_PARTY,
+    CAMERA_BESTSHOT_NIGHT_PORTRAIT,
+    CAMERA_BESTSHOT_THEATRE,
+    CAMERA_BESTSHOT_ACTION,
+    CAMERA_BESTSHOT_AR,
+    CAMERA_BESTSHOT_MAX
+} camera_bestshot_mode_type;
+
+typedef enum {
+  AUTO = 1,
+  SPOT,
+  CENTER_WEIGHTED,
+  AVERAGE
+} cam_af_focusrect_t;
+
+typedef enum {
+  CAMERA_AEC_FRAME_AVERAGE,
+  CAMERA_AEC_CENTER_WEIGHTED,
+  CAMERA_AEC_SPOT_METERING,
+  CAMERA_AEC_SMART_METERING,
+  CAMERA_AEC_USER_METERING,
+  CAMERA_AEC_MAX_MODES
+} camera_auto_exposure_mode_type;
+
+typedef enum {
+  FPS_MODE_AUTO,
+  FPS_MODE_FIXED,
+} fps_mode_t;
+
+typedef struct {
+  int32_t  buffer[256];       /* buffer to hold data */
+  int32_t  max_value;
+} camera_preview_histogram_info;
+
+/* Clockwise */
+typedef enum {
+  CAMERA_ENCODING_ROTATE_0,
+  CAMERA_ENCODING_ROTATE_90,
+  CAMERA_ENCODING_ROTATE_180,
+  CAMERA_ENCODING_ROTATE_270
+} camera_encoding_rotate_t;
+
+typedef enum {
+  MOTION_ISO_OFF,
+  MOTION_ISO_ON
+} motion_iso_t;
+
+typedef struct {
+  struct msm_ctrl_cmd ctrlCmd;
+  int fd;
+  void (*af_cb)(int8_t );
+  int8_t is_camafctrl_thread_join;
+  isp3a_af_mode_t af_mode;
+} cam_af_ctrl_t;
+
+/* Display */
+typedef struct {
+    uint16_t user_input_display_width;
+    uint16_t user_input_display_height;
+} USER_INPUT_DISPLAY_T;
+
+#if defined CAMERA_WB_AUTO
+#undef CAMERA_WB_AUTO
+#endif
+
+#if defined CAMERA_WB_CUSTOM
+#undef CAMERA_WB_CUSTOM
+#endif
+
+#if defined  CAMERA_WB_INCANDESCENT
+#undef CAMERA_WB_INCANDESCENT
+#endif
+
+#if defined CAMERA_WB_FLUORESCENT
+#undef CAMERA_WB_FLUORESCENT
+#endif
+
+#if defined CAMERA_WB_DAYLIGHT
+#undef CAMERA_WB_DAYLIGHT
+#endif
+
+#if defined CAMERA_WB_CLOUDY_DAYLIGHT
+#undef CAMERA_WB_CLOUDY_DAYLIGHT
+#endif
+
+#if defined CAMERA_WB_TWILIGHT
+#undef CAMERA_WB_TWILIGHT
+#endif
+
+#if defined CAMERA_WB_SHADE
+#undef CAMERA_WB_SHADE
+#endif
+
+typedef enum {
+  CAMERA_WB_MIN_MINUS_1,
+  CAMERA_WB_AUTO = 1,
+  CAMERA_WB_CUSTOM,
+  CAMERA_WB_INCANDESCENT,
+  CAMERA_WB_FLUORESCENT,
+  CAMERA_WB_DAYLIGHT,
+  CAMERA_WB_CLOUDY_DAYLIGHT,
+  CAMERA_WB_TWILIGHT,
+  CAMERA_WB_SHADE,
+  CAMERA_WB_OFF,
+  CAMERA_WB_MAX_PLUS_1
+} config3a_wb_t;
+
+
+typedef uint32_t  jpeg_event_t;
+
+// Possibly supported color formats
+// Ordering handcrafted for efficient coding, alter with care!
+typedef enum
+{
+    YCRCBLP_H2V2 = 0,
+    YCBCRLP_H2V2 = 1,
+
+    YCRCBLP_H2V1 = 2,
+    YCBCRLP_H2V1 = 3,
+
+    YCRCBLP_H1V2 = 4,
+    YCBCRLP_H1V2 = 5,
+
+    YCRCBLP_H1V1 = 6,
+    YCBCRLP_H1V1 = 7,
+
+    RGB565 = 8,
+    RGB888 = 9,
+    RGBa   = 10,
+
+    JPEG_BITSTREAM_H2V2 = 12,
+    JPEG_BITSTREAM_H2V1 = 14,
+    JPEG_BITSTREAM_H1V2 = 16,
+    JPEG_BITSTREAM_H1V1 = 18,
+
+    JPEG_COLOR_FORMAT_MAX,
+
+} jpeg_color_format_t;
+
+/* EXIF header */
+/* =======================================================================
+**                          Macro Definitions
+** ======================================================================= */
+/* Enum defined to let compiler generate unique offset numbers for different
+ * tags - ordering matters! NOT INTENDED to be used by any application. */
+typedef enum
+{
+    // GPS IFD
+    GPS_VERSION_ID = 0,
+    GPS_LATITUDE_REF,
+    GPS_LATITUDE,
+    GPS_LONGITUDE_REF,
+    GPS_LONGITUDE,
+    GPS_ALTITUDE_REF,
+    GPS_ALTITUDE,
+    GPS_TIMESTAMP,
+    GPS_SATELLITES,
+    GPS_STATUS,
+    GPS_MEASUREMODE,
+    GPS_DOP,
+    GPS_SPEED_REF,
+    GPS_SPEED,
+    GPS_TRACK_REF,
+    GPS_TRACK,
+    GPS_IMGDIRECTION_REF,
+    GPS_IMGDIRECTION,
+    GPS_MAPDATUM,
+    GPS_DESTLATITUDE_REF,
+    GPS_DESTLATITUDE,
+    GPS_DESTLONGITUDE_REF,
+    GPS_DESTLONGITUDE,
+    GPS_DESTBEARING_REF,
+    GPS_DESTBEARING,
+    GPS_DESTDISTANCE_REF,
+    GPS_DESTDISTANCE,
+    GPS_PROCESSINGMETHOD,
+    GPS_AREAINFORMATION,
+    GPS_DATESTAMP,
+    GPS_DIFFERENTIAL,
+
+    // TIFF IFD
+    NEW_SUBFILE_TYPE,
+    SUBFILE_TYPE,
+    IMAGE_WIDTH,
+    IMAGE_LENGTH,
+    BITS_PER_SAMPLE,
+    COMPRESSION,
+    PHOTOMETRIC_INTERPRETATION,
+    THRESH_HOLDING,
+    CELL_WIDTH,
+    CELL_HEIGHT,
+    FILL_ORDER,
+    DOCUMENT_NAME,
+    IMAGE_DESCRIPTION,
+    MAKE,
+    MODEL,
+    STRIP_OFFSETS,
+    ORIENTATION,
+    SAMPLES_PER_PIXEL,
+    ROWS_PER_STRIP,
+    STRIP_BYTE_COUNTS,
+    MIN_SAMPLE_VALUE,
+    MAX_SAMPLE_VALUE,
+    X_RESOLUTION,
+    Y_RESOLUTION,
+    PLANAR_CONFIGURATION,
+    PAGE_NAME,
+    X_POSITION,
+    Y_POSITION,
+    FREE_OFFSET,
+    FREE_BYTE_COUNTS,
+    GRAY_RESPONSE_UNIT,
+    GRAY_RESPONSE_CURVE,
+    T4_OPTION,
+    T6_OPTION,
+    RESOLUTION_UNIT,
+    PAGE_NUMBER,
+    TRANSFER_FUNCTION,
+    SOFTWARE,
+    DATE_TIME,
+    ARTIST,
+    HOST_COMPUTER,
+    PREDICTOR,
+    WHITE_POINT,
+    PRIMARY_CHROMATICITIES,
+    COLOR_MAP,
+    HALFTONE_HINTS,
+    TILE_WIDTH,
+    TILE_LENGTH,
+    TILE_OFFSET,
+    TILE_BYTE_COUNTS,
+    INK_SET,
+    INK_NAMES,
+    NUMBER_OF_INKS,
+    DOT_RANGE,
+    TARGET_PRINTER,
+    EXTRA_SAMPLES,
+    SAMPLE_FORMAT,
+    TRANSFER_RANGE,
+    JPEG_PROC,
+    JPEG_INTERCHANGE_FORMAT,
+    JPEG_INTERCHANGE_FORMAT_LENGTH,
+    JPEG_RESTART_INTERVAL,
+    JPEG_LOSSLESS_PREDICTORS,
+    JPEG_POINT_TRANSFORMS,
+    JPEG_Q_TABLES,
+    JPEG_DC_TABLES,
+    JPEG_AC_TABLES,
+    YCBCR_COEFFICIENTS,
+    YCBCR_SUB_SAMPLING,
+    YCBCR_POSITIONING,
+    REFERENCE_BLACK_WHITE,
+    GAMMA,
+    ICC_PROFILE_DESCRIPTOR,
+    SRGB_RENDERING_INTENT,
+    IMAGE_TITLE,
+    COPYRIGHT,
+    EXIF_IFD,
+    ICC_PROFILE,
+    GPS_IFD,
+
+
+    // TIFF IFD (Thumbnail)
+    TN_IMAGE_WIDTH,
+    TN_IMAGE_LENGTH,
+    TN_BITS_PER_SAMPLE,
+    TN_COMPRESSION,
+    TN_PHOTOMETRIC_INTERPRETATION,
+    TN_IMAGE_DESCRIPTION,
+    TN_MAKE,
+    TN_MODEL,
+    TN_STRIP_OFFSETS,
+    TN_ORIENTATION,
+    TN_SAMPLES_PER_PIXEL,
+    TN_ROWS_PER_STRIP,
+    TN_STRIP_BYTE_COUNTS,
+    TN_X_RESOLUTION,
+    TN_Y_RESOLUTION,
+    TN_PLANAR_CONFIGURATION,
+    TN_RESOLUTION_UNIT,
+    TN_TRANSFER_FUNCTION,
+    TN_SOFTWARE,
+    TN_DATE_TIME,
+    TN_ARTIST,
+    TN_WHITE_POINT,
+    TN_PRIMARY_CHROMATICITIES,
+    TN_JPEGINTERCHANGE_FORMAT,
+    TN_JPEGINTERCHANGE_FORMAT_L,
+    TN_YCBCR_COEFFICIENTS,
+    TN_YCBCR_SUB_SAMPLING,
+    TN_YCBCR_POSITIONING,
+    TN_REFERENCE_BLACK_WHITE,
+    TN_COPYRIGHT,
+
+    // EXIF IFD
+    EXPOSURE_TIME,
+    F_NUMBER,
+    EXPOSURE_PROGRAM,
+    SPECTRAL_SENSITIVITY,
+    ISO_SPEED_RATING,
+    OECF,
+    EXIF_VERSION,
+    EXIF_DATE_TIME_ORIGINAL,
+    EXIF_DATE_TIME_DIGITIZED,
+    EXIF_COMPONENTS_CONFIG,
+    EXIF_COMPRESSED_BITS_PER_PIXEL,
+    SHUTTER_SPEED,
+    APERTURE,
+    BRIGHTNESS,
+    EXPOSURE_BIAS_VALUE,
+    MAX_APERTURE,
+    SUBJECT_DISTANCE,
+    METERING_MODE,
+    LIGHT_SOURCE,
+    FLASH,
+    FOCAL_LENGTH,
+    SUBJECT_AREA,
+    EXIF_MAKER_NOTE,
+    EXIF_USER_COMMENT,
+    SUBSEC_TIME,
+    SUBSEC_TIME_ORIGINAL,
+    SUBSEC_TIME_DIGITIZED,
+    EXIF_FLASHPIX_VERSION,
+    EXIF_COLOR_SPACE,
+    EXIF_PIXEL_X_DIMENSION,
+    EXIF_PIXEL_Y_DIMENSION,
+    RELATED_SOUND_FILE,
+    INTEROP,
+    FLASH_ENERGY,
+    SPATIAL_FREQ_RESPONSE,
+    FOCAL_PLANE_X_RESOLUTION,
+    FOCAL_PLANE_Y_RESOLUTION,
+    FOCAL_PLANE_RESOLUTION_UNIT,
+    SUBJECT_LOCATION,
+    EXPOSURE_INDEX,
+    SENSING_METHOD,
+    FILE_SOURCE,
+    SCENE_TYPE,
+    CFA_PATTERN,
+    CUSTOM_RENDERED,
+    EXPOSURE_MODE,
+    WHITE_BALANCE,
+    DIGITAL_ZOOM_RATIO,
+    FOCAL_LENGTH_35MM,
+    SCENE_CAPTURE_TYPE,
+    GAIN_CONTROL,
+    CONTRAST,
+    SATURATION,
+    SHARPNESS,
+    DEVICE_SETTINGS_DESCRIPTION,
+    SUBJECT_DISTANCE_RANGE,
+    IMAGE_UID,
+    PIM,
+
+    EXIF_TAG_MAX_OFFSET
+
+} exif_tag_offset_t;
+
+/* Below are the supported Tags (ID and structure for their data) */
+#define CONSTRUCT_TAGID(offset,ID)   (offset << 16 | ID)
+#define _ID_GPS_LATITUDE_REF                0x0001
+#define EXIFTAGID_GPS_LATITUDE_REF          CONSTRUCT_TAGID(GPS_LATITUDE_REF, _ID_GPS_LATITUDE_REF)
+#define _ID_GPS_LATITUDE                    0x0002
+#define EXIFTAGID_GPS_LATITUDE              CONSTRUCT_TAGID(GPS_LATITUDE, _ID_GPS_LATITUDE)
+#define _ID_GPS_LONGITUDE_REF               0x0003
+#define EXIFTAGID_GPS_LONGITUDE_REF         CONSTRUCT_TAGID(GPS_LONGITUDE_REF, _ID_GPS_LONGITUDE_REF)
+#define _ID_GPS_LONGITUDE                   0x0004
+#define EXIFTAGID_GPS_LONGITUDE             CONSTRUCT_TAGID(GPS_LONGITUDE, _ID_GPS_LONGITUDE)
+#define _ID_GPS_ALTITUDE_REF                0x0005
+#define EXIFTAGID_GPS_ALTITUDE_REF          CONSTRUCT_TAGID(GPS_ALTITUDE_REF, _ID_GPS_ALTITUDE_REF)
+#define _ID_GPS_ALTITUDE                    0x0006
+#define EXIFTAGID_GPS_ALTITUDE              CONSTRUCT_TAGID(GPS_ALTITUDE, _ID_GPS_ALTITUDE)
+#define _ID_GPS_TIMESTAMP                   0x0007
+#define EXIFTAGID_GPS_TIMESTAMP             CONSTRUCT_TAGID(GPS_TIMESTAMP, _ID_GPS_TIMESTAMP)
+#define _ID_GPS_PROCESSINGMETHOD            0x001b
+#define EXIFTAGID_GPS_PROCESSINGMETHOD      CONSTRUCT_TAGID(GPS_PROCESSINGMETHOD, _ID_GPS_PROCESSINGMETHOD)
+#define _ID_GPS_DATESTAMP                   0x001d
+#define EXIFTAGID_GPS_DATESTAMP             CONSTRUCT_TAGID(GPS_DATESTAMP, _ID_GPS_DATESTAMP)
+#define _ID_ORIENTATION                     0x0112
+#define EXIFTAGID_ORIENTATION               CONSTRUCT_TAGID(ORIENTATION, _ID_ORIENTATION)
+#define EXIFTAGTYPE_ORIENTATION             EXIF_SHORT
+#define _ID_ISO_SPEED_RATING                0x8827
+#define EXIFTAGID_ISO_SPEED_RATING          CONSTRUCT_TAGID(ISO_SPEED_RATING, _ID_ISO_SPEED_RATING)
+#define _ID_EXIF_DATE_TIME_ORIGINAL          0x9003
+#define EXIFTAGID_EXIF_DATE_TIME_ORIGINAL    CONSTRUCT_TAGID(EXIF_DATE_TIME_ORIGINAL, _ID_EXIF_DATE_TIME_ORIGINAL)
+#define _ID_FOCAL_LENGTH                    0x920a
+#define EXIFTAGID_FOCAL_LENGTH              CONSTRUCT_TAGID(FOCAL_LENGTH, _ID_FOCAL_LENGTH)
 
 #endif /* __QCAMERA_INTF_H__ */

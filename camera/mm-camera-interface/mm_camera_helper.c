@@ -39,7 +39,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 #include "mm_camera_interface2.h"
 #include <linux/ion.h>
-#include "camera.h"
+#include "QCamera_Intf.h"
 
 #define MM_CAMERA_PROFILE 1
 
