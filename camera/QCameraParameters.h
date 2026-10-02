@@ -23,20 +23,19 @@
 
 namespace android {
 
-#ifndef QCOM_HARDWARE
-struct FPSRange{
+// Keep the legacy CAF FPS helper private to this HAL.
+struct QCameraFpsRange{
     int minFPS;
     int maxFPS;
-    FPSRange(){
+    QCameraFpsRange(){
         minFPS=0;
         maxFPS=0;
     };
-    FPSRange(int min,int max){
+    QCameraFpsRange(int min,int max){
         minFPS=min;
         maxFPS=max;
     };
 };
-#endif
 class QCameraParameters: public CameraParameters
 {
 public:

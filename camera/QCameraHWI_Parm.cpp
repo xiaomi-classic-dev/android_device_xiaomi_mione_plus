@@ -112,19 +112,19 @@ extern "C" {
 // to the min and max fps supported by hardware
 // this list must be sorted first by max_fps and then min_fps
 // fps values are multiplied by 1000
-static android::FPSRange allFpsRanges[] = {
-            android::FPSRange(7500, 7500),
-            android::FPSRange(10000, 10000),
-            android::FPSRange(7500, 15000),
-            android::FPSRange(15000, 15000),
-            android::FPSRange(7500, 20000),
-            android::FPSRange(20000, 20000),
-            android::FPSRange(7500, 30000),
-            android::FPSRange(10000, 30000),
-            android::FPSRange(15000, 30000),
-            android::FPSRange(30000, 30000)
+static android::QCameraFpsRange allFpsRanges[] = {
+            android::QCameraFpsRange(7500, 7500),
+            android::QCameraFpsRange(10000, 10000),
+            android::QCameraFpsRange(7500, 15000),
+            android::QCameraFpsRange(15000, 15000),
+            android::QCameraFpsRange(7500, 20000),
+            android::QCameraFpsRange(20000, 20000),
+            android::QCameraFpsRange(7500, 30000),
+            android::QCameraFpsRange(10000, 30000),
+            android::QCameraFpsRange(15000, 30000),
+            android::QCameraFpsRange(30000, 30000)
 };
-#define ALL_FPS_RANGES_COUNT (sizeof(allFpsRanges)/sizeof(android::FPSRange))
+#define ALL_FPS_RANGES_COUNT (sizeof(allFpsRanges)/sizeof(android::QCameraFpsRange))
 
 typedef struct {
     uint32_t aspect_ratio;
@@ -480,7 +480,7 @@ String8 QCameraHardwareInterface::create_values_str(const str_map *values, int l
     return str;
 }
 
-static String8 create_fps_str(const android:: FPSRange* fps, int len) {
+static String8 create_fps_str(const android:: QCameraFpsRange* fps, int len) {
     String8 str;
     char buffer[32];
 
@@ -792,7 +792,7 @@ void QCameraHardwareInterface::initDefaultParameters()
             ALOGD("sensor fps range = (%f, %f)", mSensorFpsRange.min_fps,
                             mSensorFpsRange.max_fps);
 
-            mSupportedFpsRanges = new android::FPSRange[ALL_FPS_RANGES_COUNT];
+            mSupportedFpsRanges = new android::QCameraFpsRange[ALL_FPS_RANGES_COUNT];
 
             //min and max fps in android format
             int minFps = (int)(round(mSensorFpsRange.min_fps) * 1000);
@@ -801,7 +801,7 @@ void QCameraHardwareInterface::initDefaultParameters()
             //filter supported fps ranges according to sensor fps range
             for(int i=0; i<(int)ALL_FPS_RANGES_COUNT; i++) {
                 if(allFpsRanges[i].maxFPS <= maxFps && allFpsRanges[i].minFPS >= minFps) {
-                    memcpy(&mSupportedFpsRanges[idx], &allFpsRanges[i], sizeof(android::FPSRange));
+                    memcpy(&mSupportedFpsRanges[idx], &allFpsRanges[i], sizeof(android::QCameraFpsRange));
                     idx++;
                 }
             }

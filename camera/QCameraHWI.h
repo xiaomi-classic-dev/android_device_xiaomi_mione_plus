@@ -799,7 +799,7 @@ private:
     friend class QCameraStream_Snapshot;
     friend class QCameraStream_Rdi;
 
-    android :: FPSRange* mSupportedFpsRanges;
+    android :: QCameraFpsRange* mSupportedFpsRanges;
     int mSupportedFpsRangesCount;
 
     camera_size_type* mPictureSizes;

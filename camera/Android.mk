@@ -8,6 +8,7 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE_TAGS := optional
 LOCAL_LDFLAGS := -Wl,--version-script=$(LOCAL_PATH)/hal.exports
 LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/hal.exports
+LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 LOCAL_SRC_FILES := QCameraHAL.cpp QCameraHWI_Parm.cpp QCameraHWI.cpp \
     QCameraHWI_Preview.cpp QCameraHWI_Record.cpp QCameraHWI_Still.cpp \
     QCameraHWI_Mem.cpp QCameraHWI_Display.cpp QCameraStream.cpp \
@@ -25,6 +26,7 @@ LOCAL_CFLAGS := -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
     -include bionic/libc/include/sys/socket.h
 LOCAL_C_INCLUDES := $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
     $(LOCAL_PATH)/inc $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+    system/media/camera/include \
     $(call project-path-for,qcom-display)/libgralloc \
     $(call project-path-for,qcom-display)/libgenlock \
     $(call project-path-for,qcom-media)/mm-core/inc \
