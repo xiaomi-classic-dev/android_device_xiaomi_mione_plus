@@ -120,6 +120,10 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 # adbd reads /adb_keys while retaining normal RSA authentication.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/adb_keys:root/adb_keys
+
+# Use the GPU raster path validated with the shipped Adreno 220 driver.
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/configs/webview-command-line:system/etc/webview-command-line
 endif
 
 # xiaomi mione wifi config

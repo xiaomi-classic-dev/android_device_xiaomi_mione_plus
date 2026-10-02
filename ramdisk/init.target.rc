@@ -64,6 +64,13 @@ on post-fs-data
 
 # InputMethodManagerService
     mkdir /data/system/inputmethod 0755 system system
+    setprop sys.mione.webview_ready 1
+
+on property:sys.mione.webview_ready=1 && property:ro.build.type=userdebug
+    copy /system/etc/webview-command-line /data/local/tmp/webview-command-line
+    chown root root /data/local/tmp/webview-command-line
+    chmod 0644 /data/local/tmp/webview-command-line
+    restorecon /data/local/tmp/webview-command-line
 
 on charger
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system wait ro barrier=1
