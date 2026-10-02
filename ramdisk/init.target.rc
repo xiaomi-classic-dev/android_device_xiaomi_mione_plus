@@ -11,7 +11,7 @@
 # from a build that disabled them. Keep the normal userdebug/RSA checks.
 on property:ro.build.type=userdebug
     setprop persist.sys.root_access 2
-    setprop service.adb.root 1
+    setprop cm.service.adb.root 1
     setprop persist.service.adb.enable 1
     setprop persist.sys.usb.config mass_storage,adb
 
