@@ -46,7 +46,7 @@ PRODUCT_PACKAGES += \
     calibrator \
     hostapd
 
-PRODUCT_PACKAGES += libmione_cnd_shim
+PRODUCT_PACKAGES += libmione_cnd_shim libmione_sensors_shim
 
 # Ramdisk files
 PRODUCT_COPY_FILES += \
