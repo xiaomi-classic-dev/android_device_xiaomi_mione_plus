@@ -111,6 +111,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.dexopt-flags=m=y \
     persist.sys.timezone=Asia/Shanghai
 
+# Start USB/root ADB in userdebug without switching to an eng build.
+ifeq ($(TARGET_BUILD_VARIANT),userdebug)
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    persist.sys.usb.config=mass_storage,adb \
+    service.adb.root=1
+endif
+
 # xiaomi mione wifi config
 $(call inherit-product, device/xiaomi/mione_plus/mione_bcm43xx.mk)
 

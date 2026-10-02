@@ -8,6 +8,15 @@
 import init.qcom.rc
 import init.target.rc
 
+# This trigger runs after build.prop and persisted properties are loaded.
+# Enable ADB-only root and USB debugging even when upgrading retained /data
+# from a build that disabled them. Keep the normal userdebug/RSA checks.
+on property:ro.build.type=userdebug
+    setprop persist.sys.root_access 2
+    setprop service.adb.root 1
+    setprop persist.service.adb.enable 1
+    setprop persist.sys.usb.config mass_storage,adb
+
 # most of the following are from boot.img of mioneplus_QDS81
 
 on init
