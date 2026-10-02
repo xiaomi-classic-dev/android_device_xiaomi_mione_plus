@@ -150,6 +150,7 @@ typedef struct {
 	 int                     local_flag[MM_CAMERA_MAX_NUM_FRAMES];
 	 camera_memory_t*        camera_memory[MM_CAMERA_MAX_NUM_FRAMES];
      camera_memory_t*        metadata_memory[MM_CAMERA_MAX_NUM_FRAMES];
+     native_handle_t*        metadata_handle[MM_CAMERA_MAX_NUM_FRAMES];
      int main_ion_fd[MM_CAMERA_MAX_NUM_FRAMES];
      struct ion_allocation_data alloc[MM_CAMERA_MAX_NUM_FRAMES];
      struct ion_fd_data ion_info_fd[MM_CAMERA_MAX_NUM_FRAMES];

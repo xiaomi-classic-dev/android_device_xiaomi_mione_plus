@@ -214,13 +214,10 @@ void QCameraStream_record::releaseEncodeBuffer() {
       ALOGE("%s: Unmapping Video Data Failed", __func__);
 
     if (mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]) {
-      void *data = mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
-      if (data && data != MAP_FAILED) {
-        struct encoder_media_buffer_type *packet =
-            (struct encoder_media_buffer_type *)data;
-        if (packet->meta_handle)
-          native_handle_delete(const_cast<native_handle_t *>(packet->meta_handle));
-      }
+      // These handles borrow the recording fds; only Binder's returned clones
+      // own duplicated fds. Keep originals separate from reusable callback slots.
+      if (mHalCamCtrl->mRecordingMemory.metadata_handle[cnt])
+        native_handle_delete(mHalCamCtrl->mRecordingMemory.metadata_handle[cnt]);
       mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->release(
         mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]);
 
@@ -368,6 +365,12 @@ status_t QCameraStream_record::processRecordFrame(void *data)
 #endif
 
   if (mHalCamCtrl->mStoreMetaDataInFrame) {
+    struct encoder_media_buffer_type *packet =
+        (struct encoder_media_buffer_type *)mHalCamCtrl->mRecordingMemory
+            .metadata_memory[frame->video.video.idx]->data;
+    packet->buffer_type = kMetadataBufferTypeNativeHandleSource;
+    packet->meta_handle = mHalCamCtrl->mRecordingMemory
+        .metadata_handle[frame->video.video.idx];
     mStopCallbackLock.unlock();
     if(mActive && (rcb != NULL) && (mHalCamCtrl->mMsgEnabled & CAMERA_MSG_VIDEO_FRAME)) {
       rcb(timeStamp, CAMERA_MSG_VIDEO_FRAME,
@@ -489,14 +492,16 @@ status_t QCameraStream_record::initEncodeBuffers()
           (struct encoder_media_buffer_type  *)
           mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
         packet->meta_handle = NULL;
-        packet->meta_handle = native_handle_create(1, 2); //1 fd, 1 offset and 1 size
+        packet->meta_handle = native_handle_create(1, 3); // fd, offset, size, buffer index
         if (!packet->meta_handle)
           return NO_MEMORY;
-        packet->buffer_type = kMetadataBufferTypeCameraSource;
+        packet->buffer_type = kMetadataBufferTypeNativeHandleSource;
         native_handle_t * nh = const_cast<native_handle_t *>(packet->meta_handle);
+        mHalCamCtrl->mRecordingMemory.metadata_handle[cnt] = nh;
         nh->data[0] = mHalCamCtrl->mRecordingMemory.fd[cnt];
         nh->data[1] = 0;
         nh->data[2] = mHalCamCtrl->mRecordingMemory.size;
+        nh->data[3] = cnt;
       }
     	recordframes[cnt].fd = mHalCamCtrl->mRecordingMemory.fd[cnt];
     	recordframes[cnt].buffer = (uint32_t)mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->data;
@@ -554,22 +559,45 @@ status_t QCameraStream_record::initEncodeBuffers()
 void QCameraStream_record::releaseRecordingFrame(const void *opaque)
 {
     ALOGV("%s : BEGIN, opaque = 0x%p",__func__, opaque);
+    if (mHalCamCtrl->mStoreMetaDataInFrame && opaque) {
+        struct encoder_media_buffer_type *packet =
+            (struct encoder_media_buffer_type *)opaque;
+        if (packet->buffer_type != kMetadataBufferTypeNativeHandleSource ||
+            !packet->meta_handle) {
+            ALOGE("%s: invalid recording metadata", __func__);
+            return;
+        }
+        native_handle_t *handle = const_cast<native_handle_t *>(packet->meta_handle);
+        int index = -1;
+        if (handle->numFds == 1 && handle->numInts == 3 &&
+            handle->data[1] == 0 &&
+            handle->data[2] == (int)mHalCamCtrl->mRecordingMemory.size)
+            index = handle->data[3];
+        bool valid = index >= 0 && index < mHalCamCtrl->mRecordingMemory.buffer_count;
+        // CameraService may return any free callback slot. The transported
+        // index identifies the frame even when releases arrive out of order.
+        bool original = false;
+        for (int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++)
+            original |= handle == mHalCamCtrl->mRecordingMemory.metadata_handle[cnt];
+        if (!original) {
+            native_handle_close(handle);
+            native_handle_delete(handle);
+        }
+        packet->meta_handle = NULL;
+        if (mActive && valid) {
+            if (MM_CAMERA_OK != cam_evt_buf_done(mCameraId, &mRecordedFrames[index]))
+                ALOGE("%s: Buf Done Failed", __func__);
+        } else {
+            ALOGE("%s: recording stopped or invalid frame index %d", __func__, index);
+        }
+        return;
+    }
     if(!mActive)
     {
         ALOGE("%s : Recording already stopped!!! Leak???",__func__);
         return;
     }
     for(int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
-      if (mHalCamCtrl->mStoreMetaDataInFrame) {
-        if(mHalCamCtrl->mRecordingMemory.metadata_memory[cnt] &&
-                mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data == opaque) {
-            /* found the match */
-            if(MM_CAMERA_OK != cam_evt_buf_done(mCameraId, &mRecordedFrames[cnt]))
-                ALOGE("%s : Buf Done Failed",__func__);
-            ALOGV("%s : END",__func__);
-            return;
-        }
-      } else {
         if(mHalCamCtrl->mRecordingMemory.camera_memory[cnt] &&
                 mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->data == opaque) {
             /* found the match */
@@ -578,7 +606,6 @@ void QCameraStream_record::releaseRecordingFrame(const void *opaque)
             ALOGV("%s : END",__func__);
             return;
         }
-      }
     }
 	ALOGE("%s: cannot find the matched frame with opaue = 0x%p", __func__, opaque);
 }
