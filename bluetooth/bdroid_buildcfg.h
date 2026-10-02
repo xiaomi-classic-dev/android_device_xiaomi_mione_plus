@@ -25,4 +25,16 @@
 #define REMOVE_EAGER_THREADS FALSE
 #define HCI_BCM4329_PATCH_DOWNLOAD_QUIRK TRUE
 
+/* BCM4329B1 firmware 0x0321 cannot report BR/EDR encryption key size.
+ * This explicitly accepts an unverified key size for that controller only;
+ * weak-key/KNOB protection from the key-size query is unavailable here.
+ */
+#define BTM_ALLOW_UNVERIFIED_BR_EDR_KEY_SIZE(status, version) \
+    ((status) == HCI_ERR_ILLEGAL_COMMAND && (version) != NULL && \
+     (version)->hci_version == HCI_PROTO_VERSION_2_1 && \
+     (version)->hci_revision == 0x0321 && \
+     (version)->lmp_version == HCI_PROTO_VERSION_2_1 && \
+     (version)->manufacturer == 15 && \
+     (version)->lmp_subversion == 0x4217)
+
 #endif
