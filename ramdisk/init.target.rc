@@ -151,6 +151,7 @@ service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet input
+    setenv LD_PRELOAD libmione_cnd_shim.so:libmione_camera_shim.so
 
 service kickstart /system/bin/qcks l
     oneshot
@@ -207,4 +208,3 @@ on property:ro.baseband=svlte2a
 
 on property:sys.radio.shutdown=true
     exec /system/bin/sh /system/etc/init.qcom.efs.sync.sh
-
