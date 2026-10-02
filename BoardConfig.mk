@@ -23,7 +23,7 @@ ANDROID_COMMON_BUILD_MK := true
 BOARD_KERNEL_CMDLINE := console=null androidboot.hardware=mione
 BOARD_KERNEL_BASE := 0x40200000
 BOARD_KERNEL_PAGESIZE := 2048
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01200000
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 
 # fix this up by examining /proc/mtd on a running device
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x105c0000
@@ -39,7 +39,7 @@ TARGET_PREBUILT_KERNEL := device/xiaomi/mione_plus/kernel
 LZMA_RAMDISK_TARGETS                    := boot,recovery
 RECOVERY_VARIANT                        := twrp
 TW_THEME := portrait_mdpi
-TARGET_PREBUILT_RECOVERY_KERNEL         := $(call my-dir)/kernel
+TARGET_PREBUILT_RECOVERY_KERNEL         := device/xiaomi/mione_plus/kernel
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
 RECOVERY_GRAPHICS_FORCE_USE_LINELENGTH := true
 RECOVERY_GRAPHICS_FB_PAGE_ALIGN := true

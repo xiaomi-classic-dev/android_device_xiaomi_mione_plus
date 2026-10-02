@@ -20,14 +20,14 @@ PRODUCT_RELEASE_NAME := mione_plus
 $(call inherit-product, build/target/product/embedded.mk)
 
 # Inherit from our custom product configuration
-$(call inherit-product, vendor/cm/config/common_mini_phone.mk)
+$(call inherit-product, vendor/omni/config/common.mk)
 
 ## Device identifier. This must come after all inclusions
 PRODUCT_DEVICE := mione_plus
-PRODUCT_NAME := cm_mione_plus
+PRODUCT_NAME := omni_mione_plus
 PRODUCT_BRAND := Xiaomi
 PRODUCT_MODEL := MI-ONE Plus
 PRODUCT_MANUFACTURER := Xiaomi
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/kernel:kernel
+    device/xiaomi/mione_plus/kernel:kernel
