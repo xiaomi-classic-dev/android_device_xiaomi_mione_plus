@@ -84,7 +84,6 @@ TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/ramdisk/fstab.mione
 RECOVERY_FSTAB_VERSION := 2
 
 # Legacy Qualcomm HAL1, built against the MiOne camera ABI.
-BOARD_MIONE_SOURCE_CAMERA := true
 USE_DEVICE_SPECIFIC_CAMERA := true
 
 # Publish device battery policy through healthd's standard board hook.

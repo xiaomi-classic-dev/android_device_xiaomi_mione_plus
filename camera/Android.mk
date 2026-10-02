@@ -1,5 +1,4 @@
 # MiOne MSM8660 legacy CAF HAL1.
-ifeq ($(BOARD_MIONE_SOURCE_CAMERA),true)
 LOCAL_PATH := $(call my-dir)
 MIONE_DEVICE_CAMERA_PATH := $(LOCAL_PATH)
 include $(CLEAR_VARS)
@@ -35,4 +34,3 @@ LOCAL_SHARED_LIBRARIES := libutils libui libcamera_client liblog libcutils \
     libmmcamera_interface2 libgenlock libbinder libdl
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
-endif
