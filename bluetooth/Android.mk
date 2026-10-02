@@ -11,3 +11,11 @@ LOCAL_MODULE_TAGS := eng
 LOCAL_SRC_FILES := $(LOCAL_MODULE)
 
 include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione_bdaddr
+LOCAL_MODULE_TAGS := optional
+LOCAL_SRC_FILES := mione_bdaddr.c
+LOCAL_SHARED_LIBRARIES := libdl liblog
+LOCAL_CFLAGS := -Wall -Wextra -Werror
+include $(BUILD_EXECUTABLE)

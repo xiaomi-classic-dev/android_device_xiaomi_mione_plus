@@ -67,6 +67,10 @@ on fs
     exec /system/bin/sh /system/etc/init.qcom.modem_links.sh
 
 on post-fs-data
+    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
+    setprop ro.bt.bdaddr_path /data/misc/bluetooth/bdaddr
+    restorecon /system/bin/mione_bdaddr
+    start mione-bdaddr
 # double check /data/radio
     mkdir /data/radio 0770 radio radio
     chmod 2770 /data/radio
@@ -100,6 +104,13 @@ on charger
 
 service chargeonlymode /sbin/chargeonlymode
     class charger
+
+service mione-bdaddr /system/bin/mione_bdaddr
+    class core
+    user bluetooth
+    group bluetooth system qcom_oncrpc
+    disabled
+    oneshot
 
 
 # healthd.mione publishes sys.mione.battery_low. power.msm8660 combines this

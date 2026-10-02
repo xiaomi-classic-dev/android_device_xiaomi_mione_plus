@@ -76,7 +76,8 @@ PRODUCT_PACKAGES += \
 
 # Bluetooth
 PRODUCT_PACKAGES += \
-    bt_vendor.conf
+    bt_vendor.conf \
+    mione_bdaddr
 
 # Input device config
 PRODUCT_COPY_FILES += \

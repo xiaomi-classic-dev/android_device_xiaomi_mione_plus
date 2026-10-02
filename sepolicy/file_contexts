@@ -1,0 +1,2 @@
+/system/bin/mione_bdaddr                       u:object_r:mione_bdaddr_exec:s0
+/dev/oncrpc/(00000000:0|3000000e:00090000)       u:object_r:mione_nv_device:s0
