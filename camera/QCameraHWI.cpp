@@ -160,6 +160,7 @@ QCameraHardwareInterface(int cameraId, int mode)
                     mNotifyCb(0),
                     mDataCb(0),
                     mDataCbTimestamp(0),
+                    mMetadataMemory(NULL),
                     mCallbackCookie(0),
                     //mPreviewHeap(0),
                     mStreamDisplay (NULL), mStreamRecord(NULL), mStreamSnap(NULL),
@@ -384,6 +385,10 @@ QCameraHardwareInterface::~QCameraHardwareInterface()
 
     /* Now close the camera after deleting all the instances */
     cam_ops_close(mCameraId);
+    if (mMetadataMemory) {
+        mMetadataMemory->release(mMetadataMemory);
+        mMetadataMemory = NULL;
+    }
     pthread_mutex_destroy(&mAsyncCmdMutex);
     pthread_cond_destroy(&mAsyncCmdWait);
 
@@ -455,6 +460,17 @@ void QCameraHardwareInterface::setCallbacks(
     mDataCbTimestamp = data_cb_timestamp;
     mGetMemory       = get_memory;
     mCallbackCookie  = user;
+    // CameraHardwareInterface requires a valid memory handle even for
+    // metadata-only callbacks. The face results remain in mMetadata.
+    if (!mMetadataMemory && mGetMemory) {
+        mMetadataMemory = mGetMemory(-1, 1, 1, mCallbackCookie);
+        if (mMetadataMemory && !mMetadataMemory->data) {
+            mMetadataMemory->release(mMetadataMemory);
+            mMetadataMemory = NULL;
+        }
+        if (!mMetadataMemory)
+            ALOGE("%s: cannot allocate face metadata callback memory", __func__);
+    }
     ALOGI("setCallbacks: X");
 }
 

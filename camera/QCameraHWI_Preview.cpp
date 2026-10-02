@@ -404,9 +404,10 @@ void QCameraStream_preview::notifyROIEvent(fd_roi_t roi)
                 camera_data_callback pcb = mHalCamCtrl->mDataCb;
                 mHalCamCtrl->mCallbackLock.unlock();
 
-                if (pcb && (mHalCamCtrl->mMsgEnabled & CAMERA_MSG_PREVIEW_METADATA)){
+                if (pcb && mHalCamCtrl->mMetadataMemory &&
+                    (mHalCamCtrl->mMsgEnabled & CAMERA_MSG_PREVIEW_METADATA)){
                     ALOGE("%s: Face detection RIO callback", __func__);
-                    pcb(CAMERA_MSG_PREVIEW_METADATA, NULL, 0, &mHalCamCtrl->mMetadata, mHalCamCtrl->mCallbackCookie);
+                    pcb(CAMERA_MSG_PREVIEW_METADATA, mHalCamCtrl->mMetadataMemory, 0, &mHalCamCtrl->mMetadata, mHalCamCtrl->mCallbackCookie);
                 }
             }
         }
@@ -494,9 +495,10 @@ void QCameraStream_preview::notifyROIEvent(fd_roi_t roi)
                  camera_data_callback pcb = mHalCamCtrl->mDataCb;
                  mHalCamCtrl->mCallbackLock.unlock();
 
-                 if (pcb && (mHalCamCtrl->mMsgEnabled & CAMERA_MSG_PREVIEW_METADATA)){
+                 if (pcb && mHalCamCtrl->mMetadataMemory &&
+                     (mHalCamCtrl->mMsgEnabled & CAMERA_MSG_PREVIEW_METADATA)){
                      ALOGE("%s: Face detection RIO callback with %d faces detected (score=%d)", __func__, mNumFDRcvd, mHalCamCtrl->mFace[idx].score);
-                     pcb(CAMERA_MSG_PREVIEW_METADATA, NULL, 0, &mHalCamCtrl->mMetadata, mHalCamCtrl->mCallbackCookie);
+                     pcb(CAMERA_MSG_PREVIEW_METADATA, mHalCamCtrl->mMetadataMemory, 0, &mHalCamCtrl->mMetadata, mHalCamCtrl->mCallbackCookie);
                  }
              }
         }

@@ -663,6 +663,7 @@ private:
     camera_data_callback           mDataCb;
     camera_data_timestamp_callback mDataCbTimestamp;
     camera_request_memory          mGetMemory;
+    camera_memory_t                *mMetadataMemory;
     void                           *mCallbackCookie;
 
     //sp<MemoryHeapBase>  mPreviewHeap;  //@Guru : Need to remove
