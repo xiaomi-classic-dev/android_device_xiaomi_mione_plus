@@ -35,7 +35,7 @@ TARGET_LDPRELOAD := libmione_cnd_shim.so
 
 # Kernel
 BOARD_KERNEL_BASE := 0x40200000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=mione kgsl.mmutype=gpummu vmalloc=400M androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=qcom kgsl.mmutype=gpummu vmalloc=400M androidboot.selinux=permissive
 BOARD_KERNEL_PAGE_SIZE := 2048
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
@@ -83,7 +83,7 @@ BOARD_USES_MMCUTILS := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
-TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/ramdisk/fstab.mione
+TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/ramdisk/fstab.qcom
 RECOVERY_FSTAB_VERSION := 2
 
 # Legacy Qualcomm HAL1, built against the MiOne camera ABI.

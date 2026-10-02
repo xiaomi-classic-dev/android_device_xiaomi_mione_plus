@@ -50,7 +50,6 @@ PRODUCT_PACKAGES += libmione_cnd_shim
 
 # Ramdisk files
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/ramdisk/init.mione.rc:root/init.mione.rc \
     device/xiaomi/mione_plus/ramdisk/init.qcom.class_core.sh:root/init.qcom.class_core.sh \
     device/xiaomi/mione_plus/ramdisk/init.qcom.class_main.sh:root/init.qcom.class_main.sh \
     device/xiaomi/mione_plus/ramdisk/init.qcom.rc:root/init.qcom.rc \
@@ -58,8 +57,8 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/ramdisk/init.qcom.usb.rc:root/init.qcom.usb.rc \
     device/xiaomi/mione_plus/ramdisk/init.qcom.usb.sh:root/init.qcom.usb.sh \
     device/xiaomi/mione_plus/ramdisk/init.target.rc:root/init.target.rc \
-    device/xiaomi/mione_plus/ramdisk/ueventd.mione.rc:root/ueventd.mione.rc \
-    device/xiaomi/mione_plus/ramdisk/fstab.mione:root/fstab.mione \
+    device/xiaomi/mione_plus/ramdisk/ueventd.qcom.rc:root/ueventd.qcom.rc \
+    device/xiaomi/mione_plus/ramdisk/fstab.qcom:root/fstab.qcom \
     device/xiaomi/mione_plus/ramdisk/sbin/chargeonlymode:root/sbin/chargeonlymode
 
 # WiFi
