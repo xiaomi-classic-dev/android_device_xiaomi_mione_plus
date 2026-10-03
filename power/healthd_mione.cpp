@@ -5,7 +5,7 @@
 #include <cutils/log.h>
 #include <cutils/properties.h>
 #include <string.h>
-#include <healthd.h>
+#include <healthd/healthd.h>
 #include "battery_policy.h"
 
 static int low;

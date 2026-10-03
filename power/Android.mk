@@ -15,7 +15,7 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libhealthd.mione
 LOCAL_SRC_FILES := healthd_mione.cpp
-LOCAL_C_INCLUDES := system/core/healthd
+LOCAL_HEADER_LIBRARIES := libhealthd_headers
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 include $(BUILD_STATIC_LIBRARY)
 

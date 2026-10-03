@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <cutils/properties.h>
 #include <hardware/power.h>
-#include <healthd.h>
+#include <healthd/healthd.h>
 #include "../battery_policy.h"
 static int checks, failures;
 #define CHECK(expr) do { ++checks; if (!(expr)) { ++failures; printf("FAIL line %d: %s\n", __LINE__, #expr); } } while (0)
