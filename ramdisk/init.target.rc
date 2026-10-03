@@ -147,6 +147,14 @@ on post-fs-data
 on boot
     start qcamerasvr
 
+# Loaded from the ramdisk before the generic vendor rild.rc definition.
+# Keep the Oreo radio UID and capabilities, with MiOne's legacy device groups.
+service ril-daemon /vendor/bin/hw/rild
+    class main
+    user radio
+    group radio system cache inet misc audio log readproc wakelock 3006 2950
+    capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
+
 service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
     user camera
