@@ -31,6 +31,6 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
     $(call project-path-for,qcom-media)/mm-core/inc \
     $(call project-path-for,qcom-media)/libstagefrighthw
 LOCAL_SHARED_LIBRARIES := libutils libui libcamera_client liblog libcutils \
-    libmmcamera_interface2 libgenlock libbinder libdl
+    libmmcamera_interface2 libgenlock libbinder libdl libnativewindow
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
