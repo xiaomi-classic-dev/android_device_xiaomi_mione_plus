@@ -43,7 +43,6 @@ TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_SMP := true
 ARCH_ARM_HAVE_TLS_REGISTER := true
 TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
-LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := $(MIONE_PATH)/include
 
 # QCOM hardware
 BOARD_USES_QCOM_HARDWARE := true
@@ -74,7 +73,7 @@ BOARD_GLOBAL_CFLAGS += -DREFRESH_RATE=60
 
 # Audio
 BOARD_USES_LEGACY_ALSA_AUDIO := true
-# The legacy CAF policy uses M-only internals; use the N framework manager.
+# The legacy CAF policy uses M-only internals; use the Oreo framework manager.
 override USE_CUSTOM_AUDIO_POLICY := 0
 BOARD_QCOM_VOIP_ENABLED := true
 BOARD_QCOM_TUNNEL_LPA_ENABLED := false
@@ -127,7 +126,6 @@ BOARD_HAVE_XIAOMI_MIONE := true
 
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := mione
-TARGET_LDPRELOAD := libmione_cnd_shim.so
 
 # Kernel
 BOARD_KERNEL_BASE := 0x40200000
@@ -187,3 +185,8 @@ USE_DEVICE_SPECIFIC_CAMERA := true
 
 # Publish device battery policy through healthd's standard board hook.
 BOARD_HAL_STATIC_LIBRARIES += libhealthd.mione
+
+# Oreo keeps the legacy 32-bit Binder ABI used by MiOne's userspace.
+TARGET_USES_64_BIT_BINDER := false
+BOARD_KERNEL_IMAGE_NAME := zImage
+DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
