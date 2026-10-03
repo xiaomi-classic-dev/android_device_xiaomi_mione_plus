@@ -1,0 +1,157 @@
+From 01225bdc3ba7990c32df7f5d5445d504321b3e8a Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sat, 3 Oct 2026 05:02:50 +0800
+Subject: [PATCH 3/4] Bluetooth: Let legacy controllers start while retaining
+ key-size checks
+
+BCM4329B1 boots and completes firmware download, but Nougat's backported
+fc2ca9ee6908 startup assertion aborts because Read Encryption Key Size is
+not advertised. Warn instead of terminating the whole adapter. Continue
+to query actual encrypted links; do not fabricate support or key length,
+and retain rejection on command failure or insufficient key size.
+
+Carry the originating connection handle and encryption event type through
+the HCI command context. Unsupported commands can return only a status
+byte, so validate response length before accessing the handle/key size.
+Reject malformed or mismatched successful responses against the original
+handle, and use the correct encryption-change vs key-refresh completion.
+Command-status failures use the same rejection path. This also removes
+the shared event-type race between outstanding key-size commands.
+
+The extracted actual response functions passed 470016 scenarios under
+ASan/UBSan, including short replies, unknown-command errors, all key sizes,
+wrong handles, and both event types. Device enable/inquiry is tested
+separately. Encrypted pairing remains dependent on firmware actually
+answering the query; this patch does not bypass that security requirement.
+
+Change-Id: Ia2f71d37435d17e6e2a1cba9931c231c22ee1692
+---
+ device/src/controller.c |  5 +++-
+ stack/btu/btu_hcif.c    | 63 ++++++++++++++++++++++++++++-------------
+ 2 files changed, 47 insertions(+), 21 deletions(-)
+
+diff --git a/device/src/controller.c b/device/src/controller.c
+index 60820c2c004e7356e7b27f2fb35455b4e5608367..1e332433c1033d5d3273da9ac2072041b7178fe3 100644
+--- a/device/src/controller.c
++++ b/device/src/controller.c
+@@ -294,7 +294,10 @@ static future_t *start_up(void) {
+         &number_of_local_supported_codecs, local_supported_codecs);
+   }
+ 
+-  assert(HCI_READ_ENCR_KEY_SIZE_SUPPORTED(supported_commands));
++  if (!HCI_READ_ENCR_KEY_SIZE_SUPPORTED(supported_commands)) {
++    LOG_WARN(LOG_TAG, "%s controller does not advertise Read Encryption Key Size; "
++        "encrypted links still require a successful key-size query", __func__);
++  }
+ 
+   readable = true;
+   return future_new_immediate(FUTURE_SUCCESS);
+diff --git a/stack/btu/btu_hcif.c b/stack/btu/btu_hcif.c
+index 1db8190fc9c565a13a4425996e234503149b1030..ef68b7294aca3d67a78e5202fb787af43ee9e432 100644
+--- a/stack/btu/btu_hcif.c
++++ b/stack/btu/btu_hcif.c
+@@ -47,6 +47,8 @@
+ #include "hcimsgs.h"
+ #include "l2c_int.h"
+ 
++static bool read_key_send_from_key_refresh = false;
++
+ // TODO(zachoverflow): remove this horrible hack
+ #include "btu.h"
+ extern fixed_queue_t *btu_hci_msg_queue;
+@@ -378,6 +380,14 @@ void btu_hcif_send_cmd (UNUSED_ATTR UINT8 controller_id, BT_HDR *p_buf)
+         vsc_callback = *((void **)(p_buf + 1));
+     }
+ 
++    if (opcode == HCI_READ_ENCR_KEY_SIZE) {
++        uint8_t *params = stream + 1; // Skip command parameter length.
++        uint16_t handle;
++        STREAM_TO_UINT16(handle, params);
++        vsc_callback = (void *)(((uintptr_t)handle << 1) |
++            (read_key_send_from_key_refresh ? 1 : 0));
++    }
++
+     hci_layer_get_interface()->transmit_command(
+       p_buf,
+       btu_hcif_command_complete_evt,
+@@ -608,8 +618,6 @@ static void btu_hcif_rmt_name_request_comp_evt (UINT8 *p, UINT16 evt_len)
+ }
+ 
+ const uint8_t MIN_KEY_SIZE = 7;
+-bool read_key_send_from_key_refresh = false;
+-
+ static void read_encryption_key_size_complete_after_key_refresh(
+     uint8_t status, uint16_t handle, uint8_t key_size) {
+   if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
+@@ -674,6 +682,32 @@ static void read_encryption_key_size_complete_after_encryption_change(
+   btm_sec_encrypt_change(handle, status, 1 /* enable */);
+ }
+ 
++static void read_encryption_key_size_complete(UINT8 *p, UINT16 evt_len,
++                                              uintptr_t context) {
++  const uint16_t handle = context >> 1;
++  const bool from_key_refresh = context & 1;
++  uint8_t status = evt_len ? p[0] : HCI_ERR_UNSPECIFIED;
++  uint8_t key_size = 0;
++
++  // Unsupported commands can return only a status byte, without a handle.
++  // Keep the originating handle and event type in each command's context.
++  if (status == HCI_SUCCESS) {
++    if (evt_len < 4 || (p[1] | ((uint16_t)p[2] << 8)) != handle) {
++      HCI_TRACE_ERROR("%s malformed key-size response for handle: 0x%02x",
++                      __func__, handle);
++      status = HCI_ERR_UNSPECIFIED;
++    } else {
++      key_size = p[3];
++    }
++  }
++
++  if (from_key_refresh) {
++    read_encryption_key_size_complete_after_key_refresh(status, handle, key_size);
++  } else {
++    read_encryption_key_size_complete_after_encryption_change(status, handle, key_size);
++  }
++}
++
+ /*******************************************************************************
+ **
+ ** Function         btu_hcif_encryption_change_evt
+@@ -907,24 +941,8 @@ static void btu_hcif_hdl_command_complete (UINT16 opcode, UINT8 *p, UINT16 evt_l
+             btm_read_inq_tx_power_complete(p);
+             break;
+ 
+-        case HCI_READ_ENCR_KEY_SIZE: {
+-            UINT8 *pp = p;
+-
+-            UINT8   status;
+-            UINT16  handle;
+-            UINT8   key_size;
+-
+-            STREAM_TO_UINT8  (status, pp);
+-            STREAM_TO_UINT16 (handle, pp);
+-            STREAM_TO_UINT8  (key_size, pp);
+-
+-            if (read_key_send_from_key_refresh) {
+-                read_encryption_key_size_complete_after_encryption_change(status, handle, key_size);
+-            } else {
+-                read_encryption_key_size_complete_after_key_refresh(status, handle, key_size);
+-            }
+-
+-            }
++        case HCI_READ_ENCR_KEY_SIZE:
++            read_encryption_key_size_complete(p, evt_len, (uintptr_t)p_cplt_cback);
+             break;
+ 
+ #if (BLE_INCLUDED == TRUE)
+@@ -1056,6 +1074,11 @@ static void btu_hcif_hdl_command_status (UINT16 opcode, UINT8 status, UINT8 *p_c
+ 
+     switch (opcode)
+     {
++        case HCI_READ_ENCR_KEY_SIZE:
++            if (status != HCI_SUCCESS)
++                read_encryption_key_size_complete(&status, 1, (uintptr_t)p_vsc_status_cback);
++            break;
++
+         case HCI_EXIT_SNIFF_MODE:
+         case HCI_EXIT_PARK_MODE:
+ #if BTM_SCO_WAKE_PARKED_LINK == TRUE

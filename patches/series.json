@@ -1,0 +1,49 @@
+{
+  "android_branch": "cm-14.1",
+  "projects": [
+    {
+      "path": "frameworks/base",
+      "base_commit": "a9c4a0207a372c143c0252b0cdcf8e355a05657a",
+      "source_head": "5f55a2df56b5a4c4494d1f9f05e844b6f74256c8",
+      "patches": [
+        {
+          "file": "frameworks-base/0001-Bluetooth-Finish-enabling-classic-only-adapters.patch",
+          "source_commit": "5f55a2df56b5a4c4494d1f9f05e844b6f74256c8",
+          "patch_id": "e6fcf4da6ee8b0b57e308a46626587bf1ce1754f",
+          "sha256": "dea08f30a8114c0ae511192b4f9303ce92a03988d0a5b8343a475e5943d1c739"
+        }
+      ]
+    },
+    {
+      "path": "system/bt",
+      "base_commit": "48d8da8be181720c399921ed09067c836c68b100",
+      "source_head": "6b3580e84da1554302a524a0fdf330b9841247ee",
+      "patches": [
+        {
+          "file": "system-bt/0001-Bluetooth-Keep-security-backports-buildable-on-class.patch",
+          "source_commit": "38fd97b9dee76ecd99d060dac2332d11592d2969",
+          "patch_id": "85e404f3053832690abf0285d054e29572f0add7",
+          "sha256": "c78df05e27c3359c12d0953ca2fc04117af1da7b3d7d802d67d90de5153f27f3"
+        },
+        {
+          "file": "system-bt/0002-HCI-Add-an-opt-in-bounded-BCM4329-patch-download-qui.patch",
+          "source_commit": "319a6db1c8b3f976dab71aeedc9fc553fd917b7f",
+          "patch_id": "8e7629ee1dea2e6e1ebf08b9b5e781b4a0066ef0",
+          "sha256": "66e7b59d67f5bdcbb9b55c223415945f8545c5e4d484fec8ff7ded995a192dd9"
+        },
+        {
+          "file": "system-bt/0003-Bluetooth-Let-legacy-controllers-start-while-retaini.patch",
+          "source_commit": "01225bdc3ba7990c32df7f5d5445d504321b3e8a",
+          "patch_id": "c7679eb33b56685b11ae02492da62b1547b07d7e",
+          "sha256": "2e09bd6615130d091188e67e2a2c8761e8d720e80e887cc035a9fbdaaf2808e2"
+        },
+        {
+          "file": "system-bt/0004-Bluetooth-Add-a-device-opt-in-for-unverified-legacy-.patch",
+          "source_commit": "6b3580e84da1554302a524a0fdf330b9841247ee",
+          "patch_id": "b22a2621dc6edc218be20e91bf383e6acf2f7f9c",
+          "sha256": "7a44713477179f2eaa53164c498cb6236eb3db82688b7b94c792fd3022277113"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+From 319a6db1c8b3f976dab71aeedc9fc553fd917b7f Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sat, 3 Oct 2026 04:54:13 +0800
+Subject: [PATCH 2/4] HCI: Add an opt-in bounded BCM4329 patch-download quirk
+
+MiOne CM13 logs show the same 0x34,0x31 bytes during BCM4329 minidriver download that now trigger the Nougat H4 unknown-type assertion. Preserve strict handling for other adapters and other invalid bytes. With the device flag, allow only that ordered two-byte sequence once per UART open; do not alter packet payload parsing.
+
+Change-Id: Ic9ceefdabc88355031edfd42e593c042a7896f5b
+---
+ hci/src/hci_hal_h4.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/hci/src/hci_hal_h4.c b/hci/src/hci_hal_h4.c
+index e30732a10132f8cffd2848c4b1de1a78c8452b91..ae8618e1f01906804887f21b07818f819f232c84 100644
+--- a/hci/src/hci_hal_h4.c
++++ b/hci/src/hci_hal_h4.c
+@@ -57,6 +57,9 @@ static serial_data_type_t current_data_type;
+ static bool stream_has_interpretation;
+ static bool stream_corruption_detected;
+ static uint8_t stream_corruption_bytes_to_ignore;
++#if defined(HCI_BCM4329_PATCH_DOWNLOAD_QUIRK) && HCI_BCM4329_PATCH_DOWNLOAD_QUIRK == TRUE
++static uint8_t bcm4329_patch_bytes_dropped;
++#endif
+ 
+ #if (defined(REMOVE_EAGER_THREADS) && (REMOVE_EAGER_THREADS == TRUE))
+ static void event_uart_has_bytes(void *context);
+@@ -79,6 +82,9 @@ static bool hal_init(const hci_hal_callbacks_t *upper_callbacks, thread_t *upper
+ 
+ static bool hal_open() {
+   LOG_INFO(LOG_TAG, "%s", __func__);
++#if defined(HCI_BCM4329_PATCH_DOWNLOAD_QUIRK) && HCI_BCM4329_PATCH_DOWNLOAD_QUIRK == TRUE
++  bcm4329_patch_bytes_dropped = 0;
++#endif
+   // TODO(zachoverflow): close if already open / or don't reopen (maybe at the hci layer level)
+ 
+   int fd_array[CH_MAX];
+@@ -313,6 +319,16 @@ static void event_uart_has_bytes(eager_reader_t *reader, UNUSED_ATTR void *conte
+       return;
+ 
+     if (type_byte < DATA_TYPE_ACL || type_byte > DATA_TYPE_EVENT) {
++#if defined(HCI_BCM4329_PATCH_DOWNLOAD_QUIRK) && HCI_BCM4329_PATCH_DOWNLOAD_QUIRK == TRUE
++      // The MiOne controller emits these two bytes during patch download.
++      // Allow this observed sequence once per UART open; retain other asserts.
++      if (bcm4329_patch_bytes_dropped < 2 &&
++          type_byte == (bcm4329_patch_bytes_dropped == 0 ? 0x34 : 0x31)) {
++        ++bcm4329_patch_bytes_dropped;
++        LOG_WARN(LOG_TAG, "%s dropping BCM4329 patch byte 0x%x", __func__, type_byte);
++        return;
++      }
++#endif
+       LOG_ERROR(LOG_TAG, "%s Unknown HCI message type 0x%x (min=0x%x max=0x%x). Aborting...",
+                 __func__, type_byte, DATA_TYPE_ACL, DATA_TYPE_EVENT);
+       LOG_EVENT_INT(BT_HCI_UNKNOWN_MESSAGE_TYPE_NUM, type_byte);

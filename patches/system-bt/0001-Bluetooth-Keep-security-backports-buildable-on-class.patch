@@ -1,0 +1,127 @@
+From 38fd97b9dee76ecd99d060dac2332d11592d2969 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sat, 3 Oct 2026 03:50:23 +0800
+Subject: [PATCH 1/4] Bluetooth: Keep security backports buildable on
+ classic-only adapters
+
+Guard sample LTK cleanup and IRK reset behind BLE, and avoid querying a BLE connection when BLE support is absent. Include BTA public types before its private declarations and expose the bonded-device predicate to classic pairing. Existing classic bond-replacement and encryption-key-size checks remain enabled, while BLE security checks stay unchanged for BLE-enabled builds. This preserves BLE/GATT/SMP=FALSE on BCM4329 rather than advertising unsupported features.
+
+Change-Id: Ib297c747fdc71c052f63530f6fd1e43e4aafc255
+---
+ bta/dm/bta_dm_act.c     | 2 ++
+ btif/src/btif_storage.c | 2 ++
+ stack/btm/btm_int.h     | 2 +-
+ stack/btm/btm_sec.c     | 4 +++-
+ stack/btu/btu_hcif.c    | 8 +++++---
+ 5 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/bta/dm/bta_dm_act.c b/bta/dm/bta_dm_act.c
+index 74dc747043e8b01d19144f7993886f0397d35664..49b49f4042e5a10bc37ba8ae7d3d7340cdf1abbf 100644
+--- a/bta/dm/bta_dm_act.c
++++ b/bta/dm/bta_dm_act.c
+@@ -868,11 +868,13 @@ void bta_dm_remove_device(tBTA_DM_MSG *p_data)
+     if (continue_delete_other_dev && (bdcmp(other_address, dummy_bda) != 0))
+         bta_dm_process_remove_device(other_address);
+ 
++#if BLE_INCLUDED == TRUE
+     /* Check the length of the paired devices, and if 0 then reset IRK */
+     if (btif_storage_get_num_bonded_devices() < 1) {
+         LOG_INFO(LOG_TAG, "Last paired device removed, resetting IRK");
+         btm_ble_reset_id();
+     }
++#endif
+ }
+ 
+ /*******************************************************************************
+diff --git a/btif/src/btif_storage.c b/btif/src/btif_storage.c
+index 978178338769b4213466af2a0956b70ed16e333a..ee40b38181cf98271165f7c5aba97a535d2dc744 100644
+--- a/btif/src/btif_storage.c
++++ b/btif/src/btif_storage.c
+@@ -850,6 +850,7 @@ bt_status_t btif_storage_remove_bonded_device(bt_bdaddr_t *remote_bd_addr)
+  * firmware.
+  */
+ static void remove_devices_with_sample_ltk() {
++#if (defined(BLE_INCLUDED) && (BLE_INCLUDED == TRUE))
+     list_t *bad_ltk = list_new(osi_free);
+ 
+     for (const btif_config_section_iter_t *iter = btif_config_section_begin(); iter != btif_config_section_end(); iter = btif_config_section_next(iter)) {
+@@ -881,6 +882,7 @@ static void remove_devices_with_sample_ltk() {
+     }
+ 
+     list_free(bad_ltk);
++#endif
+ }
+ 
+ /*******************************************************************************
+diff --git a/stack/btm/btm_int.h b/stack/btm/btm_int.h
+index ebf96758e40d393c0eabd51bd8fc90fadebdaa48..a35d5e3bce8c7911563c993c89073ab3bc44d2d8 100644
+--- a/stack/btm/btm_int.h
++++ b/stack/btm/btm_int.h
+@@ -1126,10 +1126,10 @@ extern void  btm_sec_pin_code_request (UINT8 *p_bda);
+ extern void  btm_sec_update_clock_offset (UINT16 handle, UINT16 clock_offset);
+ extern void  btm_sec_dev_rec_cback_event (tBTM_SEC_DEV_REC *p_dev_rec, UINT8 res, BOOLEAN is_le_trasnport);
+ extern void btm_sec_set_peer_sec_caps (tACL_CONN *p_acl_cb, tBTM_SEC_DEV_REC *p_dev_rec);
++extern BOOLEAN btm_sec_is_a_bonded_dev (BD_ADDR bda);
+ 
+ #if BLE_INCLUDED == TRUE
+ extern void  btm_sec_clear_ble_keys (tBTM_SEC_DEV_REC  *p_dev_rec);
+-extern BOOLEAN btm_sec_is_a_bonded_dev (BD_ADDR bda);
+ extern void btm_consolidate_dev(tBTM_SEC_DEV_REC *p_target_rec);
+ extern BOOLEAN btm_sec_is_le_capable_dev (BD_ADDR bda);
+ extern BOOLEAN btm_ble_init_pseudo_addr (tBTM_SEC_DEV_REC *p_dev_rec, BD_ADDR new_pseudo_addr);
+diff --git a/stack/btm/btm_sec.c b/stack/btm/btm_sec.c
+index 175fefeae62afaaf35422b1f18f0309d186e3df2..a4a3df6262211519ddf3159ceb31c59410e8eb33 100644
+--- a/stack/btm/btm_sec.c
++++ b/stack/btm/btm_sec.c
+@@ -49,6 +49,7 @@
+ #endif
+ 
+ #include "bta/sys/bta_sys.h"
++#include "bta/include/bta_api.h"
+ #include "bta/dm/bta_dm_int.h"
+ 
+ #define BTM_SEC_MAX_COLLISION_DELAY     (5000)
+@@ -4916,6 +4917,7 @@ void btm_sec_disconnected (UINT16 handle, UINT8 reason)
+      * one. Treat such devices as insecure, and remove such bonds on
+      * disconnection.
+      */
++#if BLE_INCLUDED == TRUE && SMP_INCLUDED == TRUE
+     if (is_sample_ltk(p_dev_rec->ble.keys.pltk)) {
+       android_errorWriteLog(0x534e4554, "128437297");
+       BTM_TRACE_ERROR("%s: removing bond to device that used sample LTK", __func__);
+@@ -4925,6 +4927,7 @@ void btm_sec_disconnected (UINT16 handle, UINT8 reason)
+       bta_dm_remove_device(&p_data);
+       return;
+     }
++#endif
+ 
+ #if BLE_INCLUDED == TRUE && SMP_INCLUDED == TRUE
+     if (p_dev_rec->sec_state == BTM_SEC_STATE_DISCONNECTING_BOTH)
+@@ -6478,4 +6481,3 @@ static BOOLEAN btm_sec_is_master(tBTM_SEC_DEV_REC *p_dev_rec)
+     tACL_CONN *p= btm_bda_to_acl(p_dev_rec->bd_addr, BT_TRANSPORT_BR_EDR);
+     return (p && (p->link_role == BTM_ROLE_MASTER));
+ }
+-
+diff --git a/stack/btu/btu_hcif.c b/stack/btu/btu_hcif.c
+index eacf145bf34af0c077e04ab0d827f34abe88dd22..1db8190fc9c565a13a4425996e234503149b1030 100644
+--- a/stack/btu/btu_hcif.c
++++ b/stack/btu/btu_hcif.c
+@@ -693,8 +693,11 @@ static void btu_hcif_encryption_change_evt (UINT8 *p)
+     STREAM_TO_UINT16 (handle, p);
+     STREAM_TO_UINT8  (encr_enable, p);
+ 
+-    if (status != HCI_SUCCESS || encr_enable == 0 ||
+-        BTM_IsBleConnection(handle)) {
++    if (status != HCI_SUCCESS || encr_enable == 0
++#if BLE_INCLUDED == TRUE
++        || BTM_IsBleConnection(handle)
++#endif
++       ) {
+         btm_acl_encrypt_change (handle, status, encr_enable);
+         btm_sec_encrypt_change (handle, status, encr_enable);
+     } else {
+@@ -1829,4 +1832,3 @@ static void btu_ble_rc_param_req_evt(UINT8 *p)
+ #endif /* BLE_LLT_INCLUDED */
+ 
+ #endif /* BLE_INCLUDED */
+-
