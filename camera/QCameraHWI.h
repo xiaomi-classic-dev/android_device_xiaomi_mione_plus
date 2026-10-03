@@ -26,7 +26,6 @@
 //#include <binder/MemoryHeapPmem.h>
 #include <utils/threads.h>
 #include <cutils/properties.h>
-#include <camera/Camera.h>
 #include "QCameraParameters.h"
 #include <system/window.h>
 #include <system/camera.h>
