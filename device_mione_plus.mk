@@ -76,7 +76,8 @@ PRODUCT_PACKAGES += \
 
 # Qcom
 PRODUCT_PACKAGES += \
-    libstlport
+    libstlport \
+    libstdc++
 
 # OMX
 PRODUCT_PACKAGES += \
