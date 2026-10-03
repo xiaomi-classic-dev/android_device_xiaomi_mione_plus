@@ -23,6 +23,7 @@ LOCAL_STATIC_LIBRARIES:= \
     libloc_api-rpc 
 
 LOCAL_SHARED_LIBRARIES := \
+    liblog \
     librpc \
     libutils \
     libcutils
