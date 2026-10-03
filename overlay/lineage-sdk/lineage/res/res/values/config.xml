@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home, Back, Menu, Camera and Volume rocker. -->
+    <integer name="config_deviceHardwareKeys">103</integer>
+
+    <!-- Dedicated camera and volume keys have WAKE_DROPPED key mappings. -->
+    <integer name="config_deviceHardwareWakeKeys">96</integer>
+
+    <!-- Shared RGB notification/battery light with timed pulsing. -->
+    <integer name="config_deviceLightCapabilities">75</integer>
+</resources>
