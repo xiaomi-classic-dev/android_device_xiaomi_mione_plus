@@ -55,7 +55,6 @@ PRODUCT_PACKAGES += \
     audio.usb.default \
     audio.primary.msm8660 \
     libaudioutils \
-    libdashplayer \
     libaudio-resampler
 
 # GPS
@@ -91,11 +90,7 @@ PRODUCT_PACKAGES += \
     libOmxAmrEnc \
     libstagefrighthw \
     libOmxQcelp13Enc \
-    libOmxEvrcEnc \
-    qcmediaplayer
-
-PRODUCT_BOOT_JARS += \
-    qcmediaplayer
+    libOmxEvrcEnc
 
 # HDMI
 PRODUCT_PACKAGES += \
