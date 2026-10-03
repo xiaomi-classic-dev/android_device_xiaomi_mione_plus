@@ -260,8 +260,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Start USB/root ADB in userdebug without switching to an eng build.
 ifeq ($(TARGET_BUILD_VARIANT),userdebug)
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
-    persist.sys.usb.config=mass_storage,adb \
-    cm.service.adb.root=1
+    persist.sys.usb.config=adb \
+    lineage.service.adb.root=1
 
 # Trust the build host's public key so unattended debugging needs no prompt.
 # adbd reads /adb_keys while retaining normal RSA authentication.
