@@ -1,0 +1,56 @@
+From 5290eb96c4e78cb3c4d60b684f4772181d99b61b Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sat, 3 Oct 2026 11:07:37 +0800
+Subject: [PATCH 1/2] Bluetooth: Validate encryption key-size response length
+ and handle
+
+The legacy controller can answer Unknown HCI Command with only one byte. Capture the requested handle in the callback and validate the exact successful response shape before parsing. Report truncated and mismatched replies as errors rather than reading beyond the received payload. Key-size enforcement remains enabled.
+
+Change-Id: I23b14c3bf0669faeebdb447e5a73283e63459671
+---
+ stack/hcic/hcicmds.cc | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
+index f3277e1fd01753abfa9c8f2fcb0e8e5c8baceac4..70dd5919bcee06eaa347b2ff0dbb188b7385b362 100644
+--- a/stack/hcic/hcicmds.cc
++++ b/stack/hcic/hcicmds.cc
+@@ -1313,8 +1313,17 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+ }
+ 
+ static void read_encryption_key_size_complete(
+-    ReadEncKeySizeCb cb, uint8_t* return_parameters,
++    ReadEncKeySizeCb cb, uint16_t expected_handle, uint8_t* return_parameters,
+     uint16_t return_parameters_length) {
++  // An unknown command may return only its status byte. Never read a handle
++  // or key size from a truncated response, or trust a mismatched handle.
++  if (return_parameters_length != 4) {
++    uint8_t status = HCI_ERR_ILLEGAL_PARAMETER_FMT;
++    if (return_parameters_length == 1 && return_parameters[0] != HCI_SUCCESS)
++      status = return_parameters[0];
++    std::move(cb).Run(status, expected_handle, 0);
++    return;
++  }
+   uint8_t status;
+   uint16_t handle;
+   uint8_t key_size;
+@@ -1322,6 +1331,10 @@ static void read_encryption_key_size_complete(
+   STREAM_TO_UINT16(handle, return_parameters);
+   STREAM_TO_UINT8(key_size, return_parameters);
+ 
++  if (handle != expected_handle) {
++    std::move(cb).Run(HCI_ERR_ILLEGAL_PARAMETER_FMT, expected_handle, 0);
++    return;
++  }
+   std::move(cb).Run(status, handle, key_size);
+ }
+ 
+@@ -1335,7 +1348,7 @@ void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
+ 
+   btu_hcif_send_cmd_with_cb(
+       FROM_HERE, HCI_READ_ENCR_KEY_SIZE, param, len,
+-      base::Bind(&read_encryption_key_size_complete, base::Passed(&cb)));
++      base::Bind(&read_encryption_key_size_complete, base::Passed(&cb), handle));
+ }
+ 
+ void btsnd_hcic_read_failed_contact_counter(uint16_t handle) {

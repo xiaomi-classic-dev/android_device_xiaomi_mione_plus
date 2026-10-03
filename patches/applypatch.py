@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply the recorded CM14.1 platform commits; --check only validates them."""
+"""Apply the recorded LineageOS platform commits; --check only validates them."""
 import argparse
 import hashlib
 import json
@@ -24,7 +24,7 @@ def prepare(top, project):
         raise RuntimeError("Tracked changes present: " + project["path"])
     if subprocess.call(["git", "-C", str(repo), "merge-base", "--is-ancestor",
                         base, "HEAD"]) != 0:
-        raise RuntimeError("Expected CM14.1 baseline missing: " + project["path"])
+        raise RuntimeError("Expected recorded baseline missing: " + project["path"])
     history = git(repo, "log", "--no-merges", "--format=medium", "-p",
                   base + "..HEAD")
     ids = subprocess.check_output(["git", "patch-id", "--stable"], input=history)
@@ -68,7 +68,7 @@ def main():
             if pending:
                 subprocess.check_call(["git", "-C", str(repo), "am",
                                        *map(str, pending)])
-    print("CM14.1 platform patches " + ("validated" if args.check else "ready"))
+    print("LineageOS platform patches " + ("validated" if args.check else "ready"))
 
 
 if __name__ == "__main__":

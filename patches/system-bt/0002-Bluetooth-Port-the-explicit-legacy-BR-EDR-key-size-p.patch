@@ -1,0 +1,134 @@
+From 070c57c2773f85c1710fd7bfda120b8f7afa04c9 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sat, 3 Oct 2026 11:07:37 +0800
+Subject: [PATCH 2/2] Bluetooth: Port the explicit legacy BR/EDR key-size
+ policy to Oreo
+
+Retain the previously approved device opt-in for the exact BCM4329B1 firmware version. Permit startup only for that version and mark an exact one-byte Unknown HCI Command response as unverified. Carry the real requested handle and originating encryption event through independent callbacks. Do not fabricate a key length or accept malformed successful replies, mismatched handles, other errors, or short keys. Builds without the policy remain fail-closed.
+
+Adapted from CM14.1 commit 6b3580e84da1554302a524a0fdf330b9841247ee; Oreo uses typed, per-command C++ callbacks.
+
+Change-Id: I00c299aaccf2c7a7f65992214508678c5adc6f64
+---
+ device/src/controller.cc |  9 ++++++++-
+ stack/btu/btu_hcif.cc    | 17 +++++++++++++++--
+ stack/hcic/hcicmds.cc    | 15 ++++++++++++---
+ stack/include/hcimsgs.h  |  2 +-
+ 4 files changed, 36 insertions(+), 7 deletions(-)
+
+diff --git a/device/src/controller.cc b/device/src/controller.cc
+index 33b9696b6f3fdcdfcf56655224e332ef3c8e5006..fd353154831c0770d7b2a0b417e3a725de6bcd3d 100644
+--- a/device/src/controller.cc
++++ b/device/src/controller.cc
+@@ -264,7 +264,14 @@ static future_t* start_up(void) {
+   }
+ 
+   if (!HCI_READ_ENCR_KEY_SIZE_SUPPORTED(supported_commands)) {
+-    LOG(FATAL) << " Controller must support Read Encryption Key Size command";
++#ifdef BTM_ALLOW_UNVERIFIED_BR_EDR_KEY_SIZE
++    if (BTM_ALLOW_UNVERIFIED_BR_EDR_KEY_SIZE(HCI_ERR_ILLEGAL_COMMAND, &bt_version)) {
++      LOG(WARNING) << "Legacy device policy: encryption key size cannot be verified";
++    } else
++#endif
++    {
++      LOG(FATAL) << " Controller must support Read Encryption Key Size command";
++    }
+   }
+ 
+   readable = true;
+diff --git a/stack/btu/btu_hcif.cc b/stack/btu/btu_hcif.cc
+index 279c9d930db006fed5c2c6256b7699077232a767..27c45db5dce3200c1d05d6763255569d39048aaa 100644
+--- a/stack/btu/btu_hcif.cc
++++ b/stack/btu/btu_hcif.cc
+@@ -710,7 +710,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
+ constexpr uint8_t MIN_KEY_SIZE = 7;
+ 
+ static void read_encryption_key_size_complete_after_encryption_change(
+-    uint8_t status, uint16_t handle, uint8_t key_size) {
++    uint8_t status, uint16_t handle, uint8_t key_size, bool key_size_unverified) {
++  if (key_size_unverified) {
++    HCI_TRACE_WARNING("%s legacy device policy accepts an unverified key size on 0x%02x",
++                      __func__, handle);
++    btm_acl_encrypt_change(handle, HCI_SUCCESS, 1);
++    btm_sec_encrypt_change(handle, HCI_SUCCESS, 1);
++    return;
++  }
+   if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
+     /* If remote device stop the encryption before we call "Read Encryption Key
+      * Size", we might receive Insufficient Security, which means that link is
+@@ -1667,7 +1674,13 @@ static void btu_hcif_enhanced_flush_complete_evt(void) {
+  **********************************************/
+ 
+ static void read_encryption_key_size_complete_after_key_refresh(
+-    uint8_t status, uint16_t handle, uint8_t key_size) {
++    uint8_t status, uint16_t handle, uint8_t key_size, bool key_size_unverified) {
++  if (key_size_unverified) {
++    HCI_TRACE_WARNING("%s legacy device policy accepts an unverified key size on 0x%02x",
++                      __func__, handle);
++    btm_sec_encrypt_change(handle, HCI_SUCCESS, 1);
++    return;
++  }
+   if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
+     /* If remote device stop the encryption before we call "Read Encryption Key
+      * Size", we might receive Insufficient Security, which means that link is
+diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
+index 70dd5919bcee06eaa347b2ff0dbb188b7385b362..ee7dfb11b0a76f02ac0033e60074b294181711ae 100644
+--- a/stack/hcic/hcicmds.cc
++++ b/stack/hcic/hcicmds.cc
+@@ -28,6 +28,7 @@
+ #include "btu.h"
+ #include "hcidefs.h"
+ #include "hcimsgs.h"
++#include "device/include/controller.h"
+ 
+ #include <base/bind.h>
+ #include <stddef.h>
+@@ -1315,13 +1316,21 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+ static void read_encryption_key_size_complete(
+     ReadEncKeySizeCb cb, uint16_t expected_handle, uint8_t* return_parameters,
+     uint16_t return_parameters_length) {
++#ifdef BTM_ALLOW_UNVERIFIED_BR_EDR_KEY_SIZE
++  const bt_version_t* version = controller_get_interface()->get_bt_version();
++  if (return_parameters_length == 1 &&
++      BTM_ALLOW_UNVERIFIED_BR_EDR_KEY_SIZE(return_parameters[0], version)) {
++    std::move(cb).Run(return_parameters[0], expected_handle, 0, true);
++    return;
++  }
++#endif
+   // An unknown command may return only its status byte. Never read a handle
+   // or key size from a truncated response, or trust a mismatched handle.
+   if (return_parameters_length != 4) {
+     uint8_t status = HCI_ERR_ILLEGAL_PARAMETER_FMT;
+     if (return_parameters_length == 1 && return_parameters[0] != HCI_SUCCESS)
+       status = return_parameters[0];
+-    std::move(cb).Run(status, expected_handle, 0);
++    std::move(cb).Run(status, expected_handle, 0, false);
+     return;
+   }
+   uint8_t status;
+@@ -1332,10 +1341,10 @@ static void read_encryption_key_size_complete(
+   STREAM_TO_UINT8(key_size, return_parameters);
+ 
+   if (handle != expected_handle) {
+-    std::move(cb).Run(HCI_ERR_ILLEGAL_PARAMETER_FMT, expected_handle, 0);
++    std::move(cb).Run(HCI_ERR_ILLEGAL_PARAMETER_FMT, expected_handle, 0, false);
+     return;
+   }
+-  std::move(cb).Run(status, handle, key_size);
++  std::move(cb).Run(status, handle, key_size, false);
+ }
+ 
+ void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
+diff --git a/stack/include/hcimsgs.h b/stack/include/hcimsgs.h
+index 3a20851ed671d3816ffbefa9616c7a90b2bad60f..0a4893df52bd5009f079cd1c3171521c4a415713 100644
+--- a/stack/include/hcimsgs.h
++++ b/stack/include/hcimsgs.h
+@@ -612,7 +612,7 @@ extern void btsnd_hcic_write_cur_iac_lap(
+ 
+ extern void btsnd_hcic_get_link_quality(uint16_t handle); /* Get Link Quality */
+ extern void btsnd_hcic_read_rssi(uint16_t handle);        /* Read RSSI */
+-using ReadEncKeySizeCb = base::Callback<void(uint8_t, uint16_t, uint8_t)>;
++using ReadEncKeySizeCb = base::Callback<void(uint8_t, uint16_t, uint8_t, bool)>;
+ extern void btsnd_hcic_read_encryption_key_size(uint16_t handle,
+                                                 ReadEncKeySizeCb cb);
+ extern void btsnd_hcic_read_failed_contact_counter(uint16_t handle);

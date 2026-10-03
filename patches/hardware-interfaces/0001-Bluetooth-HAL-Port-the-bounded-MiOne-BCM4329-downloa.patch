@@ -1,0 +1,80 @@
+From 5129fa3a719f5547091f089a41b4df704e97a919 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sat, 3 Oct 2026 11:08:44 +0800
+Subject: [PATCH] Bluetooth HAL: Port the bounded MiOne BCM4329 download quirk
+ to HIDL
+
+Default to strict H4 parsing. A device property can allow the single ordered 0x34,0x31 sequence observed during BCM4329 minidriver startup, once per UART instance. Leave packet payload parsing unchanged and retain fatal handling for every other unknown type or repeated sequence.
+
+Adapted from CM14.1 system/bt commit 319a6db1c8b3f976dab71aeedc9fc553fd917b7f. Oreo moved the UART transport to hardware/interfaces.
+
+Change-Id: I885495046e596ce97c7b742766ffa549e351da38
+---
+ bluetooth/1.0/default/h4_protocol.cc      | 9 +++++++++
+ bluetooth/1.0/default/h4_protocol.h       | 7 +++++--
+ bluetooth/1.0/default/vendor_interface.cc | 3 ++-
+ 3 files changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/bluetooth/1.0/default/h4_protocol.cc b/bluetooth/1.0/default/h4_protocol.cc
+index 163cc333c45389fd490089707654b69ac1ac0541..0aae28b9c95a6a89e9099a6fb9fec7fa55f9c294 100644
+--- a/bluetooth/1.0/default/h4_protocol.cc
++++ b/bluetooth/1.0/default/h4_protocol.cc
+@@ -85,6 +85,15 @@ void H4Protocol::OnDataReady(int fd) {
+     if (hci_packet_type_ != HCI_PACKET_TYPE_ACL_DATA &&
+         hci_packet_type_ != HCI_PACKET_TYPE_SCO_DATA &&
+         hci_packet_type_ != HCI_PACKET_TYPE_EVENT) {
++      // The MiOne BCM4329 minidriver emits this ordered sequence once during
++      // firmware download. Keep strict packet parsing for every other byte.
++      if (bcm4329_patch_quirk_ && bcm4329_patch_bytes_dropped_ < 2 &&
++          buffer[0] == (bcm4329_patch_bytes_dropped_ == 0 ? 0x34 : 0x31)) {
++        ++bcm4329_patch_bytes_dropped_;
++        hci_packet_type_ = HCI_PACKET_TYPE_UNKNOWN;
++        ALOGW("%s dropping BCM4329 patch byte 0x%02x", __func__, buffer[0]);
++        return;
++      }
+       LOG_ALWAYS_FATAL("%s: Unimplemented packet type %d", __func__,
+                        static_cast<int>(hci_packet_type_));
+     }
+diff --git a/bluetooth/1.0/default/h4_protocol.h b/bluetooth/1.0/default/h4_protocol.h
+index 0d0a1caf196c6327fff1216176d855e96fd1fc87..81550f1bb1834058a39de205491e9869b0ac73a0 100644
+--- a/bluetooth/1.0/default/h4_protocol.h
++++ b/bluetooth/1.0/default/h4_protocol.h
+@@ -31,12 +31,13 @@ namespace hci {
+ class H4Protocol : public HciProtocol {
+  public:
+   H4Protocol(int fd, PacketReadCallback event_cb, PacketReadCallback acl_cb,
+-             PacketReadCallback sco_cb)
++             PacketReadCallback sco_cb, bool bcm4329_patch_quirk = false)
+       : uart_fd_(fd),
+         event_cb_(event_cb),
+         acl_cb_(acl_cb),
+         sco_cb_(sco_cb),
+-        hci_packetizer_([this]() { OnPacketReady(); }) {}
++        hci_packetizer_([this]() { OnPacketReady(); }),
++        bcm4329_patch_quirk_(bcm4329_patch_quirk) {}
+ 
+   size_t Send(uint8_t type, const uint8_t* data, size_t length);
+ 
+@@ -53,6 +54,8 @@ class H4Protocol : public HciProtocol {
+ 
+   HciPacketType hci_packet_type_{HCI_PACKET_TYPE_UNKNOWN};
+   hci::HciPacketizer hci_packetizer_;
++  const bool bcm4329_patch_quirk_;
++  uint8_t bcm4329_patch_bytes_dropped_{0};
+ };
+ 
+ }  // namespace hci
+diff --git a/bluetooth/1.0/default/vendor_interface.cc b/bluetooth/1.0/default/vendor_interface.cc
+index 6ce2f11fb4bb90582200b68f11f8a7bc3962f6b1..c248d57180e16c608f810af6941e38d784b4e5c9 100644
+--- a/bluetooth/1.0/default/vendor_interface.cc
++++ b/bluetooth/1.0/default/vendor_interface.cc
+@@ -247,7 +247,8 @@ bool VendorInterface::Open(InitializeCompleteCallback initialize_complete_cb,
+ 
+   if (fd_count == 1) {
+     hci::H4Protocol* h4_hci =
+-        new hci::H4Protocol(fd_list[0], intercept_events, acl_cb, sco_cb);
++        new hci::H4Protocol(fd_list[0], intercept_events, acl_cb, sco_cb,
++                            property_get_bool("ro.bluetooth.bcm4329_patch_quirk", false));
+     fd_watcher_.WatchFdForNonBlockingReads(
+         fd_list[0], [h4_hci](int fd) { h4_hci->OnDataReady(fd); });
+     hci_ = h4_hci;

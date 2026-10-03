@@ -1,4 +1,4 @@
-From 5f55a2df56b5a4c4494d1f9f05e844b6f74256c8 Mon Sep 17 00:00:00 2001
+From cc2632fd53481aa398365dacfb21428784a8dc6c Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 03:06:02 +0800
 Subject: [PATCH] Bluetooth: Finish enabling classic-only adapters
@@ -12,10 +12,10 @@ Change-Id: If23dd7ecd9d1611678dc75f828154edcd56971e1
  1 file changed, 3 insertions(+)
 
 diff --git a/services/core/java/com/android/server/BluetoothManagerService.java b/services/core/java/com/android/server/BluetoothManagerService.java
-index c264039e8bc9c5f2fdf8771f6b184d9384f8ee82..50a9653cac5bd03263f5b0e99011942b8218d19c 100644
+index acfa5b502f67e6e9460397b74c1f3956ccf22d5d..8f062fcaedd1c910e7adb3f42ca7b583faa6e0b9 100644
 --- a/services/core/java/com/android/server/BluetoothManagerService.java
 +++ b/services/core/java/com/android/server/BluetoothManagerService.java
-@@ -1838,6 +1838,9 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
+@@ -1944,6 +1944,9 @@ class BluetoothManagerService extends IBluetoothManager.Stub {
                                                      PackageManager.FEATURE_BLUETOOTH_LE)) {
                          Intent i = new Intent(IBluetoothGatt.class.getName());
                          doBind(i, mConnection, Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT, UserHandle.CURRENT);
