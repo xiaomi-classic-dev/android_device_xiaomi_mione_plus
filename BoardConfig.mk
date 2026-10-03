@@ -136,6 +136,8 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
 TARGET_KERNEL_ARCH := arm
 TARGET_KERNEL_CONFIG := mione-user_defconfig
+# Keep the module path expected by the MiOne Wi-Fi loader.
+NEED_KERNEL_MODULE_SYSTEM := true
 
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/xiaomi/mione_plus/bluetooth
