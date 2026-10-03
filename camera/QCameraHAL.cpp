@@ -85,12 +85,12 @@ extern "C" int HAL_isIn3DMode()
     return HAL_currentCameraMode == CAMERA_MODE_3D;
 }
 
-extern "C" void HAL_getCameraInfo(int cameraId, struct CameraInfo* cameraInfo)
+extern "C" void HAL_getCameraInfo(int cameraId, struct camera_info* cameraInfo)
 {
     mm_camera_t *mm_camer_obj = 0;
     ALOGV("%s: E", __func__);
 
-    if (!HAL_numOfCameras || HAL_numOfCameras < cameraId || !cameraInfo)
+    if (!HAL_numOfCameras || cameraId < 0 || HAL_numOfCameras <= cameraId || !cameraInfo)
         return;
     else
         mm_camer_obj = HAL_camerahandle[cameraId];
@@ -123,7 +123,7 @@ extern "C" void HAL_getCameraInfo(int cameraId, struct CameraInfo* cameraInfo)
 extern "C" void * HAL_openCameraHardware(int cameraId, int mode)
 {
     ALOGV("%s: E", __func__);
-    if (!HAL_numOfCameras || HAL_numOfCameras < cameraId ||cameraId < 0) {
+    if (!HAL_numOfCameras || cameraId < 0 || HAL_numOfCameras <= cameraId ||cameraId < 0) {
       return NULL;
     }
     return QCameraHAL_openCameraHardware(cameraId, mode);

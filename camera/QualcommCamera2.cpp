@@ -162,8 +162,8 @@ extern "C" int get_camera_info(int camera_id, struct camera_info *info)
     int rc = -1;
     ALOGE("Q%s: E", __func__);
     if(info) {
-        struct CameraInfo camInfo;
-        memset(&camInfo, -1, sizeof (struct CameraInfo));
+        struct camera_info camInfo;
+        memset(&camInfo, -1, sizeof (struct camera_info));
         android::HAL_getCameraInfo(camera_id, &camInfo);
         if (camInfo.facing >= 0) {
             rc = 0;

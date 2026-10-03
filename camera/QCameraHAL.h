@@ -29,7 +29,7 @@ namespace android {
 extern "C" void *
        QCameraHAL_openCameraHardware(int  cameraId, int mode);
 extern "C" int HAL_getNumberOfCameras();
-extern "C" void HAL_getCameraInfo(int cameraId, struct CameraInfo* cameraInfo);
+extern "C" void HAL_getCameraInfo(int cameraId, struct camera_info* cameraInfo);
 
 }; // namespace android
 
