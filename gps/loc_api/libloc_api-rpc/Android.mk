@@ -1,8 +1,6 @@
 ifneq ($(BUILD_TINY_ANDROID),true)
 
 ifneq ($(BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION),50001)
-$(shell mkdir -p $(OUT)/obj/STATIC_LIBRARIES/libcommondefs-rpc_intermediates/)
-$(shell touch $(OUT)/obj/STATIC_LIBRARIES/libcommondefs-rpc_intermediates/export_includes)
 
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
@@ -34,7 +32,6 @@ LOCAL_CFLAGS+=-DDEBUG
 LOCAL_CFLAGS+=-DADD_XDR_FLOAT -DADD_XDR_BOOL
 
 LOCAL_SHARED_LIBRARIES:= librpc
-LOCAL_STATIC_LIBRARIES:= libcommondefs-rpc
 
 
 
@@ -53,7 +50,6 @@ LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH) \
 	$(LOCAL_PATH)/inc \
 	$(LOCAL_PATH)/$(RPC_INC) \
-	$(TARGET_OUT_HEADERS)/libcommondefs-rpc \
 	$(TARGET_OUT_HEADERS)/librpc
 
 LOCAL_MODULE:= libloc_api-rpc
