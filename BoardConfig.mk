@@ -96,6 +96,9 @@ BOARD_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 CAMERA_USES_SURFACEFLINGER_CLIENT_STUB := true
 BOARD_GLOBAL_CFLAGS += -DDISABLE_HW_ID_MATCH_CHECK
 
+# Oreo linker shims are selected at build time.
+TARGET_LD_SHIM_LIBS := /system/lib/hw/sensors.vendor.msm8660.so|libmione_sensors_shim.so
+
 # Misc
 BOARD_USES_LEGACY_MMAP := true
 

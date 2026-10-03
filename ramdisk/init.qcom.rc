@@ -29,7 +29,6 @@ import init.qcom.usb.rc
 import init.target.rc
 
 on init
-    export LD_SHIM_LIBS "/system/lib/hw/sensors.msm8660.so|libmione_sensors_shim.so"
     # Set permissions for persist partition
     mkdir /persist 0771 system system
 
