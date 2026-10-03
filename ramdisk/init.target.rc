@@ -87,13 +87,13 @@ on charger
     setprop sys.usb.config adb
 
 
-service chargeonlymode /sbin/chargeonlymode
+service chargeonlymode /charger
     class charger
 
 service mione-bdaddr /system/bin/mione_bdaddr
     class core
     user bluetooth
-    group bluetooth system qcom_oncrpc
+    group bluetooth system 3006
     disabled
     oneshot
 

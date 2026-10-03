@@ -205,8 +205,7 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/ramdisk/init.qcom.usb.sh:root/init.qcom.usb.sh \
     device/xiaomi/mione_plus/ramdisk/init.target.rc:root/init.target.rc \
     device/xiaomi/mione_plus/ramdisk/ueventd.qcom.rc:root/ueventd.qcom.rc \
-    device/xiaomi/mione_plus/ramdisk/fstab.qcom:root/fstab.qcom \
-    device/xiaomi/mione_plus/ramdisk/sbin/chargeonlymode:root/sbin/chargeonlymode
+    device/xiaomi/mione_plus/ramdisk/fstab.qcom:root/fstab.qcom
 
 # WiFi
 PRODUCT_PACKAGES += \
