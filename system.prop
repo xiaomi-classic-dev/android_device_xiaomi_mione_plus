@@ -107,3 +107,6 @@ persist.media.treble_omx=false
 debug.hwui.use_buffer_age=false
 
 camera.disable_treble=true
+
+# BCM4329 emits an ordered 0x34,0x31 sequence during minidriver download.
+ro.bluetooth.bcm4329_patch_quirk=true
