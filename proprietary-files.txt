@@ -111,7 +111,6 @@ lib/libmmstillomx.so
 # gps
 bin/gpsone_daemon
 lib/libgpsone_bit_api.so
-lib/libgps.utils.so
 
 # thermald
 bin/thermald
