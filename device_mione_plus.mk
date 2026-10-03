@@ -296,3 +296,6 @@ PRODUCT_PACKAGES += \
     android.hardware.wifi.supplicant@1.0 \
     libbt-vendor \
     wificond
+
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/seccomp_policy/mediacodec.policy:system/vendor/etc/seccomp_policy/mediacodec.policy
