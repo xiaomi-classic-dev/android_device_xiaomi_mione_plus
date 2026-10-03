@@ -1,2 +1,3 @@
 /system/bin/mione_bdaddr                       u:object_r:mione_bdaddr_exec:s0
 /dev/oncrpc/(00000000:0|3000000e:00090000)       u:object_r:mione_nv_device:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.gnss@1\.0-service\.mione  u:object_r:hal_gnss_default_exec:s0
