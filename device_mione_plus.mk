@@ -290,6 +290,7 @@ PRODUCT_PACKAGES += \
     android.hardware.light@2.0-impl \
     android.hardware.memtrack@1.0-impl \
     android.hardware.power@1.0-impl \
+    sensors.msm8660 \
     android.hardware.sensors@1.0-impl \
     android.hardware.wifi@1.0-impl \
     android.hardware.wifi@1.0-service \

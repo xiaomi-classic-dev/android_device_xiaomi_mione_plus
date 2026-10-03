@@ -45,7 +45,11 @@ for FILE in `egrep -v '(^#|^$)' proprietary-files.txt`; do
   if [ $COUNT = "0" ]; then
     LINEEND=""
   fi
-  echo "  $OUTDIR/proprietary/$FILE:system/$FILE$LINEEND" >> $MAKEFILE
+  DEST="$FILE"
+  if [ "$FILE" = "lib/hw/sensors.msm8660.so" ]; then
+    DEST="lib/hw/sensors.vendor.msm8660.so"
+  fi
+  echo "  $OUTDIR/proprietary/$FILE:system/$DEST$LINEEND" >> $MAKEFILE
 done
 
 (cat << EOF) > ../../../$OUTDIR/$DEVICE-vendor.mk
