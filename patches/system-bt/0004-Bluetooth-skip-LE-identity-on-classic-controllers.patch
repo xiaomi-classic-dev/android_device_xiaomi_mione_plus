@@ -1,0 +1,31 @@
+From 8d21fa79c5fd1ab756f37e00ac5a21d64001fc38 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Wed, 7 Oct 2026 21:51:19 +0800
+Subject: [PATCH] Bluetooth: skip LE identity generation on classic controllers
+
+BTM_SecRegister regenerates missing LE identity keys with HCI LE Rand even when the controller reports no LE support. After a clean data format the BCM4329 returns an unsupported-command status and the LE Rand completion CHECK aborts the Bluetooth process repeatedly. Gate LE identity generation on the controller capability; preserve classic link-key callbacks and LE-controller key generation without replacing random data or weakening command validation.
+
+Change-Id: I74e8869e8a4f904415bf49f79737edce22e3eac3
+---
+ stack/btm/btm_sec.cc | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/stack/btm/btm_sec.cc b/stack/btm/btm_sec.cc
+index 3f612cf0..10d603c0 100644
+--- a/stack/btm/btm_sec.cc
++++ b/stack/btm/btm_sec.cc
+@@ -256,8 +256,9 @@ bool BTM_SecRegister(tBTM_APPL_INFO* p_cb_info) {
+   if (p_cb_info->p_le_callback) {
+     BTM_TRACE_EVENT("%s SMP_Register( btm_proc_smp_cback )", __func__);
+     SMP_Register(btm_proc_smp_cback);
+-    /* if no IR is loaded, need to regenerate all the keys */
+-    if (memcmp(btm_cb.devcb.id_keys.ir, &temp_value, sizeof(BT_OCTET16)) == 0) {
++    /* LE identity generation sends LE Rand, which classic controllers lack. */
++    if (controller_get_interface()->supports_ble() &&
++        memcmp(btm_cb.devcb.id_keys.ir, &temp_value, sizeof(BT_OCTET16)) == 0) {
+       btm_ble_reset_id();
+     }
+   } else {
+-- 
+2.53.0
+
