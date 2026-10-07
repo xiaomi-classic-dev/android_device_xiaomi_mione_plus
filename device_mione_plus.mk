@@ -63,7 +63,7 @@ PRODUCT_PACKAGES += \
     gralloc.msm8660 \
     hwcomposer.msm8660 \
     memtrack.msm8660 \
-    lights.msm8660 \
+    android.hardware.light@2.0-service.mione \
     libgenlock \
     libmemalloc \
     liboverlay \
@@ -298,7 +298,6 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.keymaster@3.0-impl \
     android.hardware.keymaster@3.0-service \
-    android.hardware.light@2.0-impl \
     android.hardware.memtrack@1.0-impl \
     android.hardware.power@1.0-impl \
     sensors.msm8660 \

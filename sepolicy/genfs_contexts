@@ -1,0 +1,2 @@
+genfscon sysfs /devices/i2c-0/0-0036/leds/backlight u:object_r:sysfs_leds:s0
+genfscon sysfs /devices/platform/msm_ssbi.0/pm8058-core/pm8058-led/leds u:object_r:sysfs_leds:s0

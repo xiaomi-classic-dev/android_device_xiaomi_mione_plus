@@ -17,7 +17,7 @@
 
 #define LOG_TAG "mione_lights"
 #include <cutils/log.h>
-#include <hardware/lights.h>
+#include "Light.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -32,10 +32,12 @@
 #define LED_PATH(name, attr) "/sys/class/leds/" name "/" attr
 #define BACKLIGHT_MAX 127
 
+namespace android { namespace hardware { namespace light { namespace V2_0 { namespace implementation {
+
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
-static struct light_state_t g_battery;
-static struct light_state_t g_notification;
-static struct light_state_t g_rgb;
+static LightState g_battery;
+static LightState g_notification;
+static LightState g_rgb;
 static int g_rgb_valid;
 
 static const struct {
@@ -75,25 +77,23 @@ static int write_int(const char *path, int value)
     return error;
 }
 
-static int is_lit(const struct light_state_t *state)
+static int is_lit(const LightState *state)
 {
     return state->color & 0x00ffffff;
 }
 
-static int rgb_to_brightness(const struct light_state_t *state)
+static int rgb_to_brightness(const LightState *state)
 {
     unsigned int color = state->color;
     return (77 * ((color >> 16) & 0xff) +
             150 * ((color >> 8) & 0xff) + 29 * (color & 0xff)) >> 8;
 }
 
-static int set_light_backlight(struct light_device_t *dev,
-                               const struct light_state_t *state)
+static int set_light_backlight(const LightState *state)
 {
     int brightness = rgb_to_brightness(state);
     int level = (brightness * BACKLIGHT_MAX + 127) / 255;
     int error;
-    (void)dev;
 
     /* LM3530 exposes 7-bit brightness; keep a nonzero request lit. */
     if (brightness && !level)
@@ -104,11 +104,9 @@ static int set_light_backlight(struct light_device_t *dev,
     return error;
 }
 
-static int set_light_buttons(struct light_device_t *dev,
-                             const struct light_state_t *state)
+static int set_light_buttons(const LightState *state)
 {
     int error;
-    (void)dev;
     pthread_mutex_lock(&g_lock);
     error = write_int(LED_PATH("button-backlight", "brightness"),
                       is_lit(state) ? 255 : 0);
@@ -127,17 +125,17 @@ static int stop_blink_locked(void)
     return error;
 }
 
-static int set_rgb_locked(const struct light_state_t *state)
+static int set_rgb_locked(const LightState *state)
 {
     int i, error, channels[3], freq = 0, pwm = 0;
     unsigned int alpha = state->color >> 24;
-    int timed = state->flashMode == LIGHT_FLASH_TIMED &&
-                state->flashOnMS > 0 && state->flashOffMS > 0;
+    int timed = state->flashMode == Flash::TIMED &&
+                state->flashOnMs > 0 && state->flashOffMs > 0;
 
     if (g_rgb_valid && state->color == g_rgb.color &&
         state->flashMode == g_rgb.flashMode &&
-        state->flashOnMS == g_rgb.flashOnMS &&
-        state->flashOffMS == g_rgb.flashOffMS)
+        state->flashOnMs == g_rgb.flashOnMs &&
+        state->flashOffMs == g_rgb.flashOffMs)
         return 0;
     g_rgb_valid = 0;
 
@@ -154,13 +152,13 @@ static int set_rgb_locked(const struct light_state_t *state)
     }
 
     if (timed) {
-        int64_t total = (int64_t)state->flashOnMS + state->flashOffMS;
+        int64_t total = (int64_t)state->flashOnMs + state->flashOffMs;
         int64_t period = total / 50;
         /* The kernel computes pwm * freq * 50 in a 32-bit value. */
         if (period > INT_MAX / (255 * 50))
             period = INT_MAX / (255 * 50);
         freq = period ? (int)period : 1;
-        pwm = (int)((int64_t)state->flashOnMS * 255 / total);
+        pwm = (int)((int64_t)state->flashOnMs * 255 / total);
         if (pwm < 1)
             pwm = 1;
         if (pwm > 254)
@@ -199,8 +197,8 @@ static int set_rgb_locked(const struct light_state_t *state)
     return 0;
 }
 
-static int set_shared_light(struct light_state_t *saved,
-                            const struct light_state_t *state)
+static int set_shared_light(LightState *saved,
+                            const LightState *state)
 {
     int error;
     pthread_mutex_lock(&g_lock);
@@ -211,68 +209,38 @@ static int set_shared_light(struct light_state_t *saved,
     return error;
 }
 
-static int set_light_battery(struct light_device_t *dev,
-                             const struct light_state_t *state)
-{
-    (void)dev;
-    return set_shared_light(&g_battery, state);
+Return<Status> Light::setLight(Type type, const LightState& state) {
+    int error;
+    switch (type) {
+    case Type::BACKLIGHT:
+        if (state.brightnessMode == Brightness::LOW_PERSISTENCE)
+            return Status::BRIGHTNESS_NOT_SUPPORTED;
+        error = set_light_backlight(&state);
+        break;
+    case Type::BUTTONS:
+        error = set_light_buttons(&state);
+        break;
+    case Type::BATTERY:
+        error = set_shared_light(&g_battery, &state);
+        break;
+    case Type::NOTIFICATIONS:
+        error = set_shared_light(&g_notification, &state);
+        break;
+    default:
+        return Status::LIGHT_NOT_SUPPORTED;
+    }
+    return error == 0 ? Status::SUCCESS : Status::UNKNOWN;
 }
 
-static int set_light_notifications(struct light_device_t *dev,
-                                   const struct light_state_t *state)
-{
-    (void)dev;
-    return set_shared_light(&g_notification, state);
+Return<void> Light::getSupportedTypes(getSupportedTypes_cb cb) {
+    hidl_vec<Type> types;
+    types.resize(4);
+    types[0] = Type::BACKLIGHT;
+    types[1] = Type::BUTTONS;
+    types[2] = Type::BATTERY;
+    types[3] = Type::NOTIFICATIONS;
+    cb(types);
+    return Void();
 }
 
-static int close_lights(struct hw_device_t *dev)
-{
-    free(dev);
-    return 0;
-}
-
-static int open_lights(const struct hw_module_t *module, const char *name,
-                       struct hw_device_t **device)
-{
-    struct light_device_t *dev;
-    int (*set_light)(struct light_device_t *, const struct light_state_t *);
-
-    if (!name || !device)
-        return -EINVAL;
-    *device = NULL;
-    if (!strcmp(name, LIGHT_ID_BACKLIGHT))
-        set_light = set_light_backlight;
-    else if (!strcmp(name, LIGHT_ID_BUTTONS))
-        set_light = set_light_buttons;
-    else if (!strcmp(name, LIGHT_ID_BATTERY))
-        set_light = set_light_battery;
-    else if (!strcmp(name, LIGHT_ID_NOTIFICATIONS))
-        set_light = set_light_notifications;
-    else
-        return -EINVAL;
-
-    dev = calloc(1, sizeof(*dev));
-    if (!dev)
-        return -ENOMEM;
-    dev->common.tag = HARDWARE_DEVICE_TAG;
-    dev->common.version = 0;
-    dev->common.module = (struct hw_module_t *)module;
-    dev->common.close = close_lights;
-    dev->set_light = set_light;
-    *device = &dev->common;
-    return 0;
-}
-
-static struct hw_module_methods_t lights_module_methods = {
-    .open = open_lights,
-};
-
-struct hw_module_t HAL_MODULE_INFO_SYM = {
-    .tag = HARDWARE_MODULE_TAG,
-    .module_api_version = 1,
-    .hal_api_version = HARDWARE_HAL_API_VERSION,
-    .id = LIGHTS_HARDWARE_MODULE_ID,
-    .name = "MiOne LM3530/PM8058 lights",
-    .author = "The Android Open Source Project, Xiaomi Classic Device Project",
-    .methods = &lights_module_methods,
-};
+}}}}}  // android::hardware::light::V2_0::implementation
