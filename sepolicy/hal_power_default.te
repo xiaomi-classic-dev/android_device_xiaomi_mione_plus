@@ -1,0 +1,4 @@
+r_dir_file(hal_power_default, sysfs)
+r_dir_file(hal_power_default, sysfs_devices_system_cpu)
+allow hal_power_default sysfs_devices_system_cpu:file w_file_perms;
+get_prop(hal_power_default, mione_battery_low_prop)

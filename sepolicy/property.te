@@ -1,0 +1,2 @@
+type mione_battery_low_prop, property_type;
+set_prop(healthd, mione_battery_low_prop)

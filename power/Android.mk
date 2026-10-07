@@ -4,14 +4,15 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := power.msm8660
+LOCAL_MODULE := android.hardware.power@1.0-service.mione
 LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_TAGS := optional
-LOCAL_SRC_FILES := power.c
-LOCAL_SHARED_LIBRARIES := liblog libcutils
+LOCAL_INIT_RC := android.hardware.power@1.0-service.mione.rc
+LOCAL_SRC_FILES := power.c Power.cpp service.cpp
+LOCAL_SHARED_LIBRARIES := liblog libcutils libutils libhidlbase libhidltransport android.hardware.power@1.0
 LOCAL_CFLAGS := -Wall -Wextra -Werror
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libhealthd.mione

@@ -28,7 +28,7 @@
 
 #include <cutils/log.h>
 #include <cutils/properties.h>
-#include <hardware/power.h>
+#include "power_policy.h"
 #include "battery_policy.h"
 
 #define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
@@ -197,9 +197,8 @@ static void start_battery_watcher(void)
         ALOGE("Cannot start battery policy watcher: %s", strerror(error));
 }
 
-static void power_init(struct power_module *module)
+void mione_power_init(void)
 {
-    (void)module;
     pthread_once(&watcher_once, start_battery_watcher);
     ALOGI("MSM8660 Power HAL initialized; screen-off cap %u kHz; "
           "CPU maximums %u/%u kHz", SCREEN_OFF_MAX_KHZ,
@@ -207,11 +206,10 @@ static void power_init(struct power_module *module)
           read_frequency(1, "cpuinfo_max_freq"));
 }
 
-static void power_set_interactive(struct power_module *module, int on)
+void mione_power_set_interactive(int on)
 {
     unsigned int cpu;
 
-    (void)module;
     pthread_mutex_lock(&lock);
     interactive = !!on;
     for (cpu = 0; cpu < CPU_COUNT; ++cpu)
@@ -222,18 +220,11 @@ static void power_set_interactive(struct power_module *module, int on)
     pthread_mutex_unlock(&lock);
 }
 
-static void power_hint(struct power_module *module, power_hint_t hint, void *data)
+void mione_power_interaction(void)
 {
     struct timespec now;
     int64_t now_ns;
     unsigned int cpu;
-
-    (void)module;
-    /* CM11 passes CPU_BOOST's integer duration as the pointer value. */
-    if (hint != POWER_HINT_INTERACTION && hint != POWER_HINT_CPU_BOOST)
-        return;
-    if (hint == POWER_HINT_CPU_BOOST && (intptr_t)data <= 0)
-        return;
 
     pthread_mutex_lock(&lock);
     if (!interactive || clock_gettime(CLOCK_MONOTONIC, &now) != 0)
@@ -247,27 +238,8 @@ static void power_hint(struct power_module *module, power_hint_t hint, void *dat
     /* This kernel provides a one-shot pulse, without boostpulse_duration. */
     if (write_value(BOOSTPULSE_PATH, "1") == 0) {
         last_boost_ns = now_ns;
-        ALOGV("interactive boost pulse (hint=%d)", hint);
+        ALOGV("interactive boost pulse");
     }
 out:
     pthread_mutex_unlock(&lock);
 }
-
-static struct hw_module_methods_t power_methods = {
-    .open = NULL,
-};
-
-struct power_module HAL_MODULE_INFO_SYM = {
-    .common = {
-        .tag = HARDWARE_MODULE_TAG,
-        .module_api_version = POWER_MODULE_API_VERSION_0_2,
-        .hal_api_version = HARDWARE_HAL_API_VERSION,
-        .id = POWER_HARDWARE_MODULE_ID,
-        .name = "MiOne MSM8660 Power HAL",
-        .author = "The CyanogenMod Project",
-        .methods = &power_methods,
-    },
-    .init = power_init,
-    .setInteractive = power_set_interactive,
-    .powerHint = power_hint,
-};

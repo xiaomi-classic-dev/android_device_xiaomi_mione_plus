@@ -7,5 +7,5 @@ LOCAL_SRC_FILES := power_probe.cpp
 LOCAL_HEADER_LIBRARIES := libhealthd_headers
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 LOCAL_STATIC_LIBRARIES := libhealthd.mione
-LOCAL_SHARED_LIBRARIES := libhardware libcutils libutils liblog
+LOCAL_SHARED_LIBRARIES := libcutils libutils liblog libhidlbase libhidltransport android.hardware.power@1.0
 include $(BUILD_EXECUTABLE)
