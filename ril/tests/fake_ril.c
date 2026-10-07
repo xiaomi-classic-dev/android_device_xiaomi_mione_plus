@@ -6,13 +6,17 @@ static int last_request;
 static void *last_data;
 static size_t last_length;
 static RIL_Token last_token;
+static RIL_Token cancelled_token;
+static int deferred;
 static void request(int id, void *data, size_t length, RIL_Token token)
 {
     last_request = id; last_data = data; last_length = length; last_token = token;
-    callbacks->OnRequestComplete(token, RIL_E_SUCCESS, data, length);
+    if (!deferred)
+        callbacks->OnRequestComplete(token, RIL_E_SUCCESS, data, length);
 }
 static int supports(int id) { last_request = id; return id + 100; }
-static RIL_RadioFunctions functions = {6, request, NULL, supports, NULL, NULL};
+static void cancel(RIL_Token token) { cancelled_token = token; }
+static RIL_RadioFunctions functions = {6, request, NULL, supports, cancel, NULL};
 const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env, int argc, char **argv)
 {
     (void)argc; (void)argv; callbacks = env;
@@ -38,3 +42,7 @@ void mione_test_emit(int id, const void *data, size_t length)
 { callbacks->OnUnsolicitedResponse(id, data, length); }
 int mione_test_request(void *data, size_t length, RIL_Token token)
 { return last_data == data && last_length == length && last_token == token ? last_request : -1; }
+void mione_test_defer(int enabled) { deferred = enabled; }
+void mione_test_complete(RIL_Token token, RIL_Errno error, void *data, size_t length)
+{ callbacks->OnRequestComplete(token, error, data, length); }
+int mione_test_cancelled(RIL_Token token) { return cancelled_token == token; }

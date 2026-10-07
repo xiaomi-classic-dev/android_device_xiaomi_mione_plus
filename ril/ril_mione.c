@@ -3,6 +3,9 @@
  */
 #define LOG_TAG "MioneRIL"
 #include <dlfcn.h>
+#include <limits.h>
+#include <pthread.h>
+#include <stdlib.h>
 #include <string.h>
 #include <cutils/log.h>
 #include <telephony/ril.h>
@@ -17,10 +20,80 @@ static const RIL_RadioFunctions *vendor_functions;
 static RIL_RadioFunctions functions;
 static void *vendor_library;
 
+struct signal_request {
+    RIL_Token token;
+    struct signal_request *next;
+};
+static struct signal_request *signal_requests;
+static pthread_mutex_t signal_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_once_t signal_log_once = PTHREAD_ONCE_INIT;
+
+static void log_signal_layout(void)
+{
+    ALOGI("Signal strength: CAF v6 %zu bytes -> v8 %zu bytes",
+          sizeof(RIL_SignalStrength_v6), sizeof(RIL_SignalStrength_v8));
+}
+
+/* Oreo's radio bridge accepts v8/v10 signal strength, but this v6 blob has no
+ * LTE timing advance. Preserve every measured field and mark that field unknown.
+ * Copy before calling libril: its legacy LTE conversion can modify the payload.
+ */
+static int convert_signal_strength(const void *data, size_t length,
+                                   RIL_SignalStrength_v8 *result)
+{
+    RIL_SignalStrength_v6 legacy;
+    if (data == NULL || length != sizeof(legacy))
+        return 0;
+    memcpy(&legacy, data, sizeof(legacy));
+    result->GW_SignalStrength = legacy.GW_SignalStrength;
+    result->CDMA_SignalStrength = legacy.CDMA_SignalStrength;
+    result->EVDO_SignalStrength = legacy.EVDO_SignalStrength;
+    memcpy(&result->LTE_SignalStrength, &legacy.LTE_SignalStrength,
+           sizeof(legacy.LTE_SignalStrength));
+    result->LTE_SignalStrength.timingAdvance = INT_MAX;
+    pthread_once(&signal_log_once, log_signal_layout);
+    return 1;
+}
+
+static int take_signal_request(RIL_Token token)
+{
+    struct signal_request **link, *pending = NULL;
+    pthread_mutex_lock(&signal_lock);
+    for (link = &signal_requests; *link != NULL; link = &(*link)->next) {
+        if ((*link)->token == token) {
+            pending = *link;
+            *link = pending->next;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&signal_lock);
+    if (pending == NULL)
+        return 0;
+    free(pending);
+    return 1;
+}
+
+static void on_complete(RIL_Token token, RIL_Errno error,
+                        void *data, size_t length)
+{
+    RIL_SignalStrength_v8 signal;
+    int is_signal = take_signal_request(token);
+    if (is_signal && error == RIL_E_SUCCESS) {
+        if (convert_signal_strength(data, length, &signal)) {
+            framework_env.OnRequestComplete(token, error, &signal, sizeof(signal));
+            return;
+        }
+        if (data == NULL || (length != sizeof(RIL_SignalStrength_v8) &&
+                            length != sizeof(RIL_SignalStrength_v10)))
+            ALOGE("Unexpected signal strength response: %zu bytes", length);
+    }
+    framework_env.OnRequestComplete(token, error, data, length);
+}
+
 /* The shipped CAF v6 library has no cell-info or initial-attach-APN request.
  * Its IMS and subscription requests predate their insertion into AOSP's table.
  * Reject unsupported requests before the blob can interpret their payload as
- * an unrelated command. Keep the blob's version and all response layouts.
+ * an unrelated command. Keep the blob's version; adapt signal strength below.
  */
 static int vendor_request(int request)
 {
@@ -51,6 +124,22 @@ static void on_request(int request, void *data, size_t length, RIL_Token token)
                                        NULL, 0);
         return;
     }
+    if (request == RIL_REQUEST_SIGNAL_STRENGTH) {
+        struct signal_request *pending = malloc(sizeof(*pending));
+        if (pending == NULL) {
+            framework_env.OnRequestComplete(token, RIL_E_GENERIC_FAILURE, NULL, 0);
+            return;
+        }
+        pending->token = token;
+        /* Completion can run synchronously or on another thread. Keep the
+         * original token for the vendor's cancellation/acknowledgement paths.
+         * Cancelled requests remain tracked until their completion arrives.
+         */
+        pthread_mutex_lock(&signal_lock);
+        pending->next = signal_requests;
+        signal_requests = pending;
+        pthread_mutex_unlock(&signal_lock);
+    }
     vendor_functions->onRequest(translated, data, length, token);
 }
 
@@ -63,6 +152,12 @@ static int supports(int request)
 
 static void on_unsolicited(int event, const void *data, size_t length)
 {
+    RIL_SignalStrength_v8 signal;
+    if (event == RIL_UNSOL_SIGNAL_STRENGTH &&
+        convert_signal_strength(data, length, &signal)) {
+        framework_env.OnUnsolicitedResponse(event, &signal, sizeof(signal));
+        return;
+    }
     switch (event) {
     case 1036: event = RIL_UNSOL_RESPONSE_IMS_NETWORK_STATE_CHANGED; break;
     case 1038:
@@ -132,6 +227,7 @@ const RIL_RadioFunctions *RIL_Init(const struct RIL_Env *env,
         return NULL;
     framework_env = *env;
     vendor_env = *env;
+    vendor_env.OnRequestComplete = on_complete;
     vendor_env.OnUnsolicitedResponse = on_unsolicited;
     vendor_functions = init(&vendor_env, argc, argv);
     if (vendor_functions == NULL || vendor_functions->version != 6) {
