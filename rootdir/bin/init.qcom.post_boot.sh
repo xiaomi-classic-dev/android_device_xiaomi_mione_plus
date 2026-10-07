@@ -76,6 +76,8 @@ case "$target" in
 	 echo 192000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 	 echo 192000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq
          chown system.system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
+         # Interactive creates these nodes after the post-fs-data relabel.
+         restorecon -R /sys/devices/system/cpu/cpufreq/interactive
 	 chown root.system /sys/devices/system/cpu/mfreq
 	 chmod 220 /sys/devices/system/cpu/mfreq
 	 chown root.system /sys/devices/system/cpu/cpu1/online
