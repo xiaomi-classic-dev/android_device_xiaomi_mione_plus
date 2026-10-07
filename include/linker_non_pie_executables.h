@@ -15,14 +15,14 @@
  */
 
 const char* linker_non_pie_executables[] = {
-    "/system/bin/bridgemgrd",
-    "/system/bin/cnd",
-    "/system/bin/gpsone_daemon",
-    "/system/bin/netmgrd",
-    "/system/bin/port-bridge",
-    "/system/bin/qmiproxy",
-    "/system/bin/qmuxd",
-    "/system/bin/rmt_storage",
-    "/system/bin/usbhub",
-    "/system/bin/usbhub_init",
+    "/vendor/bin/bridgemgrd",
+    "/vendor/bin/cnd",
+    "/vendor/bin/gpsone_daemon",
+    "/vendor/bin/netmgrd",
+    "/vendor/bin/port-bridge",
+    "/vendor/bin/qmiproxy",
+    "/vendor/bin/qmuxd",
+    "/vendor/bin/rmt_storage",
+    "/vendor/bin/usbhub",
+    "/vendor/bin/usbhub_init",
 };

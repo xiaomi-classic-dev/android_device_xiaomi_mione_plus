@@ -25,28 +25,28 @@ PRODUCT_COPY_FILES += \
 
 # Qualcomm scripts
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/prebuilt/init.qcom.post_boot.sh:system/etc/init.qcom.post_boot.sh \
-    device/xiaomi/mione_plus/prebuilt/init.qcom.efs.sync.sh:system/etc/init.qcom.efs.sync.sh
+    device/xiaomi/mione_plus/prebuilt/init.qcom.post_boot.sh:system/vendor/etc/init.qcom.post_boot.sh \
+    device/xiaomi/mione_plus/prebuilt/init.qcom.efs.sync.sh:system/vendor/etc/init.qcom.efs.sync.sh
 
 # Permissions
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
-    frameworks/native/data/etc/android.hardware.camera.autofocus.xml:system/etc/permissions/android.hardware.camera.autofocus.xml \
-    frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
-    frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
-    frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml \
-    frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
-    frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
-    frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
-    frameworks/native/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml \
-    frameworks/native/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
-    frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml \
-    frameworks/native/data/etc/android.hardware.touchscreen.multitouch.distinct.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.distinct.xml \
-    frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
-    frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
-    frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
-    frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
-    frameworks/native/data/etc/android.hardware.sensor.compass.xml:system/etc/permissions/android.hardware.sensor.compass.xml
+    frameworks/native/data/etc/handheld_core_hardware.xml:system/vendor/etc/permissions/handheld_core_hardware.xml \
+    frameworks/native/data/etc/android.hardware.camera.autofocus.xml:system/vendor/etc/permissions/android.hardware.camera.autofocus.xml \
+    frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/vendor/etc/permissions/android.hardware.camera.flash-autofocus.xml \
+    frameworks/native/data/etc/android.hardware.camera.front.xml:system/vendor/etc/permissions/android.hardware.camera.front.xml \
+    frameworks/native/data/etc/android.hardware.ethernet.xml:system/vendor/etc/permissions/android.hardware.ethernet.xml \
+    frameworks/native/data/etc/android.hardware.location.gps.xml:system/vendor/etc/permissions/android.hardware.location.gps.xml \
+    frameworks/native/data/etc/android.hardware.wifi.xml:system/vendor/etc/permissions/android.hardware.wifi.xml \
+    frameworks/native/data/etc/android.hardware.bluetooth.xml:system/vendor/etc/permissions/android.hardware.bluetooth.xml \
+    frameworks/native/data/etc/android.hardware.sensor.proximity.xml:system/vendor/etc/permissions/android.hardware.sensor.proximity.xml \
+    frameworks/native/data/etc/android.hardware.sensor.light.xml:system/vendor/etc/permissions/android.hardware.sensor.light.xml \
+    frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:system/vendor/etc/permissions/android.hardware.sensor.gyroscope.xml \
+    frameworks/native/data/etc/android.hardware.touchscreen.multitouch.distinct.xml:system/vendor/etc/permissions/android.hardware.touchscreen.multitouch.distinct.xml \
+    frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/vendor/etc/permissions/android.hardware.usb.accessory.xml \
+    frameworks/native/data/etc/android.hardware.usb.host.xml:system/vendor/etc/permissions/android.hardware.usb.host.xml \
+    frameworks/native/data/etc/android.software.sip.voip.xml:system/vendor/etc/permissions/android.software.sip.voip.xml \
+    frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/vendor/etc/permissions/android.hardware.sensor.accelerometer.xml \
+    frameworks/native/data/etc/android.hardware.sensor.compass.xml:system/vendor/etc/permissions/android.hardware.sensor.compass.xml
 
 # Audio
 PRODUCT_PACKAGES += \
@@ -134,25 +134,25 @@ PRODUCT_PACKAGES += \
 
 # Media configuration
 PRODUCT_COPY_FILES += \
-    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
-    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
-    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml \
-    device/xiaomi/mione_plus/configs/media_codecs.xml:system/etc/media_codecs.xml \
-    device/xiaomi/mione_plus/configs/media_profiles.xml:system/etc/media_profiles.xml
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/vendor/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/vendor/etc/media_codecs_google_telephony.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/vendor/etc/media_codecs_google_video.xml \
+    device/xiaomi/mione_plus/configs/media_codecs.xml:system/vendor/etc/media_codecs.xml \
+    device/xiaomi/mione_plus/configs/media_profiles.xml:system/vendor/etc/media_profiles.xml
 
 # audio policy
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/configs/audio_policy.conf:system/etc/audio_policy.conf
+    device/xiaomi/mione_plus/configs/audio_policy.conf:system/vendor/etc/audio_policy.conf
 
 # MSM8660 firmware
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/firmware/leia_pfp_470.fw:system/etc/firmware/leia_pfp_470.fw \
-    device/xiaomi/mione_plus/firmware/leia_pm4_470.fw:system/etc/firmware/leia_pm4_470.fw \
-    device/xiaomi/mione_plus/firmware/vidc_1080p.fw:system/etc/firmware/vidc_1080p.fw
+    device/xiaomi/mione_plus/firmware/leia_pfp_470.fw:system/vendor/firmware/leia_pfp_470.fw \
+    device/xiaomi/mione_plus/firmware/leia_pm4_470.fw:system/vendor/firmware/leia_pm4_470.fw \
+    device/xiaomi/mione_plus/firmware/vidc_1080p.fw:system/vendor/firmware/vidc_1080p.fw
 
 # Thermal configuration
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/configs/thermald.conf:system/etc/thermald.conf
+    device/xiaomi/mione_plus/configs/thermald.conf:system/vendor/etc/thermald.conf
 
 # Device uses high-density artwork where available
 PRODUCT_AAPT_CONFIG := normal
@@ -180,7 +180,7 @@ PRODUCT_PACKAGES += libril_mione
 
 # gps.conf
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/configs/gps.conf:system/etc/gps.conf
+    device/xiaomi/mione_plus/configs/gps.conf:system/vendor/etc/gps.conf
 
 # mac support for mione_plus
 # credit: huangqiwu
@@ -223,34 +223,34 @@ PRODUCT_PACKAGES += \
 
 # Input device config
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/usr/idc/synaptics_rmi4_i2c.idc \
-    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/usr/idc/ft5x0x.idc \
-    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/usr/idc/sensor00fn11.idc \
-    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/usr/idc/sensor00fn54.idc \
-    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/usr/idc/mxt224_ts_input.idc \
-    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/usr/idc/mXT-touch.idc
+    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/vendor/usr/idc/synaptics_rmi4_i2c.idc \
+    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/vendor/usr/idc/ft5x0x.idc \
+    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/vendor/usr/idc/sensor00fn11.idc \
+    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/vendor/usr/idc/sensor00fn54.idc \
+    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/vendor/usr/idc/mxt224_ts_input.idc \
+    device/xiaomi/mione_plus/configs/mxt224_ts_input.idc:system/vendor/usr/idc/mXT-touch.idc
 
 # Prebuilt modules belong only to the matching prebuilt kernel. Source kernel
 # builds install their own modules through build/core/tasks/kernel.mk.
 ifneq ($(TARGET_PREBUILT_KERNEL),)
 PRODUCT_COPY_FILES += $(shell \
     find device/xiaomi/mione_plus/prebuilt -name '*.ko' \
-    | sed -r 's/^\/?(.*\/)([^/ ]+)$$/\1\2:system\/lib\/modules\/\2/' \
+    | sed -r 's/^\/?(.*\/)([^/ ]+)$$/\1\2:system\/vendor\/lib\/modules\/\2/' \
     | tr '\n' ' ')
 endif
 
 # Permissions
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
-    frameworks/native/data/etc/android.hardware.telephony.cdma.xml:system/etc/permissions/android.hardware.telephony.cdma.xml \
-    frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml
+    frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/vendor/etc/permissions/android.hardware.telephony.gsm.xml \
+    frameworks/native/data/etc/android.hardware.telephony.cdma.xml:system/vendor/etc/permissions/android.hardware.telephony.cdma.xml \
+    frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/vendor/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml
 
 # The BCM4329 firmware shipped for MiOne Plus returns BCME_UNSUPPORTED for
 # P2P. BCM4330 firmware must not be used on it. A separately validated BCM4330
 # product can opt in to this feature and its matching firmware configuration.
 ifeq ($(BOARD_MIONE_WIFI_DIRECT),true)
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml
+    frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/vendor/etc/permissions/android.hardware.wifi.direct.xml
 endif
 
 PRODUCT_PROPERTY_OVERRIDES += \

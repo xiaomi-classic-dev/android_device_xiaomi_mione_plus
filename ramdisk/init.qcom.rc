@@ -73,8 +73,8 @@ on boot
     setprop ro.telephony.call_ring.multiple false
 
     #Set SUID bit for usbhub
-    chmod 4755 /system/bin/usbhub
-    chmod 755 /system/bin/usbhub_init
+    chmod 4755 /vendor/bin/usbhub
+    chmod 755 /vendor/bin/usbhub_init
 
     #Remove SUID bit for iproute2 ip tool
     chmod 0755 /system/bin/ip
@@ -211,7 +211,7 @@ on post-fs-data
     setprop vold.post_fs_data_done 1
 
 # Export GPIO56 for fusion targets to enable/disable hub
-service usbhub_init /system/bin/usbhub_init
+service usbhub_init /vendor/bin/usbhub_init
     class late_start
     user root
     disabled
@@ -244,11 +244,11 @@ service qcom-c_main-sh /system/bin/sh /init.qcom.class_main.sh
 on property:vold.decrypt=trigger_restart_framework
     start qcom-c_main-sh
 
-service cnd /system/bin/cnd
+service cnd /vendor/bin/cnd
     class late_start
     socket cnd stream 666 root radio
 
-service rmt_storage /system/bin/rmt_storage
+service rmt_storage /vendor/bin/rmt_storage
     class core
     user root
     disabled
@@ -256,39 +256,39 @@ service rmt_storage /system/bin/rmt_storage
 on property:ro.boot.emmc=true
     start rmt_storage
 
-service hciattach /system/bin/brcm_patchram_plus --enable_hci --enable_lpm --baudrate 3000000 --patchram /etc/firmware/bcm4330.hcd /dev/ttyHS0
+service hciattach /system/bin/brcm_patchram_plus --enable_hci --enable_lpm --baudrate 3000000 --patchram /vendor/firmware/bcm4330.hcd /dev/ttyHS0
     class late_start
     user bluetooth
     group bluetooth net_bt_admin
     disabled
     oneshot
 
-service bridgemgrd /system/bin/bridgemgrd
+service bridgemgrd /vendor/bin/bridgemgrd
     class late_start
     user radio
     group radio oem_2950
     disabled
 
-service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
+service port-bridge /vendor/bin/port-bridge /dev/smd0 /dev/ttyGS0
     class late_start
     user system
     group system inet
     disabled
 
-service qmiproxy /system/bin/qmiproxy
+service qmiproxy /vendor/bin/qmiproxy
     class main
     user radio
     group radio oem_2950
     disabled
 
 # QMUX must be in multiple groups to support external process connections
-service qmuxd /system/bin/qmuxd
+service qmuxd /vendor/bin/qmuxd
     class main
     user radio
     group radio audio bluetooth gps oem_2950
     disabled
 
-service netmgrd /system/bin/netmgrd
+service netmgrd /vendor/bin/netmgrd
     class main
     group radio system wakelock
     disabled
@@ -391,7 +391,7 @@ service dhcpcd_bnep0 /system/bin/dhcpcd -BKLG
     oneshot
 
 
-service gpsone_daemon /system/bin/gpsone_daemon
+service gpsone_daemon /vendor/bin/gpsone_daemon
     class late_start
     user gps
     group gps inet net_raw
@@ -435,8 +435,8 @@ service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
     oneshot
 
 on property:crypto.driver.load=1
-    insmod /system/lib/modules/qce.ko
-    insmod /system/lib/modules/qcedev.ko
+    insmod /vendor/lib/modules/qce.ko
+    insmod /vendor/lib/modules/qcedev.ko
 
 on property:crypto.driver.load=0
     exec /system/bin/rmmod qcedev.ko
@@ -454,7 +454,7 @@ on property:drmdiag.load=1
 on property:drmdiag.load=0
     stop drmdiag
 
-service qcom-post-fs /system/bin/sh /system/etc/init.qcom.post_fs.sh
+service qcom-post-fs /system/bin/sh /vendor/etc/init.qcom.post_fs.sh
     class core
     user root
     disabled
@@ -465,7 +465,7 @@ service qcom-sh /system/bin/sh /init.qcom.sh
     user root
     oneshot
 
-service qcom-post-boot /system/bin/sh /system/etc/init.qcom.post_boot.sh
+service qcom-post-boot /system/bin/sh /vendor/etc/init.qcom.post_boot.sh
     class late_start
     user root
     disabled
@@ -493,7 +493,7 @@ service hdmid /system/bin/hdmid
     socket hdmid stream 0660 root system
     disabled
 
-service ppd /system/bin/mm-pp-daemon
+service ppd /vendor/bin/mm-pp-daemon
     class late_start
     user system
     socket pps stream 0660 system system

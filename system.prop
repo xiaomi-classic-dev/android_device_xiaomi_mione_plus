@@ -9,7 +9,7 @@ ro.telephony.default_network=7
 # Ril
 ro.ril.oem.nosim.ecclist=911,112,120,122,110,119
 persist.radio.apm_sim_not_pwdn=1
-rild.libpath=/system/lib/libril_mione.so
+rild.libpath=/vendor/lib/libril_mione.so
 rild.libargs=-d /dev/smd0
 persist.rild.nitz_plmn=
 persist.rild.nitz_long_ons_0=
@@ -24,7 +24,7 @@ ril.subscription.types=NV,RUIM
 telephony.lteOnCdmaDevice=0
 ro.telephony.ril.v3=signalstrength
 DEVICE_PROVISIONED=1
-ro.vendor.extension_library=/system/lib/libqc-opt.so
+ro.vendor.extension_library=/vendor/lib/libqc-opt.so
 
 # Graphics
 debug.sf.hw=1
@@ -110,3 +110,6 @@ camera.disable_treble=true
 
 # BCM4329 emits an ordered 0x34,0x31 sequence during minidriver download.
 ro.bluetooth.bcm4329_patch_quirk=true
+
+# MediaProfiles uses the legacy XML schema at the device vendor path.
+media.settings.xml=/vendor/etc/media_profiles.xml

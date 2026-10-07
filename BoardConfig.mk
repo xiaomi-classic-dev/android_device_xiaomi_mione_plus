@@ -101,10 +101,10 @@ LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := $(MIONE_PATH)/include
 
 # Oreo linker shims are selected at build time.
 TARGET_LD_SHIM_LIBS := \
-    /system/bin/cnd|libmione_cnd_shim.so \
-    /system/bin/netmgrd|libmione_cnd_shim.so \
-    /system/lib/libnetmgr.so|libmione_cnd_shim.so \
-    /system/lib/hw/sensors.vendor.msm8660.so|libmione_sensors_shim.so
+    /vendor/bin/cnd|libmione_cnd_shim.so \
+    /vendor/bin/netmgrd|libmione_cnd_shim.so \
+    /vendor/lib/libnetmgr.so|libmione_cnd_shim.so \
+    /vendor/lib/hw/sensors.vendor.msm8660.so|libmione_sensors_shim.so
 
 # Misc
 BOARD_USES_LEGACY_MMAP := true
@@ -148,8 +148,8 @@ TARGET_KERNEL_ARCH := arm
 TARGET_KERNEL_CONFIG := mione-user_defconfig
 TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-eabi-
 KERNEL_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin
-# Keep the module path expected by the MiOne Wi-Fi loader.
-NEED_KERNEL_MODULE_SYSTEM := true
+# Install modules with the device vendor HALs and matching Wi-Fi loader.
+NEED_KERNEL_MODULE_SYSTEM := false
 
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/xiaomi/mione_plus/bluetooth

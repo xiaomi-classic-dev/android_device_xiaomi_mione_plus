@@ -34,7 +34,7 @@
 #define LOC_MAX_PARAM_STRING               80
 #define LOC_MAX_PARAM_LINE                 80
 
-#define GPS_CONF_FILE            "/etc/gps.conf"            /* primary */
+#define GPS_CONF_FILE            "/vendor/etc/gps.conf"            /* primary */
 
 /*=============================================================================
  *

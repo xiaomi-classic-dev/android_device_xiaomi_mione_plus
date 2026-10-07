@@ -16,7 +16,7 @@ static sensors_module_t* vendor_module;
 static std::vector<sensor_t> sensors;
 
 static void load_module() {
-    void* library = dlopen("/system/lib/hw/sensors.vendor.msm8660.so", RTLD_NOW | RTLD_LOCAL);
+    void* library = dlopen("/vendor/lib/hw/sensors.vendor.msm8660.so", RTLD_NOW | RTLD_LOCAL);
     if (!library) {
         ALOGE("Cannot load sensor HAL: %s", dlerror());
         return;

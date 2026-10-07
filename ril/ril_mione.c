@@ -8,7 +8,7 @@
 #include <telephony/ril.h>
 
 #ifndef MIONE_VENDOR_RIL
-#define MIONE_VENDOR_RIL "/system/lib/libril-qc-qmi-1.so"
+#define MIONE_VENDOR_RIL "/vendor/lib/libril-qc-qmi-1.so"
 #endif
 
 static struct RIL_Env framework_env;

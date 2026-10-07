@@ -198,9 +198,9 @@ case "$target" in
                 ;;
         esac
 
-        insmod /system/lib/modules/ss_mfcinit.ko
-        insmod /system/lib/modules/ss_vencoder.ko
-        insmod /system/lib/modules/ss_vdecoder.ko
+        insmod /vendor/lib/modules/ss_mfcinit.ko
+        insmod /vendor/lib/modules/ss_vencoder.ko
+        insmod /vendor/lib/modules/ss_vdecoder.ko
         chmod 0666 /dev/ss_mfc_reg
         chmod 0666 /dev/ss_vdec
         chmod 0666 /dev/ss_venc

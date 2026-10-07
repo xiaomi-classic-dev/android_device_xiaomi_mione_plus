@@ -49,13 +49,13 @@ on fs
 # make modem firmware available at /vendor/firmware/image ( /vendor symlink to /system/vendor )
     mkdir /system/vendor/firmware/ 0755 system system
     symlink /firmware/image /system/vendor/firmware/image
-    exec /system/bin/sh /system/etc/init.qcom.modem_links.sh
+    exec /system/bin/sh /vendor/etc/init.qcom.modem_links.sh
 
 on post-fs-data
     mount debugfs debugfs /sys/kernel/debug
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
     setprop ro.bt.bdaddr_path /data/misc/bluetooth/bdaddr
-    restorecon /system/bin/mione_bdaddr
+    restorecon /vendor/bin/mione_bdaddr
     start mione-bdaddr
 # double check /data/radio
     mkdir /data/radio 0770 radio radio
@@ -91,7 +91,7 @@ on charger
 service chargeonlymode /charger
     class charger
 
-service mione-bdaddr /system/bin/mione_bdaddr
+service mione-bdaddr /vendor/bin/mione_bdaddr
     class core
     user bluetooth
     group bluetooth system
@@ -156,7 +156,7 @@ service ril-daemon /vendor/bin/hw/rild
     group radio system cache inet misc audio log readproc wakelock oem_2950
     capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
 
-service qcamerasvr /system/bin/mm-qcamera-daemon
+service qcamerasvr /vendor/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet input
@@ -193,7 +193,7 @@ service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
     disabled
 
 
-service thermald /system/bin/thermald --norestorebrightness
+service thermald /vendor/bin/thermald --norestorebrightness -c /vendor/etc/thermald.conf
     class late_start
     user root
     group root
@@ -212,4 +212,4 @@ on property:ro.baseband=svlte2a
     setprop ro.ril.svlte1x true
 
 on property:sys.radio.shutdown=true
-    exec /system/bin/sh /system/etc/init.qcom.efs.sync.sh
+    exec /system/bin/sh /vendor/etc/init.qcom.efs.sync.sh

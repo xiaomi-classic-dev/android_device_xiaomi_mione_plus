@@ -3,6 +3,7 @@
 lib/libacdbloader.so
 lib/libacdbmapper.so
 lib/libaudioalsa.so
+lib/libaudioparsers.so
 lib/libaudcal.so
 lib/libdiag.so
 lib/libv8.so
@@ -18,10 +19,13 @@ lib/egl/libEGL_adreno200.so
 lib/egl/libGLESv1_CM_adreno200.so
 lib/egl/libGLESv2_adreno200.so
 lib/egl/libGLESv2S3D_adreno200.so
-#lib/egl/libq3dtools_adreno200.so
+lib/egl/libplayback_adreno200.so
+lib/egl/libq3dtools_adreno200.so
 lib/libC2D2.so
-#lib/libc2d2_z180.so
+lib/libc2d2_z180.so
 lib/libOpenVG.so
+lib/libOpenCL.so
+lib/libllvm-arm.so
 lib/libgsl.so
 lib/libsc-a2xx.so
 # related firmware
@@ -49,8 +53,6 @@ etc/wifi/nvram.txt
 
 # bluetooth
 lib/libnv.so
-etc/firmware/bcm4329.hcd
-etc/firmware/bcm4330.hcd
 
 # QCOM Script
 # modem, sound, firmware

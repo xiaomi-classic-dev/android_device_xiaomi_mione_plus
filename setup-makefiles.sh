@@ -49,6 +49,11 @@ for FILE in `egrep -v '(^#|^$)' proprietary-files.txt`; do
   if [ "$FILE" = "lib/hw/sensors.msm8660.so" ]; then
     DEST="lib/hw/sensors.vendor.msm8660.so"
   fi
+  case "$DEST" in
+    vendor/*) ;;
+    etc/firmware/*) DEST="vendor/firmware/${DEST#etc/firmware/}" ;;
+    *) DEST="vendor/$DEST" ;;
+  esac
   echo "  $OUTDIR/proprietary/$FILE:system/$DEST$LINEEND" >> $MAKEFILE
 done
 
@@ -108,7 +113,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_SRC_FILES := proprietary/lib/libaudioalsa.so
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
 
@@ -119,7 +124,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_SRC_FILES := proprietary/lib/libacdbloader.so
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
 
@@ -130,12 +135,13 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_SRC_FILES := proprietary/lib/libacdbmapper.so
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
 MIONE_AUDIO_MK
 
 cat >> ../../../$OUTDIR/Android.mk <<'MIONE_STLPORT_MK'
+
 # Android 8 removed STLport; retain the CM14 source-built ABI for old blobs.
 include $(CLEAR_VARS)
 LOCAL_MODULE := libstlport
@@ -144,7 +150,7 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
 LOCAL_SRC_FILES := proprietary/lib/libstlport.so
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
 MIONE_STLPORT_MK
