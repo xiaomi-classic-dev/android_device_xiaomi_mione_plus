@@ -1,0 +1,18 @@
+# MiOne has /vendor in /system/vendor and no device-tree first-stage fstab.
+# Keep coldboot permissions in ramdisk; load the vendor rc files after coldboot
+# and /system mounting, before normal fs/boot or charger actions are queued.
+on early-init
+    mkdir /firmware 0771 system system
+    symlink /data/tombstones /tombstones
+
+on init
+    mkdir /persist 0771 system system
+    mount_all /fstab.qcom.early /vendor/etc/init/hw/init.qcom.rc --early
+
+    # Imported on-init actions would miss the action list already executing.
+    # Preserve the original FunctionFS and USB serial setup in this bootstrap.
+    write /sys/class/android_usb/android0/iSerial ${ro.serialno}
+    write /sys/class/android_usb/android0/f_rndis/wceis 1
+    mkdir /dev/usb-ffs 0770 shell shell
+    mkdir /dev/usb-ffs/adb 0770 shell shell
+    mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000

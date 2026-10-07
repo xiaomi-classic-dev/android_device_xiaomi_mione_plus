@@ -25,12 +25,8 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import init.qcom.usb.rc
-import init.target.rc
-
-on init
-    # Set permissions for persist partition
-    mkdir /persist 0771 system system
+import /vendor/etc/init/hw/init.qcom.usb.rc
+import /vendor/etc/init/hw/init.target.rc
 
 on early-boot
     # set RLIMIT_MEMLOCK to 64MB
@@ -231,12 +227,12 @@ on property:bluetooth.isEnabled=true
     start btwlancoex
     write /sys/class/bluetooth/hci0/idle_timeout 7000
 
-service qcom-c_core-sh /system/bin/sh /init.qcom.class_core.sh
+service qcom-c_core-sh /system/bin/sh /vendor/bin/init.qcom.class_core.sh
     class core
     user root
     oneshot
 
-service qcom-c_main-sh /system/bin/sh /init.qcom.class_main.sh
+service qcom-c_main-sh /system/bin/sh /vendor/bin/init.qcom.class_main.sh
     class main
     user root
     oneshot
@@ -460,12 +456,12 @@ service qcom-post-fs /system/bin/sh /vendor/etc/init.qcom.post_fs.sh
     disabled
     oneshot
 
-service qcom-sh /system/bin/sh /init.qcom.sh
+service qcom-sh /system/bin/sh /vendor/bin/init.qcom.sh
     class late_start
     user root
     oneshot
 
-service qcom-post-boot /system/bin/sh /vendor/etc/init.qcom.post_boot.sh
+service qcom-post-boot /system/bin/sh /vendor/bin/init.qcom.post_boot.sh
     class late_start
     user root
     disabled

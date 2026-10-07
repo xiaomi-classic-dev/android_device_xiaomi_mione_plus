@@ -1,0 +1,2 @@
+# Mount only /system before importing the device vendor init configuration.
+/dev/block/platform/msm_sdcc.1/by-name/system       /system         ext4    ro,barrier=1                                                    wait

@@ -17,9 +17,6 @@ on property:ro.build.type=userdebug
 
 # most of the following are from boot.img of mioneplus_QDS81
 
-on init
-    mkdir /vendor/firmware 0775 system system
-
 on boot
     chown system system /sys/class/leds/backlight/brightness
     chown system system /sys/class/leds/flashlight/brightness
@@ -38,7 +35,7 @@ on boot
 
 on fs
 # mount mmc partitions
-    mount_all ./fstab.qcom
+    mount_all /vendor/etc/fstab.qcom
     # Optional calibration storage; a failed mount must not block Android.
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist wait nosuid nodev barrier=1,data=ordered,nodelalloc
     #Setting permissons for misc partition
@@ -55,7 +52,7 @@ on post-fs-data
     # Use the device fstab after /system provides mkswap.
     write /proc/sys/vm/swappiness 100
     write /proc/sys/vm/page-cluster 0
-    swapon_all /fstab.qcom
+    swapon_all /vendor/etc/fstab.qcom
     mount debugfs debugfs /sys/kernel/debug
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
     setprop ro.bt.bdaddr_path /data/misc/bluetooth/bdaddr
@@ -71,7 +68,6 @@ on post-fs-data
     mkdir /data/system/inputmethod 0755 system system
 
 on charger
-    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system wait ro barrier=1
     write /sys/module/rpm_resources/enable_low_power/L2_cache 1
     write /sys/module/rpm_resources/enable_low_power/pxo 1
     write /sys/module/rpm_resources/enable_low_power/vdd_dig 2
@@ -138,10 +134,6 @@ service mione-bdaddr /vendor/bin/mione_bdaddr
 #
 #
 
-on early-init
-    mkdir /firmware 0771 system system
-    symlink /data/tombstones /tombstones
-
 on post-fs-data
     mkdir /data/tombstones 0771 system system
     mkdir /tombstones/modem 0771 system system
@@ -152,7 +144,7 @@ on post-fs-data
 on boot
     start qcamerasvr
 
-# Loaded from the ramdisk before the generic vendor rild.rc definition.
+# Loaded by the ramdisk bootstrap before the generic vendor rild.rc definition.
 # Keep the Oreo radio UID and capabilities, with MiOne's legacy device groups.
 service ril-daemon /vendor/bin/hw/rild
     class main
@@ -216,4 +208,4 @@ on property:ro.baseband=svlte2a
     setprop ro.ril.svlte1x true
 
 on property:sys.radio.shutdown=true
-    exec /system/bin/sh /vendor/etc/init.qcom.efs.sync.sh
+    exec /system/bin/sh /vendor/bin/init.qcom.efs.sync.sh

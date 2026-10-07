@@ -23,11 +23,6 @@ PRODUCT_COPY_FILES += \
 
 
 
-# Qualcomm scripts
-PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/prebuilt/init.qcom.post_boot.sh:system/vendor/etc/init.qcom.post_boot.sh \
-    device/xiaomi/mione_plus/prebuilt/init.qcom.efs.sync.sh:system/vendor/etc/init.qcom.efs.sync.sh
-
 # Permissions
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/vendor/etc/permissions/handheld_core_hardware.xml \
@@ -196,17 +191,24 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += libmione_cnd_shim libmione_sensors_shim
 
-# Ramdisk files
+# Vendor init configuration and scripts.  MiOne needs a small ramdisk
+# bootstrap because /vendor is supplied by /system rather than a partition.
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/ramdisk/init.qcom.class_core.sh:root/init.qcom.class_core.sh \
-    device/xiaomi/mione_plus/ramdisk/init.qcom.class_main.sh:root/init.qcom.class_main.sh \
-    device/xiaomi/mione_plus/ramdisk/init.qcom.rc:root/init.qcom.rc \
-    device/xiaomi/mione_plus/ramdisk/init.qcom.sh:root/init.qcom.sh \
-    device/xiaomi/mione_plus/ramdisk/init.qcom.usb.rc:root/init.qcom.usb.rc \
-    device/xiaomi/mione_plus/ramdisk/init.qcom.usb.sh:root/init.qcom.usb.sh \
-    device/xiaomi/mione_plus/ramdisk/init.target.rc:root/init.target.rc \
-    device/xiaomi/mione_plus/ramdisk/ueventd.qcom.rc:root/ueventd.qcom.rc \
-    device/xiaomi/mione_plus/ramdisk/fstab.qcom:root/fstab.qcom
+    device/xiaomi/mione_plus/rootdir/etc/init.qcom.rc:system/vendor/etc/init/hw/init.qcom.rc \
+    device/xiaomi/mione_plus/rootdir/etc/init.qcom.usb.rc:system/vendor/etc/init/hw/init.qcom.usb.rc \
+    device/xiaomi/mione_plus/rootdir/etc/init.target.rc:system/vendor/etc/init/hw/init.target.rc \
+    device/xiaomi/mione_plus/rootdir/etc/fstab.qcom:system/vendor/etc/fstab.qcom \
+    device/xiaomi/mione_plus/rootdir/etc/ueventd.qcom.rc:system/vendor/ueventd.rc \
+    device/xiaomi/mione_plus/rootdir/bin/init.qcom.class_core.sh:system/vendor/bin/init.qcom.class_core.sh \
+    device/xiaomi/mione_plus/rootdir/bin/init.qcom.class_main.sh:system/vendor/bin/init.qcom.class_main.sh \
+    device/xiaomi/mione_plus/rootdir/bin/init.qcom.sh:system/vendor/bin/init.qcom.sh \
+    device/xiaomi/mione_plus/rootdir/bin/init.qcom.usb.sh:system/vendor/bin/init.qcom.usb.sh \
+    device/xiaomi/mione_plus/rootdir/bin/init.qcom.post_boot.sh:system/vendor/bin/init.qcom.post_boot.sh \
+    device/xiaomi/mione_plus/rootdir/bin/init.qcom.efs.sync.sh:system/vendor/bin/init.qcom.efs.sync.sh \
+    device/xiaomi/mione_plus/ramdisk/init.qcom.bootstrap.rc:root/init.qcom.rc \
+    device/xiaomi/mione_plus/ramdisk/fstab.qcom.early:root/fstab.qcom.early \
+    device/xiaomi/mione_plus/rootdir/etc/fstab.qcom:root/fstab.qcom \
+    device/xiaomi/mione_plus/rootdir/etc/ueventd.qcom.rc:root/ueventd.qcom.rc
 
 # WiFi
 PRODUCT_PACKAGES += \
