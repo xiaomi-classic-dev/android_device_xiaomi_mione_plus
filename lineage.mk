@@ -20,7 +20,7 @@ PRODUCT_MANUFACTURER := Xiaomi
 PRODUCT_CHARACTERISTICS := phone
 
 # Set build fingerprint / ID / Product Name etc.
+BUILD_FINGERPRINT := Xiaomi/mione_plus/mione_plus:4.1.2/JZO54K/QDS84:userdebug/test-keys
 PRODUCT_BUILD_PROP_OVERRIDES += \
 	PRODUCT_NAME=mione_plus \
-	BUILD_FINGERPRINT="Xiaomi/mione_plus/mione_plus:4.1.2/JZO54K/QDS84:userdebug/test-keys" \
-	PRIVATE_BUILD_DESC="mione_plus-userdebug 4.1.2 JZO54K QDS84 test-keys" \
+	PRIVATE_BUILD_DESC="mione_plus-userdebug 4.1.2 JZO54K QDS84 test-keys"
