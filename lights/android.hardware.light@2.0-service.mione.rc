@@ -1,3 +1,7 @@
+on post-fs-data
+    restorecon_recursive /sys/devices/i2c-0/0-0036/leds/backlight
+    restorecon_recursive /sys/devices/platform/msm_ssbi.0/pm8058-core/pm8058-led/leds
+
 service vendor.light-hal-2-0 /vendor/bin/hw/android.hardware.light@2.0-service.mione
     class hal
     user system

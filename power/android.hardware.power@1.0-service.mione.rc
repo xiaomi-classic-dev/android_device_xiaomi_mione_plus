@@ -1,3 +1,6 @@
+on post-fs-data
+    restorecon_recursive /sys/devices/system/cpu
+
 service vendor.power-hal-1-0 /vendor/bin/hw/android.hardware.power@1.0-service.mione
     class hal
     user system
