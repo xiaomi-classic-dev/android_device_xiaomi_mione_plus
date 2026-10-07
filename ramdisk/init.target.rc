@@ -52,6 +52,7 @@ on fs
     exec /system/bin/sh /system/etc/init.qcom.modem_links.sh
 
 on post-fs-data
+    mount debugfs debugfs /sys/kernel/debug
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
     setprop ro.bt.bdaddr_path /data/misc/bluetooth/bdaddr
     restorecon /system/bin/mione_bdaddr
@@ -93,7 +94,7 @@ service chargeonlymode /charger
 service mione-bdaddr /system/bin/mione_bdaddr
     class core
     user bluetooth
-    group bluetooth system 3006
+    group bluetooth system
     disabled
     oneshot
 
@@ -152,7 +153,7 @@ on boot
 service ril-daemon /vendor/bin/hw/rild
     class main
     user radio
-    group radio system cache inet misc audio log readproc wakelock 3006 2950
+    group radio system cache inet misc audio log readproc wakelock oem_2950
     capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
 
 service qcamerasvr /system/bin/mm-qcamera-daemon
@@ -191,10 +192,6 @@ service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
     user root
     disabled
 
-service qosmgrd /system/bin/qosmgr /system/etc/qosmgr_rules.xml
-    user system
-    group system
-    disabled
 
 service thermald /system/bin/thermald --norestorebrightness
     class late_start

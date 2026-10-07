@@ -37,7 +37,6 @@ on early-boot
     setrlimit 8 67108864 67108864
 
 on boot
-    exec system/bin/btnvtool -O
     chown bluetooth bluetooth /sys/module/bluetooth_power/parameters/power
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
@@ -178,7 +177,7 @@ on post-fs-data
 
     #Create directories for wiper services
     mkdir /data/wpstiles/ 0755 shell
-    mkdir /data/wiper 0755 gps 3006
+    mkdir /data/wiper 0755 gps
 
     #Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
@@ -260,14 +259,14 @@ on property:ro.boot.emmc=true
 service hciattach /system/bin/brcm_patchram_plus --enable_hci --enable_lpm --baudrate 3000000 --patchram /etc/firmware/bcm4330.hcd /dev/ttyHS0
     class late_start
     user bluetooth
-    group 3006 bluetooth net_bt_admin
+    group bluetooth net_bt_admin
     disabled
     oneshot
 
 service bridgemgrd /system/bin/bridgemgrd
     class late_start
     user radio
-    group radio 2950
+    group radio oem_2950
     disabled
 
 service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
@@ -279,18 +278,19 @@ service port-bridge /system/bin/port-bridge /dev/smd0 /dev/ttyGS0
 service qmiproxy /system/bin/qmiproxy
     class main
     user radio
-    group radio 2950
+    group radio oem_2950
     disabled
 
 # QMUX must be in multiple groups to support external process connections
 service qmuxd /system/bin/qmuxd
     class main
     user radio
-    group radio audio bluetooth gps 2950
+    group radio audio bluetooth gps oem_2950
     disabled
 
 service netmgrd /system/bin/netmgrd
     class main
+    group radio system wakelock
     disabled
 
 service sensors /system/bin/sensors.qcom
@@ -390,16 +390,11 @@ service dhcpcd_bnep0 /system/bin/dhcpcd -BKLG
     disabled
     oneshot
 
-service wiperiface /system/bin/wiperiface
-    class late_start
-    user gps
-    group gps 3006 net_raw
-    oneshot
 
 service gpsone_daemon /system/bin/gpsone_daemon
     class late_start
     user gps
-    group gps 3006 inet net_raw
+    group gps inet net_raw
     disabled
 
 service quipc_igsn /system/bin/quipc_igsn
@@ -435,7 +430,7 @@ service xtwifi_client /system/bin/xtwifi-client
 service fm_dl /system/bin/sh /system/etc/init.qcom.fm.sh
     class late_start
     user root
-    group system 3006
+    group system
     disabled
     oneshot
 
@@ -515,7 +510,7 @@ on property:persist.data.ds_fmc_app.mode=1
 
 service ims_regmanager /system/bin/exe-ims-regmanagerprocessnative
     class late_start
-    group 3006 net_bt_admin inet radio wifi
+    group net_bt_admin inet radio wifi
     disabled
 
 on property:persist.ims.regmanager.mode=1
@@ -546,7 +541,7 @@ service ril-daemon1 /system/bin/rild -c 1
     socket rild-debug1 stream 660 radio system
     user root
     disabled
-    group radio cache inet misc audio sdcard_r sdcard_rw 3006 diag 2950 log
+    group radio cache inet misc audio sdcard_r sdcard_rw diag oem_2950 log
 
 service profiler_daemon /system/bin/profiler_daemon
     class late_start

@@ -15,7 +15,7 @@
 
 
 # the DIAG device node is not world writable/readable.
-/dev/diag                 0660   system     2950
+/dev/diag                 0660   system     oem_2950
 
 /dev/genlock              0666   system     system
 /dev/kgsl                 0666   system     system
@@ -88,9 +88,9 @@
 /dev/i2c-5                0660   media       media
 
 /dev/pmem_audio           0660   system     audio
-/dev/oncrpc/*             0660   root       3006
+/dev/oncrpc/*             0660   root       system
 /dev/gss                  0660   gps        gps
-/dev/radio0               0644   fm_radio   fm_radio
+/dev/radio0               0644   system     system
 /dev/msm_voicememo        0660   system     audio
 /dev/qseecom              0660   system     drmrpc
 /dev/msm_pcm_lp_dec       0660   system     audio
