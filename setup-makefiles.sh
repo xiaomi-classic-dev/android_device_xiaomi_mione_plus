@@ -25,7 +25,7 @@ PRODUCT_PACKAGES += libaudioalsa libacdbloader libacdbmapper
 
 # Other prebuilt libraries needed during linking
 PRODUCT_COPY_FILES += \\
-	$OUTDIR/proprietary/lib/libv8.so:obj/lib/libv8.so
+	$OUTDIR/proprietary/vendor/lib/libv8.so:obj/lib/libv8.so
 
 PRODUCT_COPY_FILES += \\
 EOF
@@ -36,7 +36,7 @@ DISM=`egrep -c '(^#|^$)' proprietary-files.txt`
 COUNT=`expr $COUNT - $DISM`
 for FILE in `egrep -v '(^#|^$)' proprietary-files.txt`; do
   case "$FILE" in
-    lib/libaudioalsa.so|lib/libacdbloader.so|lib/libacdbmapper.so)
+    vendor/lib/libaudioalsa.so|vendor/lib/libacdbloader.so|vendor/lib/libacdbmapper.so|vendor/lib/libstlport.so)
       COUNT=`expr $COUNT - 1`
       continue
       ;;
@@ -46,14 +46,6 @@ for FILE in `egrep -v '(^#|^$)' proprietary-files.txt`; do
     LINEEND=""
   fi
   DEST="$FILE"
-  if [ "$FILE" = "lib/hw/sensors.msm8660.so" ]; then
-    DEST="lib/hw/sensors.vendor.msm8660.so"
-  fi
-  case "$DEST" in
-    vendor/*) ;;
-    etc/firmware/*) DEST="vendor/firmware/${DEST#etc/firmware/}" ;;
-    *) DEST="vendor/$DEST" ;;
-  esac
   echo "  $OUTDIR/proprietary/$FILE:system/$DEST$LINEEND" >> $MAKEFILE
 done
 
@@ -112,7 +104,7 @@ LOCAL_MODULE_OWNER := xiaomi
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
-LOCAL_SRC_FILES := proprietary/lib/libaudioalsa.so
+LOCAL_SRC_FILES := proprietary/vendor/lib/libaudioalsa.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
@@ -123,7 +115,7 @@ LOCAL_MODULE_OWNER := xiaomi
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
-LOCAL_SRC_FILES := proprietary/lib/libacdbloader.so
+LOCAL_SRC_FILES := proprietary/vendor/lib/libacdbloader.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
@@ -134,7 +126,7 @@ LOCAL_MODULE_OWNER := xiaomi
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
-LOCAL_SRC_FILES := proprietary/lib/libacdbmapper.so
+LOCAL_SRC_FILES := proprietary/vendor/lib/libacdbmapper.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
@@ -149,7 +141,7 @@ LOCAL_MODULE_OWNER := xiaomi
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := .so
-LOCAL_SRC_FILES := proprietary/lib/libstlport.so
+LOCAL_SRC_FILES := proprietary/vendor/lib/libstlport.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
