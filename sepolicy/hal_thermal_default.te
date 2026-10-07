@@ -1,0 +1,4 @@
+r_dir_file(hal_thermal_default, sysfs)
+r_dir_file(hal_thermal_default, sysfs_thermal)
+allow hal_thermal_default proc_stat:file r_file_perms;
+allow hal_thermal_default vendor_file:file r_file_perms;
