@@ -1,4 +1,4 @@
-/system/bin/mione_bdaddr                       u:object_r:mione_bdaddr_exec:s0
+/(vendor|system/vendor)/bin/mione_bdaddr                       u:object_r:mione_bdaddr_exec:s0
 /dev/oncrpc/(00000000:0|3000000e:00090000)       u:object_r:mione_nv_device:s0
 /dev/msm_vidc_reg                              u:object_r:video_device:s0
 /dev/msm_vidc_dec                              u:object_r:video_device:s0

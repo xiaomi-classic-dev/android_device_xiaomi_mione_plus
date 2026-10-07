@@ -25,7 +25,7 @@ WIFI_DRIVER_FW_PATH_AP           := "/vendor/firmware/fw_bcmdhd_apsta.bin"
 WIFI_DRIVER_FW_PATH_P2P          := "/vendor/firmware/fw_bcmdhd_p2p.bin"
 WIFI_DRIVER_FW_PATH_PARAM        := "/sys/module/bcmdhd/parameters/firmware_path"
 WIFI_DRIVER_MODULE_NAME          := bcmdhd
-WIFI_DRIVER_MODULE_PATH          := "/system/lib/modules/bcmdhd.ko"
+WIFI_DRIVER_MODULE_PATH          := "/vendor/lib/modules/bcmdhd.ko"
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
 
 # Broadcom BCM43xx chips are WiFi/BT capable
