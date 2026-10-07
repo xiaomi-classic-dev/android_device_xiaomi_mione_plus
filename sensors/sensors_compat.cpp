@@ -115,7 +115,12 @@ static int set_delay(sensors_poll_device_t* dev, int handle, int64_t period) {
 static int poll_events(sensors_poll_device_t* dev, sensors_event_t* data, int count) {
     Device* ctx = reinterpret_cast<Device*>(dev);
     if (!data || count <= 0) return -EINVAL;
-    return ctx->vendor->poll(ctx->vendor, data, count);
+    int result;
+    do {
+        errno = 0;
+        result = ctx->vendor->poll(ctx->vendor, data, count);
+    } while (result == -EINTR || (result == -1 && errno == EINTR));
+    return result;
 }
 
 static int batch(sensors_poll_device_1_t* dev, int handle, int flags,
