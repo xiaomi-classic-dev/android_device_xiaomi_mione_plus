@@ -22,3 +22,6 @@
 /dev/block/platform/msm_sdcc.1/by-name/aboot        /aboot          emmc    defaults                                                        defaults
 /devices/platform/msm_sdcc.3/mmc_host*              auto            auto    defaults                                                        voldmanaged=sdcard1:auto,encryptable=userdata
 /devices/platform/msm_hsusb_host.0/usb1             auto            auto    defaults                                                        voldmanaged=usbdisk0:auto
+
+# Compressed RAM swap; backing memory is allocated only as pages are swapped.
+/dev/block/zram0 none swap defaults zramsize=536870912,max_comp_streams=2
