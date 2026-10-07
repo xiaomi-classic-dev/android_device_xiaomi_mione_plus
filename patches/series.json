@@ -17,7 +17,7 @@
     {
       "path": "system/bt",
       "base_commit": "e0cf87b0d66c6aa60e13c88e375e055a8d604b8d",
-      "source_head": "070c57c2773f85c1710fd7bfda120b8f7afa04c9",
+      "source_head": "b6fb1810401ba7de89fd357d31f8853ac8d9cefd",
       "patches": [
         {
           "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-leng.patch",
@@ -30,6 +30,12 @@
           "source_commit": "070c57c2773f85c1710fd7bfda120b8f7afa04c9",
           "patch_id": "3d3dd68357fbd12e8b689076e5cd8ce5ac68c2eb",
           "sha256": "5576767f34cfa4ef6fc2e1044c47d78d58e732e6d959d0868b1291fa4e669b62"
+        },
+        {
+          "file": "system-bt/0003-Bluetooth-avoid-LE-queries-on-classic-controllers.patch",
+          "source_commit": "b6fb1810401ba7de89fd357d31f8853ac8d9cefd",
+          "patch_id": "2be5f7b54422ae5500c5f5dfd09b3188b8f2c271",
+          "sha256": "4513d6f45fe7f1520c1ef411889f303cd6b4c608124c84d519709d9fabee72ed"
         }
       ]
     },

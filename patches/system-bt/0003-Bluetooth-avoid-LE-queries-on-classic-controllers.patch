@@ -1,0 +1,79 @@
+From b6fb1810401ba7de89fd357d31f8853ac8d9cefd Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Wed, 7 Oct 2026 21:18:41 +0800
+Subject: [PATCH] Bluetooth: Avoid LE advertising and feature queries on
+ classic controllers
+
+Oreo initializes advertising unconditionally when vendor BLE extensions are absent. A BCM4329 classic-only controller then hits the ble_supported assertion in supports_ble_extended_advertising. Gate advertising initialization on the reported controller capability, and return zeroed LE adapter properties without querying LE-only accessors. Preserve the LE-controller behavior and the existing key-size compatibility policy.
+
+Change-Id: If16310f1e751d0e96dcce7f9faaf83ef16d0365e
+Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
+---
+ bta/dm/bta_dm_act.cc | 12 +++++++-----
+ btif/src/btif_dm.cc  | 11 ++++++++++-
+ 2 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/bta/dm/bta_dm_act.cc b/bta/dm/bta_dm_act.cc
+index c38cf917..269e7a05 100644
+--- a/bta/dm/bta_dm_act.cc
++++ b/bta/dm/bta_dm_act.cc
+@@ -43,6 +43,7 @@
+ #include "btm_int.h"
+ #include "btu.h"
+ #include "gap_api.h" /* For GAP_BleReadPeerPrefConnParams */
++#include "device/include/controller.h"
+ #include "l2c_api.h"
+ #include "osi/include/log.h"
+ #include "osi/include/osi.h"
+@@ -440,14 +441,15 @@ static void bta_dm_sys_hw_cback(tBTA_SYS_HW_EVT status) {
+     BTM_RegBusyLevelNotif(bta_dm_bl_change_cback, NULL,
+                           BTM_BL_UPDATE_MASK | BTM_BL_ROLE_CHG_MASK);
+ 
++    if (controller_get_interface()->supports_ble()) {
+ #if (BLE_VND_INCLUDED == TRUE)
+-    BTM_BleReadControllerFeatures(bta_dm_ctrl_features_rd_cmpl_cback);
++      BTM_BleReadControllerFeatures(bta_dm_ctrl_features_rd_cmpl_cback);
+ #else
+-    /* If VSC multi adv commands are available, advertising will be initialized
+-     * when capabilities are read. If they are not avaliable, initialize
+-     * advertising here */
+-    btm_ble_adv_init();
++      /* If VSC multi adv commands are available, advertising will be initialized
++       * when capabilities are read. Otherwise initialize advertising here. */
++      btm_ble_adv_init();
+ #endif
++    }
+ 
+     /* Earlier, we used to invoke BTM_ReadLocalAddr which was just copying the
+        bd_addr
+diff --git a/btif/src/btif_dm.cc b/btif/src/btif_dm.cc
+index 572640e0..99f2519b 100644
+--- a/btif/src/btif_dm.cc
++++ b/btif/src/btif_dm.cc
+@@ -1845,13 +1845,22 @@ static void btif_dm_upstreams_evt(uint16_t event, char* p_param) {
+ 
+     case BTA_DM_LE_FEATURES_READ: {
+       tBTM_BLE_VSC_CB cmn_vsc_cb;
+-      bt_local_le_features_t local_le_features;
++      bt_local_le_features_t local_le_features = {};
+       char buf[512];
+       bt_property_t prop;
+       prop.type = BT_PROPERTY_LOCAL_LE_FEATURES;
+       prop.val = (void*)buf;
+       prop.len = sizeof(buf);
+ 
++      // Classic-only controllers cannot answer the LE feature queries below.
++      if (!controller_get_interface()->supports_ble()) {
++        prop.len = sizeof(local_le_features);
++        memcpy(prop.val, &local_le_features, prop.len);
++        HAL_CBACK(bt_hal_cbacks, adapter_properties_cb, BT_STATUS_SUCCESS, 1,
++                  &prop);
++        break;
++      }
++
+       /* LE features are not stored in storage. Should be retrived from stack */
+       BTM_BleGetVendorCapabilities(&cmn_vsc_cb);
+       local_le_features.local_privacy_enabled = BTM_BleLocalPrivacyEnabled();
+-- 
+2.53.0
+
