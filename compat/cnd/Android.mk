@@ -13,6 +13,7 @@ include $(BUILD_SHARED_LIBRARY)
 # Explicit test target; not installed in the product.
 include $(CLEAR_VARS)
 LOCAL_MODULE := mione_cnd_shim_test
+LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := tests
 LOCAL_SRC_FILES := cnd_shim_test.c
 LOCAL_C_INCLUDES := external/icu/icu4c/source/common
