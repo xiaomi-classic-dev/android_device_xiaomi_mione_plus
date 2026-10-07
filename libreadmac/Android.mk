@@ -13,6 +13,7 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES:= readmac.c
 LOCAL_MODULE:= libreadmac
+LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)

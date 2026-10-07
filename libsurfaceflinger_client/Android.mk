@@ -8,6 +8,7 @@ LOCAL_SRC_FILES :=
 LOCAL_SHARED_LIBRARIES :=
 
 LOCAL_MODULE := libsurfaceflinger_client
+LOCAL_VENDOR_MODULE := true
 
 include $(BUILD_SHARED_LIBRARY)
 

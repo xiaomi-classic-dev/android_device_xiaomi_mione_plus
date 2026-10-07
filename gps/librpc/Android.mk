@@ -22,6 +22,7 @@ LOCAL_COPY_HEADERS:= \
 	rpc/xdr.h
 
 LOCAL_MODULE:= librpc
+LOCAL_VENDOR_MODULE := true
 
 LOCAL_MODULE_TAGS := optional
 
@@ -29,6 +30,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := librpc
+LOCAL_VENDOR_MODULE := true
 LOCAL_SHARED_LIBRARIES := liblog libcutils
 LOCAL_STATIC_LIBRARIES := libpower
 LOCAL_WHOLE_STATIC_LIBRARIES := librpc
