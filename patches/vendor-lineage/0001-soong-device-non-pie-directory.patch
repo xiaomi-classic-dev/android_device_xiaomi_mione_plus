@@ -1,0 +1,52 @@
+From cc2a67a6f9f580380413b79ccbde9e5331f30d88 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Wed, 7 Oct 2026 21:05:39 +0800
+Subject: [PATCH] soong: Pass the optional device non-PIE allowlist directory
+
+Export LINKER_NON_PIE_EXECUTABLES_HEADER_DIR to the linker product-variable properties. Use JSON null when unset so builds without a device allowlist do not compile the optional compatibility code or require its header.
+
+Change-Id: I3d2cdd3ba6eb486c328f7fa8e2aa38cd423da524
+Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
+---
+ build/soong/android/variable.go | 6 ++++++
+ build/soong/soong_config.mk     | 1 +
+ 2 files changed, 7 insertions(+)
+
+diff --git a/build/soong/android/variable.go b/build/soong/android/variable.go
+index d92ae929..7fe123a6 100644
+--- a/build/soong/android/variable.go
++++ b/build/soong/android/variable.go
+@@ -1,5 +1,10 @@
+ package android
+ type Product_variables struct {
++	Non_pie_executables_header_dir struct {
++		Cppflags []string
++		Include_dirs []string
++		Srcs []string
++	}
+ 	Has_legacy_camera_hal1 struct {
+ 		Cflags []string
+ 	}
+@@ -28,6 +33,7 @@ type Product_variables struct {
+ }
+ 
+ type ProductVariables struct {
++	Non_pie_executables_header_dir *string `json:",omitempty"`
+ 	Has_legacy_camera_hal1  *bool `json:",omitempty"`
+ 	Needs_legacy_camera_hal1_dyn_native_handle  *bool `json:",omitempty"`
+ 	Needs_text_relocations  *bool `json:",omitempty"`
+diff --git a/build/soong/soong_config.mk b/build/soong/soong_config.mk
+index 0c98c89c..711e47af 100644
+--- a/build/soong/soong_config.mk
++++ b/build/soong/soong_config.mk
+@@ -6,6 +6,7 @@ lineage_soong:
+ 	echo '"Lineage": {'; \
+ 	echo '    "Has_legacy_camera_hal1": $(if $(filter true,$(TARGET_HAS_LEGACY_CAMERA_HAL1)),true,false),'; \
+ 	echo '    "Needs_legacy_camera_hal1_dyn_native_handle": $(if $(filter true,$(TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE)),true,false),'; \
++	echo '    "Non_pie_executables_header_dir": $(if $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR),"$(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)",null),'; \
+ 	echo '    "Needs_text_relocations": $(if $(filter true,$(TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS)),true,false),'; \
+ 	echo '    "Specific_camera_parameter_library": "$(TARGET_SPECIFIC_CAMERA_PARAMETER_LIBRARY)",'; \
+ 	echo '    "Target_shim_libs": "$(subst $(space),:,$(TARGET_LD_SHIM_LIBS))",'; \
+-- 
+2.53.0
+

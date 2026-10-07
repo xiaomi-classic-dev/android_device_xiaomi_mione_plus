@@ -45,6 +45,32 @@
           "sha256": "1be6f97c5bdd6ccd458cd036966d3eb4cef85fd1615a975c3d3370a6fc43cfaa"
         }
       ]
+    },
+    {
+      "path": "bionic",
+      "base_commit": "fee4dc888bd235123fceff06aed02e0b1db73d7f",
+      "source_head": "968fcd5a0372d4a23b05078a090fd93a83761fc7",
+      "patches": [
+        {
+          "file": "bionic/0001-linker-device-non-pie-allowlist.patch",
+          "source_commit": "968fcd5a0372d4a23b05078a090fd93a83761fc7",
+          "patch_id": "95848175453bb8203881855495116541c2617556",
+          "sha256": "2da79d7440de9b1f775d1a07f39ed2be845b4eeba03ef92edecec6993b2b800a"
+        }
+      ]
+    },
+    {
+      "path": "vendor/lineage",
+      "base_commit": "921feb7d99058da0ef17a5c2361fa91a6b87b488",
+      "source_head": "cc2a67a6f9f580380413b79ccbde9e5331f30d88",
+      "patches": [
+        {
+          "file": "vendor-lineage/0001-soong-device-non-pie-directory.patch",
+          "source_commit": "cc2a67a6f9f580380413b79ccbde9e5331f30d88",
+          "patch_id": "294bca7ac9fa730c467c51bb6201bcd2423f8d68",
+          "sha256": "7b551344613867d27ff03aa058c9addf65068cfb57485db82581b853c6cda1a2"
+        }
+      ]
     }
   ]
 }
