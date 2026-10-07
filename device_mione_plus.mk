@@ -303,7 +303,8 @@ PRODUCT_PACKAGES += \
     wificond
 
 PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/seccomp_policy/mediacodec.policy:system/vendor/etc/seccomp_policy/mediacodec.policy
+    device/xiaomi/mione_plus/seccomp_policy/mediacodec.policy:system/vendor/etc/seccomp_policy/mediacodec.policy \
+    device/xiaomi/mione_plus/seccomp_policy/mediaextractor.policy:system/vendor/etc/seccomp_policy/mediaextractor.policy
 
 # Preserve the legacy Wi-Fi loader capability in images and OTA metadata.
 PRODUCT_PACKAGES += fs_config_files

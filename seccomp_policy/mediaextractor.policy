@@ -1,0 +1,2 @@
+# debuggerd's signal handler timestamps native backtraces through this syscall.
+gettimeofday: 1
