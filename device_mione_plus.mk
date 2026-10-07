@@ -267,6 +267,11 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 # adbd reads /adb_keys while retaining normal RSA authentication.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/adb_keys:root/adb_keys
+
+# Use RGB video uploads while keeping WebView GPU rasterization/compositing.
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/configs/webview-command-line:system/vendor/etc/webview-command-line \
+    device/xiaomi/mione_plus/configs/init.mione.webview.rc:system/vendor/etc/init/init.mione.webview.rc
 endif
 
 # xiaomi mione wifi config
