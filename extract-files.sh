@@ -12,5 +12,6 @@ for FILE in `egrep -v '(^#|^$)' proprietary-files.txt`; do
 done
 
 python3 "$BASE/../tools/patch-isp-poll.py" "$BASE/lib/liboemcamera.so" || exit 1
+python3 "$BASE/../tools/patch-vendor-paths.py" "$BASE" || exit 1
 
 ./setup-makefiles.sh
