@@ -102,7 +102,7 @@ bool_t rpc_loc_event_cb_f_type_svc(
    int index = argp->cb_id & 0xFFFF;
 
    /* Callback not registered, or unexpected ID (shouldn't happen) */
-   if (index > LOC_API_CB_MAX_CLIENTS || loc_glue_callback_table[index].cb_func == NULL)
+   if (index >= LOC_API_CB_MAX_CLIENTS || loc_glue_callback_table[index].cb_func == NULL)
    {
       ALOGE("Warning: No callback handler.\n");
       ret->loc_event_cb_f_type_result = 0;
@@ -343,6 +343,11 @@ int32 loc_close
 
    stat = RPC_FUNC_VERSION(rpc_loc_close_, RPC_LOC_CLOSE_VERSION)(&args, &rets, loc_api_clnt);
 
+   /* Join the RPC callback thread before clearing the handler it can call.
+    * A close failure still requires local client teardown. */
+   clnt_destroy(loc_api_clnt);
+   loc_api_clnt = NULL;
+
    /* Clean the client's callback function in callback table */
    int i;
    for (i = 0; i < LOC_API_CB_MAX_CLIENTS; i++)
@@ -362,11 +367,6 @@ int32 loc_close
    }
 
    LOC_GLUE_CHECK_RESULT(stat, int32);
-
-   if (loc_api_clnt != NULL)
-       clnt_destroy(loc_api_clnt);
-
-   loc_api_clnt = NULL;
 
    return (int32) rets.loc_close_result;
 }

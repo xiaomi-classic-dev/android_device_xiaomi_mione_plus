@@ -971,6 +971,11 @@ static int32 loc_event_cb
 
    loc_eng_callback_log(loc_event, loc_event_payload);
    pthread_mutex_lock(&loc_eng_data.deferred_action_mutex);
+   if (loc_eng_data.deferred_action_flags & DEFERRED_ACTION_QUIT)
+   {
+      pthread_mutex_unlock(&loc_eng_data.deferred_action_mutex);
+      return RPC_LOC_API_SUCCESS;
+   }
    loc_eng_data.loc_event = loc_event;
    memcpy(&loc_eng_data.loc_event_payload, loc_event_payload, sizeof(*loc_event_payload));
    /* hold a wake lock while events are pending for deferred_action_thread */
@@ -2307,4 +2312,3 @@ extern "C" const GpsInterface* get_gps_interface()
 {
     return &sLocEngInterface;
 }
-
