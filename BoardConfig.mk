@@ -198,6 +198,7 @@ RECOVERY_FSTAB_VERSION := 2
 
 # Legacy Qualcomm HAL1, built against the MiOne camera ABI.
 USE_DEVICE_SPECIFIC_CAMERA := true
+TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE := true
 
 # Publish device battery policy through healthd's standard board hook.
 BOARD_HAL_STATIC_LIBRARIES += libhealthd.mione
