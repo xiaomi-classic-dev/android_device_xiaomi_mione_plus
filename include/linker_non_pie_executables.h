@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
+// The linker compares /proc/self/exe; /vendor is a symlink on this device.
 const char* linker_non_pie_executables[] = {
-    "/vendor/bin/bridgemgrd",
-    "/vendor/bin/cnd",
-    "/vendor/bin/gpsone_daemon",
-    "/vendor/bin/netmgrd",
-    "/vendor/bin/port-bridge",
-    "/vendor/bin/qmiproxy",
-    "/vendor/bin/qmuxd",
-    "/vendor/bin/rmt_storage",
-    "/vendor/bin/usbhub",
-    "/vendor/bin/usbhub_init",
+    "/system/vendor/bin/bridgemgrd",
+    "/system/vendor/bin/cnd",
+    "/system/vendor/bin/gpsone_daemon",
+    "/system/vendor/bin/netmgrd",
+    "/system/vendor/bin/port-bridge",
+    "/system/vendor/bin/qmiproxy",
+    "/system/vendor/bin/qmuxd",
+    "/system/vendor/bin/rmt_storage",
+    "/system/vendor/bin/usbhub",
+    "/system/vendor/bin/usbhub_init",
 };
