@@ -296,6 +296,8 @@ PRODUCT_PACKAGES += \
     android.hardware.power@1.0-impl \
     sensors.msm8660 \
     android.hardware.sensors@1.0-impl \
+    vibrator.default \
+    android.hardware.vibrator@1.0-impl \
     android.hardware.wifi@1.0-impl \
     android.hardware.wifi@1.0-service \
     android.hardware.wifi.supplicant@1.0 \
