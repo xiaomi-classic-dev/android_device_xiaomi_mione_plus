@@ -231,7 +231,7 @@ static int loc_eng_init(GpsCallbacks* callbacks)
    // Avoid repeated initialization. Call de-init to clean up first.
    if (loc_eng_inited == 1)
    {
-      loc_eng_deinit();       /* stop the active client */
+      loc_eng_cleanup();      /* join the old worker before resetting its data */
 #ifdef FEATURE_GNSS_BIT_API
       gpsone_loc_api_server_unblock();
       gpsone_loc_api_server_join();
@@ -365,8 +365,10 @@ SIDE EFFECTS
 ===========================================================================*/
 static void loc_eng_cleanup()
 {
-   // clean up
-   loc_eng_deinit();
+   if (!loc_eng_inited)
+   {
+      return;
+   }
 
    if (loc_eng_data.deferred_action_thread)
    {
@@ -382,6 +384,10 @@ static void loc_eng_cleanup()
       pthread_join(loc_eng_data.deferred_action_thread, &ignoredValue);
       loc_eng_data.deferred_action_thread = NULL;
    }
+
+   /* The worker uses the RPC client both on entry and on exit. Closing it
+    * before joining can leave the worker waiting on a destroyed client lock. */
+   loc_eng_deinit();
 
    pthread_mutex_destroy (&loc_eng_data.xtra_module_data.lock);
    pthread_mutex_destroy (&loc_eng_data.deferred_stop_mutex);
@@ -2294,7 +2300,6 @@ static void loc_eng_deferred_action_thread(void* arg)
 #endif
    LOC_LOGD("loc_eng_deferred_action_thread exiting\n");
    loc_eng_data.release_wakelock_cb();
-   loc_eng_data.deferred_action_thread = 0;
 }
 
 // for gps.c
