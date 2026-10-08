@@ -147,7 +147,7 @@ TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
 TARGET_KERNEL_ARCH := arm
 TARGET_KERNEL_CONFIG := mione-user_defconfig
 TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
-KERNEL_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin
+KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin
 # Install modules with the device vendor HALs and matching Wi-Fi loader.
 NEED_KERNEL_MODULE_SYSTEM := false
 
