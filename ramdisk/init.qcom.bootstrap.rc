@@ -1,6 +1,5 @@
 # First-stage init mounts /system from the ramdisk fstab.
 # /vendor is supplied by /system/vendor on this non-Treble device.
-import /vendor/etc/init/hw/init.qcom.rc
 on early-init
     mkdir /firmware 0771 system system
     symlink /data/tombstones /tombstones
