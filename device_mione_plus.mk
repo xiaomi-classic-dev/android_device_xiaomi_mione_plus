@@ -304,7 +304,7 @@ PRODUCT_PACKAGES += \
     android.hardware.gnss@1.0-service.mione \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
-    android.hardware.graphics.mapper@2.0-impl \
+    android.hardware.graphics.mapper@2.0-impl-2.1 \
     android.hardware.graphics.composer@2.1-impl \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.keymaster@3.0-impl \
@@ -315,8 +315,8 @@ PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-service \
     vibrator.default \
     android.hardware.vibrator@1.0-impl \
-    android.hardware.wifi@1.0-service \
-    android.hardware.wifi.supplicant@1.1 \
+    android.hardware.wifi@1.0-service.legacy \
+    android.hardware.wifi.supplicant@1.2 \
     libbt-vendor \
     wificond
 

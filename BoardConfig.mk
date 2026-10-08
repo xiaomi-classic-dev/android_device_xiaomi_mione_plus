@@ -70,7 +70,7 @@ TARGET_NO_HW_VSYNC := true
 TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 # Pie validates usage before forwarding it to the legacy gralloc HAL.
 # MSM8660 camera heap (bit 22) and uncached memory (bit 25).
-TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x02400000U
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x02402000U
 BOARD_EGL_CFG := device/xiaomi/mione_plus/configs/egl.cfg
 BOARD_GLOBAL_CFLAGS += -DQCOM_NO_SECURE_PLAYBACK
 BOARD_GLOBAL_CFLAGS += -DREFRESH_RATE=60
@@ -250,3 +250,6 @@ TARGET_USES_MKE2FS := true
 
 # Non-Treble ramdisk mount points, available before vendor init is parsed.
 BOARD_ROOT_EXTRA_FOLDERS += firmware persist
+
+# BCM4329 firmware cannot reconfigure its SoftAP MAC at runtime.
+WIFI_HIDL_FEATURE_DISABLE_AP_MAC_RANDOMIZATION := true
