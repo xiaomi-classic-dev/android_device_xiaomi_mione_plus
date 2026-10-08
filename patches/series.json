@@ -10,7 +10,7 @@
           "file": "frameworks-base/0001-Bluetooth-Finish-enabling-classic-only-adapters.patch",
           "source_commit": "cc2632fd53481aa398365dacfb21428784a8dc6c",
           "patch_id": "e6fcf4da6ee8b0b57e308a46626587bf1ce1754f",
-          "sha256": "ae8fcaa49f935e1424bfdec801cbbd797cb2b7a21104efa47606f65198456437"
+          "sha256": "1625e44e17187869163b4d043d59ecd4503fd8c80d81229a6d06cc010999ed64"
         }
       ]
     },
@@ -23,25 +23,25 @@
           "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-leng.patch",
           "source_commit": "5290eb96c4e78cb3c4d60b684f4772181d99b61b",
           "patch_id": "dee0e7b5b5bb68ef155852214dc8592eb2786044",
-          "sha256": "f9f5ec2e7cbc13a01cffbfb88e4f4c0bc7687253de183a6e516eea8edad2c79d"
+          "sha256": "923f8b1e61e9c3a081288db4019be8f8c2545fcacd40df3bcb423fe6d8e25d21"
         },
         {
           "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-p.patch",
           "source_commit": "070c57c2773f85c1710fd7bfda120b8f7afa04c9",
           "patch_id": "3d3dd68357fbd12e8b689076e5cd8ce5ac68c2eb",
-          "sha256": "5576767f34cfa4ef6fc2e1044c47d78d58e732e6d959d0868b1291fa4e669b62"
+          "sha256": "228d3361415ecdd15fbf37f06047099f5b8ef00b7125b1d71850ba0ae6990d14"
         },
         {
           "file": "system-bt/0003-Bluetooth-avoid-LE-queries-on-classic-controllers.patch",
           "source_commit": "b6fb1810401ba7de89fd357d31f8853ac8d9cefd",
           "patch_id": "2be5f7b54422ae5500c5f5dfd09b3188b8f2c271",
-          "sha256": "4513d6f45fe7f1520c1ef411889f303cd6b4c608124c84d519709d9fabee72ed"
+          "sha256": "f04ccbe9f089eaf85bcf2eab5681840881e3d8d90e554ed9d50d5395ea408bd8"
         },
         {
           "file": "system-bt/0004-Bluetooth-skip-LE-identity-on-classic-controllers.patch",
           "source_commit": "8d21fa79c5fd1ab756f37e00ac5a21d64001fc38",
           "patch_id": "15ba17c001f1e61b636183453327a2e352caf498",
-          "sha256": "1b7f63f817ee04600f2b5e6b9bc93bdc181c321d6abb78421a5c5a92c932c910"
+          "sha256": "3544eb1c8b963ba6a59632b3773b17f207fe7838ad4c99c4600953c86012bfc9"
         }
       ]
     },
@@ -54,7 +54,7 @@
           "file": "hardware-interfaces/0001-Bluetooth-HAL-Port-the-bounded-MiOne-BCM4329-downloa.patch",
           "source_commit": "5129fa3a719f5547091f089a41b4df704e97a919",
           "patch_id": "d8afbc87fa158150ce1f939aa54f5922c5db2df3",
-          "sha256": "1be6f97c5bdd6ccd458cd036966d3eb4cef85fd1615a975c3d3370a6fc43cfaa"
+          "sha256": "bcc5342bd027ae4c358764249b4adadbc1fd997050ddd49d8878b3252ace275e"
         }
       ]
     },
@@ -67,7 +67,7 @@
           "file": "bionic/0001-linker-device-non-pie-allowlist.patch",
           "source_commit": "968fcd5a0372d4a23b05078a090fd93a83761fc7",
           "patch_id": "95848175453bb8203881855495116541c2617556",
-          "sha256": "2da79d7440de9b1f775d1a07f39ed2be845b4eeba03ef92edecec6993b2b800a"
+          "sha256": "57485a781ba13dbaddab860762787be69b0c4be363067f13b3b7a4460a9cc87c"
         }
       ]
     },
@@ -80,7 +80,7 @@
           "file": "vendor-lineage/0001-soong-device-non-pie-directory.patch",
           "source_commit": "cc2a67a6f9f580380413b79ccbde9e5331f30d88",
           "patch_id": "294bca7ac9fa730c467c51bb6201bcd2423f8d68",
-          "sha256": "7b551344613867d27ff03aa058c9addf65068cfb57485db82581b853c6cda1a2"
+          "sha256": "6baf7003427e0326b18ed63dd2dd8265f9ae0665e6ff5c84956122b8aa0a75eb"
         }
       ]
     }

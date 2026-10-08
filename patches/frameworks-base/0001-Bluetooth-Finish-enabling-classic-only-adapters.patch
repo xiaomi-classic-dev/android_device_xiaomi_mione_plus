@@ -12,7 +12,7 @@ Change-Id: If23dd7ecd9d1611678dc75f828154edcd56971e1
  1 file changed, 3 insertions(+)
 
 diff --git a/services/core/java/com/android/server/BluetoothManagerService.java b/services/core/java/com/android/server/BluetoothManagerService.java
-index acfa5b502f67e6e9460397b74c1f3956ccf22d5d..8f062fcaedd1c910e7adb3f42ca7b583faa6e0b9 100644
+index acfa5b502f6..8f062fcaedd 100644
 --- a/services/core/java/com/android/server/BluetoothManagerService.java
 +++ b/services/core/java/com/android/server/BluetoothManagerService.java
 @@ -1944,6 +1944,9 @@ class BluetoothManagerService extends IBluetoothManager.Stub {

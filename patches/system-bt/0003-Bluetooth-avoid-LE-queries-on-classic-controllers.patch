@@ -74,6 +74,3 @@ index 572640e0..99f2519b 100644
        /* LE features are not stored in storage. Should be retrived from stack */
        BTM_BleGetVendorCapabilities(&cmn_vsc_cb);
        local_le_features.local_privacy_enabled = BTM_BleLocalPrivacyEnabled();
--- 
-2.53.0
-

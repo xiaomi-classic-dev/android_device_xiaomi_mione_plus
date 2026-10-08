@@ -131,6 +131,3 @@ index 000000000..f6f66c653
 +bool allow_non_pie(const char* executable);
 +
 +#endif // _LINKER_NON_PIE_H_
--- 
-2.53.0
-

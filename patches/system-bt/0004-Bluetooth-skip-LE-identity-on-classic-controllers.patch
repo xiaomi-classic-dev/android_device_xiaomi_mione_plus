@@ -26,6 +26,3 @@ index 3f612cf0..10d603c0 100644
        btm_ble_reset_id();
      }
    } else {
--- 
-2.53.0
-

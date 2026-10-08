@@ -1,8 +1,8 @@
 From 070c57c2773f85c1710fd7bfda120b8f7afa04c9 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
-Subject: [PATCH 2/2] Bluetooth: Port the explicit legacy BR/EDR key-size
- policy to Oreo
+Subject: [PATCH] Bluetooth: Port the explicit legacy BR/EDR key-size policy to
+ Oreo
 
 Retain the previously approved device opt-in for the exact BCM4329B1 firmware version. Permit startup only for that version and mark an exact one-byte Unknown HCI Command response as unverified. Carry the real requested handle and originating encryption event through independent callbacks. Do not fabricate a key length or accept malformed successful replies, mismatched handles, other errors, or short keys. Builds without the policy remain fail-closed.
 
@@ -17,7 +17,7 @@ Change-Id: I00c299aaccf2c7a7f65992214508678c5adc6f64
  4 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/device/src/controller.cc b/device/src/controller.cc
-index 33b9696b6f3fdcdfcf56655224e332ef3c8e5006..fd353154831c0770d7b2a0b417e3a725de6bcd3d 100644
+index 33b9696b..fd353154 100644
 --- a/device/src/controller.cc
 +++ b/device/src/controller.cc
 @@ -264,7 +264,14 @@ static future_t* start_up(void) {
@@ -37,7 +37,7 @@ index 33b9696b6f3fdcdfcf56655224e332ef3c8e5006..fd353154831c0770d7b2a0b417e3a725
  
    readable = true;
 diff --git a/stack/btu/btu_hcif.cc b/stack/btu/btu_hcif.cc
-index 279c9d930db006fed5c2c6256b7699077232a767..27c45db5dce3200c1d05d6763255569d39048aaa 100644
+index 279c9d93..27c45db5 100644
 --- a/stack/btu/btu_hcif.cc
 +++ b/stack/btu/btu_hcif.cc
 @@ -710,7 +710,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
@@ -72,7 +72,7 @@ index 279c9d930db006fed5c2c6256b7699077232a767..27c45db5dce3200c1d05d6763255569d
      /* If remote device stop the encryption before we call "Read Encryption Key
       * Size", we might receive Insufficient Security, which means that link is
 diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
-index 70dd5919bcee06eaa347b2ff0dbb188b7385b362..ee7dfb11b0a76f02ac0033e60074b294181711ae 100644
+index 70dd5919..ee7dfb11 100644
 --- a/stack/hcic/hcicmds.cc
 +++ b/stack/hcic/hcicmds.cc
 @@ -28,6 +28,7 @@
@@ -120,7 +120,7 @@ index 70dd5919bcee06eaa347b2ff0dbb188b7385b362..ee7dfb11b0a76f02ac0033e60074b294
  
  void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
 diff --git a/stack/include/hcimsgs.h b/stack/include/hcimsgs.h
-index 3a20851ed671d3816ffbefa9616c7a90b2bad60f..0a4893df52bd5009f079cd1c3171521c4a415713 100644
+index 3a20851e..0a4893df 100644
 --- a/stack/include/hcimsgs.h
 +++ b/stack/include/hcimsgs.h
 @@ -612,7 +612,7 @@ extern void btsnd_hcic_write_cur_iac_lap(
