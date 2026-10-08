@@ -68,6 +68,9 @@ NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_DISPLAY_INSECURE_MM_HEAP := true
 TARGET_NO_HW_VSYNC := true
 TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
+# Pie validates usage before forwarding it to the legacy gralloc HAL.
+# MSM8660 camera heap (bit 22) and uncached memory (bit 25).
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x02400000U
 BOARD_EGL_CFG := device/xiaomi/mione_plus/configs/egl.cfg
 BOARD_GLOBAL_CFLAGS += -DQCOM_NO_SECURE_PLAYBACK
 BOARD_GLOBAL_CFLAGS += -DREFRESH_RATE=60
