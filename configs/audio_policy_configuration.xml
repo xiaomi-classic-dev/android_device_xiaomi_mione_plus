@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<audioPolicyConfiguration xmlns:xi="http://www.w3.org/2001/XInclude" version="1.0">
+    <globalConfiguration speaker_drc_enabled="false" />
+    <modules>
+        <module name="primary" halVersion="2.0">
+            <attachedDevices>
+                <item>Earpiece</item>
+                <item>Speaker</item>
+                <item>Built-In Mic</item>
+                <item>Built-In Back Mic</item>
+                <item>Telephony Rx</item>
+            </attachedDevices>
+            <defaultOutputDevice>Speaker</defaultOutputDevice>
+            <mixPorts>
+                <mixPort name="primary output" role="source" flags="AUDIO_OUTPUT_FLAG_PRIMARY">
+                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT" samplingRates="44100,48000" channelMasks="AUDIO_CHANNEL_OUT_STEREO" />
+                </mixPort>
+                <mixPort name="primary input" role="sink">
+                    <profile name="" format="AUDIO_FORMAT_PCM_16_BIT" samplingRates="8000,11025,12000,16000,22050,24000,32000,44100,48000" channelMasks="AUDIO_CHANNEL_IN_MONO,AUDIO_CHANNEL_IN_STEREO" />
+                </mixPort>
+            </mixPorts>
+            <devicePorts>
+                <devicePort tagName="Earpiece" type="AUDIO_DEVICE_OUT_EARPIECE" role="sink" />
+                <devicePort tagName="Speaker" type="AUDIO_DEVICE_OUT_SPEAKER" role="sink" />
+                <devicePort tagName="Wired Headset" type="AUDIO_DEVICE_OUT_WIRED_HEADSET" role="sink" />
+                <devicePort tagName="Wired Headphones" type="AUDIO_DEVICE_OUT_WIRED_HEADPHONE" role="sink" />
+                <devicePort tagName="BT SCO" type="AUDIO_DEVICE_OUT_BLUETOOTH_SCO" role="sink" />
+                <devicePort tagName="BT SCO Headset" type="AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET" role="sink" />
+                <devicePort tagName="BT SCO Car Kit" type="AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT" role="sink" />
+                <devicePort tagName="HDMI" type="AUDIO_DEVICE_OUT_AUX_DIGITAL" role="sink" />
+                <devicePort tagName="Digital Dock" type="AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET" role="sink" />
+                <devicePort tagName="FM" type="AUDIO_DEVICE_OUT_FM" role="sink" />
+                <devicePort tagName="Built-In Mic" type="AUDIO_DEVICE_IN_BUILTIN_MIC" role="source" />
+                <devicePort tagName="Built-In Back Mic" type="AUDIO_DEVICE_IN_BACK_MIC" role="source" />
+                <devicePort tagName="Wired Headset Mic" type="AUDIO_DEVICE_IN_WIRED_HEADSET" role="source" />
+                <devicePort tagName="BT SCO Headset Mic" type="AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET" role="source" />
+                <devicePort tagName="HDMI In" type="AUDIO_DEVICE_IN_AUX_DIGITAL" role="source" />
+                <devicePort tagName="Telephony Rx" type="AUDIO_DEVICE_IN_TELEPHONY_RX" role="source" />
+                <devicePort tagName="Analog Dock In" type="AUDIO_DEVICE_IN_ANLG_DOCK_HEADSET" role="source" />
+                <devicePort tagName="FM Tuner" type="AUDIO_DEVICE_IN_FM_TUNER" role="source" />
+            </devicePorts>
+            <routes>
+                <route type="mix" sink="Earpiece" sources="primary output" />
+                <route type="mix" sink="Speaker" sources="primary output" />
+                <route type="mix" sink="Wired Headset" sources="primary output" />
+                <route type="mix" sink="Wired Headphones" sources="primary output" />
+                <route type="mix" sink="BT SCO" sources="primary output" />
+                <route type="mix" sink="BT SCO Headset" sources="primary output" />
+                <route type="mix" sink="BT SCO Car Kit" sources="primary output" />
+                <route type="mix" sink="HDMI" sources="primary output" />
+                <route type="mix" sink="Digital Dock" sources="primary output" />
+                <route type="mix" sink="FM" sources="primary output" />
+                <route type="mix" sink="primary input" sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,BT SCO Headset Mic,HDMI In,Telephony Rx,Analog Dock In,FM Tuner" />
+            </routes>
+        </module>
+        <xi:include href="/vendor/etc/a2dp_audio_policy_configuration.xml" />
+        <xi:include href="/vendor/etc/usb_audio_policy_configuration.xml" />
+        <xi:include href="/vendor/etc/r_submix_audio_policy_configuration.xml" />
+    </modules>
+    <xi:include href="/vendor/etc/audio_policy_volumes.xml" />
+    <xi:include href="/vendor/etc/default_volume_tables.xml" />
+</audioPolicyConfiguration>
