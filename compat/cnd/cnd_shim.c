@@ -12,9 +12,9 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-/* CND imports these ICU 4.6 C APIs. Their signatures and callback argument
- * layouts are unchanged in ICU 53. Converters are created, used and destroyed
- * by the system ICU; no ICU implementation or converter data is duplicated. */
+/* CND imports these ICU 4.6 C APIs. Use Android's stable ICU C interface
+ * for the matching functions and callback layouts. Converters and their data
+ * remain owned by the runtime APEX. */
 UConverter *ucnv_open_46(const char *name, UErrorCode *status)
 {
     return ucnv_open(name, status);
