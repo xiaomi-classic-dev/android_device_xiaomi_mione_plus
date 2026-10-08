@@ -1,0 +1,2 @@
+on post-fs-data && property:ro.debuggable=1
+    exec - root root -- /vendor/bin/init.mione.adbroot.sh

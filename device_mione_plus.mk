@@ -267,9 +267,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # Start USB/root ADB in userdebug without switching to an eng build.
 ifeq ($(TARGET_BUILD_VARIANT),userdebug)
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
-    persist.sys.usb.config=adb \
-    lineage.service.adb.root=1
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += persist.sys.usb.config=adb
+
+# Initialize the Android 10 root-debugging setting on first boot only.
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/configs/init.mione.adbroot.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.mione.adbroot.rc \
+    device/xiaomi/mione_plus/rootdir/bin/init.mione.adbroot.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.mione.adbroot.sh
 
 # Trust the build host's public key so unattended debugging needs no prompt.
 # adbd reads /adb_keys while retaining normal RSA authentication.
