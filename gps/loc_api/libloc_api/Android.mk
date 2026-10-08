@@ -27,7 +27,8 @@ LOCAL_SHARED_LIBRARIES := \
     liblog \
     librpc \
     libutils \
-    libcutils
+    libcutils \
+    libprocessgroup
 
 LOCAL_SRC_FILES += \
     loc_eng.cpp \
