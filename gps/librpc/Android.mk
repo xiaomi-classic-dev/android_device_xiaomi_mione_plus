@@ -31,8 +31,7 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := librpc
 LOCAL_VENDOR_MODULE := true
-LOCAL_SHARED_LIBRARIES := liblog libcutils
-LOCAL_STATIC_LIBRARIES := libpower
+LOCAL_SHARED_LIBRARIES := liblog libcutils libpower
 LOCAL_WHOLE_STATIC_LIBRARIES := librpc
 
 # LOCAL_PRELINK_MODULE := false
