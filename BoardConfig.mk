@@ -229,9 +229,12 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/vendor/bin/hw/rild=22 \
     /system/vendor/bin/mione_bdaddr=22 \
     /system/vendor/bin/cnd=22 \
+    /system/vendor/bin/mm-pp-daemon=22 \
+    /system/vendor/bin/mm-qcamera-daemon=22 \
     /system/vendor/bin/netmgrd=22 \
     /system/vendor/bin/qmuxd=22 \
-    /system/vendor/bin/rmt_storage=22
+    /system/vendor/bin/rmt_storage=22 \
+    /system/vendor/bin/thermald=22
 
 # Fit the image and dex metadata in the verified 1 GiB system partition.
 MALLOC_SVELTE := true
