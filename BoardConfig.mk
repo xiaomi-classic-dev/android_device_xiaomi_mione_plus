@@ -110,7 +110,7 @@ TARGET_LD_SHIM_LIBS := \
 BOARD_USES_LEGACY_MMAP := true
 
 # SELinux
--include device/qcom/sepolicy/sepolicy.mk
+-include device/qcom/sepolicy-legacy/sepolicy.mk
 
 # Filesystem
 #BOARD_VOLD_MAX_PARTITIONS := 36
@@ -146,8 +146,8 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
 TARGET_KERNEL_ARCH := arm
 TARGET_KERNEL_CONFIG := mione-user_defconfig
-TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-eabi-
-KERNEL_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin
+TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
+KERNEL_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin
 # Install modules with the device vendor HALs and matching Wi-Fi loader.
 NEED_KERNEL_MODULE_SYSTEM := false
 
@@ -207,3 +207,18 @@ BOARD_HAL_STATIC_LIBRARIES += libhealthd.mione
 TARGET_USES_64_BIT_BINDER := false
 BOARD_KERNEL_IMAGE_NAME := zImage
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
+
+# Pie uses per-process SDK compatibility for the fixed legacy camera/RIL blobs.
+TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
+    /system/bin/cameraserver=22 \
+    /system/bin/mediaserver=22 \
+    /vendor/bin/hw/android.hardware.camera.provider@2.4-service=22 \
+    /vendor/bin/cnd=22 \
+    /vendor/bin/netmgrd=22
+
+# Fit the image and dex metadata in the verified 1 GiB system partition.
+MALLOC_SVELTE := true
+EXCLUDE_SERIF_FONTS := true
+USE_REDUCED_CJK_FONT_WEIGHTS := true
+WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
+TARGET_USES_MKE2FS := true

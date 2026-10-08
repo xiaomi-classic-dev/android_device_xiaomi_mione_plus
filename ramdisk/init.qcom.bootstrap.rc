@@ -6,6 +6,8 @@ on early-init
     symlink /data/tombstones /tombstones
 
 on init
+    # Linux 3.4 FunctionFS has no asynchronous I/O support.
+    setprop sys.usb.ffs.aio_compat 1
     mkdir /persist 0771 system system
     mount_all /fstab.qcom.early /vendor/etc/init/hw/init.qcom.rc --early
 
