@@ -137,9 +137,7 @@ on boot
     # Allow write permission for rtc wakealarm
     chmod 0666 /sys/class/rtc/rtc0/wakealarm
 
-# import cne init file
 on post-fs
-    import /persist/init.cne.rc
     start qcom-post-fs
 
 # msm specific files that need to be created on /data
