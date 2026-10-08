@@ -1,4 +1,4 @@
-From 8d21fa79c5fd1ab756f37e00ac5a21d64001fc38 Mon Sep 17 00:00:00 2001
+From d89fa0481c16a1ac1c31b5c579af8c704f609110 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:51:19 +0800
 Subject: [PATCH] Bluetooth: skip LE identity generation on classic controllers
@@ -11,10 +11,10 @@ Change-Id: I74e8869e8a4f904415bf49f79737edce22e3eac3
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/stack/btm/btm_sec.cc b/stack/btm/btm_sec.cc
-index 3f612cf0..10d603c0 100644
+index e054b3111..71be462c1 100644
 --- a/stack/btm/btm_sec.cc
 +++ b/stack/btm/btm_sec.cc
-@@ -256,8 +256,9 @@ bool BTM_SecRegister(tBTM_APPL_INFO* p_cb_info) {
+@@ -254,8 +254,9 @@ bool BTM_SecRegister(const tBTM_APPL_INFO* p_cb_info) {
    if (p_cb_info->p_le_callback) {
      BTM_TRACE_EVENT("%s SMP_Register( btm_proc_smp_cback )", __func__);
      SMP_Register(btm_proc_smp_cback);

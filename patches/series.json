@@ -1,86 +1,79 @@
 {
-  "android_branch": "lineage-15.1",
+  "android_branch": "lineage-16.0",
   "projects": [
     {
       "path": "frameworks/base",
-      "base_commit": "39c4a924c7ed9f6093c0983de947734151e4bc7e",
-      "source_head": "cc2632fd53481aa398365dacfb21428784a8dc6c",
-      "patches": [
-        {
-          "file": "frameworks-base/0001-Bluetooth-Finish-enabling-classic-only-adapters.patch",
-          "source_commit": "cc2632fd53481aa398365dacfb21428784a8dc6c",
-          "patch_id": "e6fcf4da6ee8b0b57e308a46626587bf1ce1754f",
-          "sha256": "1625e44e17187869163b4d043d59ecd4503fd8c80d81229a6d06cc010999ed64"
-        }
-      ]
+      "base_commit": "ea0de66d71ac88db42f26d9b63c9c1941aa097fc",
+      "source_head": "ea0de66d71ac88db42f26d9b63c9c1941aa097fc",
+      "patches": []
     },
     {
       "path": "system/bt",
-      "base_commit": "e0cf87b0d66c6aa60e13c88e375e055a8d604b8d",
-      "source_head": "8d21fa79c5fd1ab756f37e00ac5a21d64001fc38",
+      "base_commit": "269bcb0debd5e4cd7f44dd6588e78f4fe3dc8816",
+      "source_head": "d89fa0481c16a1ac1c31b5c579af8c704f609110",
       "patches": [
         {
-          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-leng.patch",
-          "source_commit": "5290eb96c4e78cb3c4d60b684f4772181d99b61b",
+          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-length-and-handl.patch",
+          "source_commit": "b7cab5d38344e0b1210ad3ac59db866e20530f8c",
           "patch_id": "dee0e7b5b5bb68ef155852214dc8592eb2786044",
-          "sha256": "923f8b1e61e9c3a081288db4019be8f8c2545fcacd40df3bcb423fe6d8e25d21"
+          "sha256": "5ce639a6d196191dca4547aac4ef895e322e69a0fa9cbf17a75cb2a2c99a0fb7"
         },
         {
-          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-p.patch",
-          "source_commit": "070c57c2773f85c1710fd7bfda120b8f7afa04c9",
-          "patch_id": "3d3dd68357fbd12e8b689076e5cd8ce5ac68c2eb",
-          "sha256": "228d3361415ecdd15fbf37f06047099f5b8ef00b7125b1d71850ba0ae6990d14"
+          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-policy-to-Ore.patch",
+          "source_commit": "47bcdd36047697a9f77d07337e46a16ca0871130",
+          "patch_id": "01e2f63f174a907f120ac87dd82120cb16f4b469",
+          "sha256": "d5f1196b1064a865fa5ebeb8dd19af1e881a49d5479aef0699ee8bb1b84bab21"
         },
         {
-          "file": "system-bt/0003-Bluetooth-avoid-LE-queries-on-classic-controllers.patch",
-          "source_commit": "b6fb1810401ba7de89fd357d31f8853ac8d9cefd",
+          "file": "system-bt/0003-Bluetooth-Avoid-LE-advertising-and-feature-queries-on-classic-co.patch",
+          "source_commit": "bf6c82952fb44ca6cd7d716866c0a9a9148d5af0",
           "patch_id": "2be5f7b54422ae5500c5f5dfd09b3188b8f2c271",
-          "sha256": "f04ccbe9f089eaf85bcf2eab5681840881e3d8d90e554ed9d50d5395ea408bd8"
+          "sha256": "57a9f3c494a3074706104d0b0398bd2d49a5c5df677a894162e45434fc55c984"
         },
         {
-          "file": "system-bt/0004-Bluetooth-skip-LE-identity-on-classic-controllers.patch",
-          "source_commit": "8d21fa79c5fd1ab756f37e00ac5a21d64001fc38",
+          "file": "system-bt/0004-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
+          "source_commit": "d89fa0481c16a1ac1c31b5c579af8c704f609110",
           "patch_id": "15ba17c001f1e61b636183453327a2e352caf498",
-          "sha256": "3544eb1c8b963ba6a59632b3773b17f207fe7838ad4c99c4600953c86012bfc9"
+          "sha256": "2783cc38afa2d51a855bcd1e6d9c44ca022e25a32fca0bcf099371ba66450e25"
         }
       ]
     },
     {
       "path": "hardware/interfaces",
-      "base_commit": "5f14a29297db529a6f82527d8444af8ff0f65476",
-      "source_head": "5129fa3a719f5547091f089a41b4df704e97a919",
+      "base_commit": "247f33da70920c5d79765faab67ee3191133723c",
+      "source_head": "79ac83cfa6eb981535db03795dfbcd6d60daa45f",
       "patches": [
         {
-          "file": "hardware-interfaces/0001-Bluetooth-HAL-Port-the-bounded-MiOne-BCM4329-downloa.patch",
-          "source_commit": "5129fa3a719f5547091f089a41b4df704e97a919",
+          "file": "hardware-interfaces/0001-Bluetooth-HAL-Port-the-bounded-MiOne-BCM4329-download-quirk-to-H.patch",
+          "source_commit": "79ac83cfa6eb981535db03795dfbcd6d60daa45f",
           "patch_id": "d8afbc87fa158150ce1f939aa54f5922c5db2df3",
-          "sha256": "bcc5342bd027ae4c358764249b4adadbc1fd997050ddd49d8878b3252ace275e"
+          "sha256": "5c50ad3a00c71ade4a277cd1e9303dcb6e85d094e0611d743d3e88d3541f9b20"
         }
       ]
     },
     {
       "path": "bionic",
-      "base_commit": "fee4dc888bd235123fceff06aed02e0b1db73d7f",
-      "source_head": "968fcd5a0372d4a23b05078a090fd93a83761fc7",
+      "base_commit": "b91dfc8b9dcb1ffbf9572fc0406878e599c45ccc",
+      "source_head": "25712ad5a608a90898e4e24a3d47ea72787cf575",
       "patches": [
         {
-          "file": "bionic/0001-linker-device-non-pie-allowlist.patch",
-          "source_commit": "968fcd5a0372d4a23b05078a090fd93a83761fc7",
-          "patch_id": "95848175453bb8203881855495116541c2617556",
-          "sha256": "57485a781ba13dbaddab860762787be69b0c4be363067f13b3b7a4460a9cc87c"
+          "file": "bionic/0001-linker-Restore-device-selected-non-PIE-executables-for-Oreo.patch",
+          "source_commit": "25712ad5a608a90898e4e24a3d47ea72787cf575",
+          "patch_id": "f2eb59145b58023fc468e590f5a20823bcd731d2",
+          "sha256": "23f15bfa8712f21ea47b4b8c451e447e1c2b8dc5d8106cec4df19d2df9ba728d"
         }
       ]
     },
     {
       "path": "vendor/lineage",
-      "base_commit": "921feb7d99058da0ef17a5c2361fa91a6b87b488",
-      "source_head": "cc2a67a6f9f580380413b79ccbde9e5331f30d88",
+      "base_commit": "64ab602c30f36934a304d3e5e418be2179861915",
+      "source_head": "05273f7bc4f3b02de79df360262834fb26be0dd0",
       "patches": [
         {
-          "file": "vendor-lineage/0001-soong-device-non-pie-directory.patch",
-          "source_commit": "cc2a67a6f9f580380413b79ccbde9e5331f30d88",
-          "patch_id": "294bca7ac9fa730c467c51bb6201bcd2423f8d68",
-          "sha256": "6baf7003427e0326b18ed63dd2dd8265f9ae0665e6ff5c84956122b8aa0a75eb"
+          "file": "vendor-lineage/0001-soong-Pass-the-optional-device-non-PIE-allowlist-directory.patch",
+          "source_commit": "05273f7bc4f3b02de79df360262834fb26be0dd0",
+          "patch_id": "b46746e2cd94926480bdd694f5c9c7ea6a1f3d1b",
+          "sha256": "68eadae6ab46b75634d4d4783dde3cfaa756d92b0b6aefecc41597f62c2f482a"
         }
       ]
     }

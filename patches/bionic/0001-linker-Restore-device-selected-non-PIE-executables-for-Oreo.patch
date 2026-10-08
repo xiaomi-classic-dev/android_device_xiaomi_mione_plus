@@ -1,4 +1,4 @@
-From 968fcd5a0372d4a23b05078a090fd93a83761fc7 Mon Sep 17 00:00:00 2001
+From 25712ad5a608a90898e4e24a3d47ea72787cf575 Mon Sep 17 00:00:00 2001
 From: Matt Mower <mowerm@gmail.com>
 Date: Wed, 7 Oct 2026 21:05:39 +0800
 Subject: [PATCH] linker: Restore device-selected non-PIE executables for Oreo
@@ -19,10 +19,10 @@ Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
  create mode 100644 linker/linker_non_pie.h
 
 diff --git a/linker/Android.bp b/linker/Android.bp
-index d74fbd36d..b9003d12c 100644
+index 50fcf07fd..857a610fd 100644
 --- a/linker/Android.bp
 +++ b/linker/Android.bp
-@@ -106,6 +106,11 @@ cc_binary {
+@@ -167,6 +167,11 @@ cc_binary {
              cppflags: ["-DUSE_LD_CONFIG_FILE"],
          },
          lineage: {
@@ -31,11 +31,11 @@ index d74fbd36d..b9003d12c 100644
 +                include_dirs: ["%s"],
 +                srcs: ["linker_non_pie.cpp"],
 +            },
-             needs_text_relocations: {
-                 cppflags: ["-DTARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS"],
+             target_process_sdk_version_override: {
+                 cppflags: ["-DSDK_VERSION_OVERRIDES=\"%s\""],
              },
 diff --git a/linker/linker_main.cpp b/linker/linker_main.cpp
-index 7e74ae745..e05bb04b1 100644
+index ba7037759..dc3ec81f9 100644
 --- a/linker/linker_main.cpp
 +++ b/linker/linker_main.cpp
 @@ -27,6 +27,9 @@
@@ -48,7 +48,7 @@ index 7e74ae745..e05bb04b1 100644
  
  #include "linker_debug.h"
  #include "linker_cfi.h"
-@@ -316,7 +319,11 @@ static ElfW(Addr) __linker_init_post_relocation(KernelArgumentBlock& args) {
+@@ -340,7 +343,11 @@ static ElfW(Addr) __linker_init_post_relocation(KernelArgumentBlock& args) {
    ElfW(Ehdr)* elf_hdr = reinterpret_cast<ElfW(Ehdr)*>(si->base);
  
    // We haven't supported non-PIE since Lollipop for security reasons.
@@ -58,8 +58,8 @@ index 7e74ae745..e05bb04b1 100644
 +      && !(elf_hdr->e_type == ET_EXEC && allow_non_pie(executable_path))
 +#endif
 +      ) {
-     // We don't use __libc_fatal here because we don't want a tombstone: it's
-     // been several years now but we still find ourselves on app compatibility
+     // We don't use async_safe_fatal here because we don't want a tombstone:
+     // even after several years we still find ourselves on app compatibility
      // investigations because some app's trying to launch an executable that
 diff --git a/linker/linker_non_pie.cpp b/linker/linker_non_pie.cpp
 new file mode 100644

@@ -1,4 +1,4 @@
-From b6fb1810401ba7de89fd357d31f8853ac8d9cefd Mon Sep 17 00:00:00 2001
+From bf6c82952fb44ca6cd7d716866c0a9a9148d5af0 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:18:41 +0800
 Subject: [PATCH] Bluetooth: Avoid LE advertising and feature queries on
@@ -14,10 +14,10 @@ Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
  2 files changed, 17 insertions(+), 6 deletions(-)
 
 diff --git a/bta/dm/bta_dm_act.cc b/bta/dm/bta_dm_act.cc
-index c38cf917..269e7a05 100644
+index 51201f537..fc2f32f5c 100644
 --- a/bta/dm/bta_dm_act.cc
 +++ b/bta/dm/bta_dm_act.cc
-@@ -43,6 +43,7 @@
+@@ -42,6 +42,7 @@
  #include "btm_int.h"
  #include "btu.h"
  #include "gap_api.h" /* For GAP_BleReadPeerPrefConnParams */
@@ -25,7 +25,7 @@ index c38cf917..269e7a05 100644
  #include "l2c_api.h"
  #include "osi/include/log.h"
  #include "osi/include/osi.h"
-@@ -440,14 +441,15 @@ static void bta_dm_sys_hw_cback(tBTA_SYS_HW_EVT status) {
+@@ -420,14 +421,15 @@ static void bta_dm_sys_hw_cback(tBTA_SYS_HW_EVT status) {
      BTM_RegBusyLevelNotif(bta_dm_bl_change_cback, NULL,
                            BTM_BL_UPDATE_MASK | BTM_BL_ROLE_CHG_MASK);
  
@@ -47,10 +47,10 @@ index c38cf917..269e7a05 100644
      /* Earlier, we used to invoke BTM_ReadLocalAddr which was just copying the
         bd_addr
 diff --git a/btif/src/btif_dm.cc b/btif/src/btif_dm.cc
-index 572640e0..99f2519b 100644
+index 56d1cec7d..e6433c36c 100644
 --- a/btif/src/btif_dm.cc
 +++ b/btif/src/btif_dm.cc
-@@ -1845,13 +1845,22 @@ static void btif_dm_upstreams_evt(uint16_t event, char* p_param) {
+@@ -1843,13 +1843,22 @@ static void btif_dm_upstreams_evt(uint16_t event, char* p_param) {
  
      case BTA_DM_LE_FEATURES_READ: {
        tBTM_BLE_VSC_CB cmn_vsc_cb;

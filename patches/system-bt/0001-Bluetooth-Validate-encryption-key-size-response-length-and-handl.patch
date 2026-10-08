@@ -1,4 +1,4 @@
-From 5290eb96c4e78cb3c4d60b684f4772181d99b61b Mon Sep 17 00:00:00 2001
+From b7cab5d38344e0b1210ad3ac59db866e20530f8c Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
 Subject: [PATCH] Bluetooth: Validate encryption key-size response length and
@@ -12,10 +12,10 @@ Change-Id: I23b14c3bf0669faeebdb447e5a73283e63459671
  1 file changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
-index f3277e1f..70dd5919 100644
+index 0778afc1b..ccf6e9fe3 100644
 --- a/stack/hcic/hcicmds.cc
 +++ b/stack/hcic/hcicmds.cc
-@@ -1313,8 +1313,17 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+@@ -1312,8 +1312,17 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
  }
  
  static void read_encryption_key_size_complete(
@@ -34,7 +34,7 @@ index f3277e1f..70dd5919 100644
    uint8_t status;
    uint16_t handle;
    uint8_t key_size;
-@@ -1322,6 +1331,10 @@ static void read_encryption_key_size_complete(
+@@ -1321,6 +1330,10 @@ static void read_encryption_key_size_complete(
    STREAM_TO_UINT16(handle, return_parameters);
    STREAM_TO_UINT8(key_size, return_parameters);
  
@@ -45,7 +45,7 @@ index f3277e1f..70dd5919 100644
    std::move(cb).Run(status, handle, key_size);
  }
  
-@@ -1335,7 +1348,7 @@ void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
+@@ -1334,7 +1347,7 @@ void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
  
    btu_hcif_send_cmd_with_cb(
        FROM_HERE, HCI_READ_ENCR_KEY_SIZE, param, len,
