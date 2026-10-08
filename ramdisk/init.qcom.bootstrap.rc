@@ -8,6 +8,8 @@ on early-init
 on init
     # Linux 3.4 FunctionFS has no asynchronous I/O support.
     setprop sys.usb.ffs.aio_compat 1
+    setprop persist.adb.nonblocking_ffs 0
+    setprop ro.adb.nonblocking_ffs 0
     mkdir /persist 0771 system system
 
     # Keep FunctionFS and stable USB serial setup in the hardware bootstrap.
