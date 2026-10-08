@@ -76,19 +76,6 @@
           "sha256": "68eadae6ab46b75634d4d4783dde3cfaa756d92b0b6aefecc41597f62c2f482a"
         }
       ]
-    },
-    {
-      "path": "packages/apps/Trebuchet",
-      "base_commit": "02e99b157f05f8fbabb9c2457e387842ccad0bed",
-      "source_head": "b7101f50cf6009d6bc1e995bb3238572e8f212fa",
-      "patches": [
-        {
-          "file": "packages-apps-Trebuchet/0001-Quickstep-Initialize-recents-icon-state-before-background-task-l.patch",
-          "source_commit": "b7101f50cf6009d6bc1e995bb3238572e8f212fa",
-          "patch_id": "16f1d870df6262413eed345cc989979250264770",
-          "sha256": "a6b23284f887287d2987290c9052d34005344e75fe191b3b867f3ea9de2fe082"
-        }
-      ]
     }
   ]
 }
