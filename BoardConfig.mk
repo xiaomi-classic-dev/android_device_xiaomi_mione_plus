@@ -228,7 +228,6 @@ BOARD_HAL_STATIC_LIBRARIES += libhealthd.mione
 TARGET_USES_64_BIT_BINDER := false
 BOARD_KERNEL_IMAGE_NAME := zImage
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
-DEVICE_FRAMEWORK_MANIFEST_FILE += system/libhidl/vintfdata/manifest_healthd_exclude.xml
 
 # Preserve the API-22 loading contract only in services using legacy blobs.
 # /vendor resolves to /system/vendor on this non-Treble device.
