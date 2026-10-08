@@ -115,6 +115,10 @@ BOARD_USES_LEGACY_MMAP := true
 # SELinux
 -include device/qcom/sepolicy-legacy/sepolicy.mk
 
+# Legacy vendor baseline: stock MIUI 4.12.5 (Android 4.1.2).
+# Stock has no SPL metadata; use its 2014-12-05 build date as the reference.
+VENDOR_SECURITY_PATCH := 2014-12-05
+
 # Filesystem
 #BOARD_VOLD_MAX_PARTITIONS := 36
 
