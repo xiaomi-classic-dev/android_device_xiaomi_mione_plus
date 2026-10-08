@@ -285,6 +285,7 @@ $(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
 
 # Oreo adapters retain the device's source-built legacy HALs.
 PRODUCT_PACKAGES += \
+    android.hardware.health@2.0-service.mione \
     android.hardware.audio@2.0-impl \
     android.hardware.audio@2.0-service \
     android.hardware.audio.effect@2.0-impl \

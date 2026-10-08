@@ -1,0 +1,10 @@
+// Copyright (C) 2026 The CyanogenMod Project
+// SPDX-License-Identifier: Apache-2.0
+cc_library_static {
+    name: "libhealthd.mione",
+    vendor_available: true,
+    srcs: ["healthd_mione.cpp"],
+    header_libs: ["libhealthd_headers"],
+    shared_libs: ["libcutils", "liblog"],
+    cflags: ["-Wall", "-Wextra", "-Werror"],
+}
