@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Hack for build audio-caf 
-
-LOCAL_PATH := $(call my-dir)
+MIONE_DEVICE_PATH := $(call my-dir)
 
 ifeq ($(TARGET_BOOTLOADER_BOARD_NAME),mione)
-include $(call all-makefiles-under,$(LOCAL_PATH))
+ifneq ($(BUILD_WITHOUT_VENDOR),true)
+# Android 10's hardware/qcom parent excludes the standalone CAF trees.
+include $(call project-path-for,qcom-audio)/Android.mk
+include $(call project-path-for,qcom-display)/Android.mk
+include $(call project-path-for,qcom-media)/Android.mk
+endif
+include $(call all-makefiles-under,$(MIONE_DEVICE_PATH))
 endif
