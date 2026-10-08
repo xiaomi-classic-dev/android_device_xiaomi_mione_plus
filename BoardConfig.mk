@@ -208,13 +208,22 @@ TARGET_USES_64_BIT_BINDER := false
 BOARD_KERNEL_IMAGE_NAME := zImage
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
 
-# Pie uses per-process SDK compatibility for the fixed legacy camera/RIL blobs.
+# Preserve the API-22 loading contract only in services using legacy blobs.
+# /vendor resolves to /system/vendor on this non-Treble device.
 TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/bin/cameraserver=22 \
     /system/bin/mediaserver=22 \
-    /vendor/bin/hw/android.hardware.camera.provider@2.4-service=22 \
-    /vendor/bin/cnd=22 \
-    /vendor/bin/netmgrd=22
+    /system/bin/audioserver=22 \
+    /system/vendor/bin/hw/android.hardware.camera.provider@2.4-service=22 \
+    /system/vendor/bin/hw/android.hardware.audio@2.0-service=22 \
+    /system/vendor/bin/hw/android.hardware.sensors@1.0-service=22 \
+    /system/vendor/bin/hw/android.hardware.gnss@1.0-service.mione=22 \
+    /system/vendor/bin/hw/rild=22 \
+    /system/vendor/bin/mione_bdaddr=22 \
+    /system/vendor/bin/cnd=22 \
+    /system/vendor/bin/netmgrd=22 \
+    /system/vendor/bin/qmuxd=22 \
+    /system/vendor/bin/rmt_storage=22
 
 # Fit the image and dex metadata in the verified 1 GiB system partition.
 MALLOC_SVELTE := true

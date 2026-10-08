@@ -286,6 +286,7 @@ $(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
 # Oreo adapters retain the device's source-built legacy HALs.
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
+    android.hardware.audio@2.0-service \
     android.hardware.audio.effect@2.0-impl \
     android.hardware.bluetooth@1.0-impl \
     camera.device@1.0-impl \
@@ -303,6 +304,7 @@ PRODUCT_PACKAGES += \
     android.hardware.memtrack@1.0-impl \
     sensors.msm8660 \
     android.hardware.sensors@1.0-impl \
+    android.hardware.sensors@1.0-service \
     vibrator.default \
     android.hardware.vibrator@1.0-impl \
     android.hardware.wifi@1.0-service \
