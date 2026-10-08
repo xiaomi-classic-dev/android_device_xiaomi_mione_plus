@@ -1,6 +1,6 @@
-# MiOne has /vendor in /system/vendor and no device-tree first-stage fstab.
-# Keep coldboot permissions in ramdisk; load the vendor rc files after coldboot
-# and /system mounting, before normal fs/boot or charger actions are queued.
+# First-stage init mounts /system from the ramdisk fstab.
+# /vendor is supplied by /system/vendor on this non-Treble device.
+import /vendor/etc/init/hw/init.qcom.rc
 on early-init
     mkdir /firmware 0771 system system
     symlink /data/tombstones /tombstones
@@ -9,10 +9,8 @@ on init
     # Linux 3.4 FunctionFS has no asynchronous I/O support.
     setprop sys.usb.ffs.aio_compat 1
     mkdir /persist 0771 system system
-    mount_all /fstab.qcom.early /vendor/etc/init/hw/init.qcom.rc --early
 
-    # Imported on-init actions would miss the action list already executing.
-    # Preserve the original FunctionFS and USB serial setup in this bootstrap.
+    # Keep FunctionFS and stable USB serial setup in the hardware bootstrap.
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
     write /sys/class/android_usb/android0/f_rndis/wceis 1
     mkdir /dev/usb-ffs 0770 shell shell

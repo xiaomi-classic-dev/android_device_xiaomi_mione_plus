@@ -246,3 +246,6 @@ EXCLUDE_SERIF_FONTS := true
 USE_REDUCED_CJK_FONT_WEIGHTS := true
 WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
 TARGET_USES_MKE2FS := true
+
+# Non-Treble ramdisk mount points, available before vendor init is parsed.
+BOARD_ROOT_EXTRA_FOLDERS += firmware persist

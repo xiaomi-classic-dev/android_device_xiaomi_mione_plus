@@ -210,7 +210,6 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/rootdir/bin/init.qcom.post_boot.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.post_boot.sh \
     device/xiaomi/mione_plus/rootdir/bin/init.qcom.efs.sync.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.efs.sync.sh \
     device/xiaomi/mione_plus/ramdisk/init.qcom.bootstrap.rc:root/init.qcom.rc \
-    device/xiaomi/mione_plus/ramdisk/fstab.qcom.early:root/fstab.qcom.early \
     device/xiaomi/mione_plus/rootdir/etc/fstab.qcom:root/fstab.qcom \
     device/xiaomi/mione_plus/rootdir/etc/ueventd.qcom.rc:root/ueventd.qcom.rc
 
