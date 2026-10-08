@@ -1,4 +1,4 @@
-From b7cab5d38344e0b1210ad3ac59db866e20530f8c Mon Sep 17 00:00:00 2001
+From 42255f0a48a74611b1aa2a98ec57b361425f896e Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
 Subject: [PATCH] Bluetooth: Validate encryption key-size response length and
@@ -8,20 +8,22 @@ The legacy controller can answer Unknown HCI Command with only one byte. Capture
 
 Change-Id: I23b14c3bf0669faeebdb447e5a73283e63459671
 ---
- stack/hcic/hcicmds.cc | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+ stack/hcic/hcicmds.cc | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
 diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
-index 0778afc1b..ccf6e9fe3 100644
+index 23a8648b0..e4072155d 100644
 --- a/stack/hcic/hcicmds.cc
 +++ b/stack/hcic/hcicmds.cc
-@@ -1312,8 +1312,17 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+@@ -1309,8 +1309,18 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+   btu_hcif_send_cmd(LOCAL_BR_EDR_CONTROLLER_ID, p);
  }
  
- static void read_encryption_key_size_complete(
--    ReadEncKeySizeCb cb, uint8_t* return_parameters,
+-static void read_encryption_key_size_complete(ReadEncKeySizeCb cb, uint8_t* return_parameters,
+-                                              uint16_t return_parameters_length) {
++static void read_encryption_key_size_complete(
 +    ReadEncKeySizeCb cb, uint16_t expected_handle, uint8_t* return_parameters,
-     uint16_t return_parameters_length) {
++    uint16_t return_parameters_length) {
 +  // An unknown command may return only its status byte. Never read a handle
 +  // or key size from a truncated response, or trust a mismatched handle.
 +  if (return_parameters_length != 4) {
@@ -34,7 +36,7 @@ index 0778afc1b..ccf6e9fe3 100644
    uint8_t status;
    uint16_t handle;
    uint8_t key_size;
-@@ -1321,6 +1330,10 @@ static void read_encryption_key_size_complete(
+@@ -1318,6 +1328,10 @@ static void read_encryption_key_size_complete(ReadEncKeySizeCb cb, uint8_t* retu
    STREAM_TO_UINT16(handle, return_parameters);
    STREAM_TO_UINT8(key_size, return_parameters);
  
@@ -45,11 +47,14 @@ index 0778afc1b..ccf6e9fe3 100644
    std::move(cb).Run(status, handle, key_size);
  }
  
-@@ -1334,7 +1347,7 @@ void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
+@@ -1329,8 +1343,9 @@ void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
+   uint8_t* p = param;
+   UINT16_TO_STREAM(p, handle);
  
-   btu_hcif_send_cmd_with_cb(
-       FROM_HERE, HCI_READ_ENCR_KEY_SIZE, param, len,
--      base::Bind(&read_encryption_key_size_complete, base::Passed(&cb)));
+-  btu_hcif_send_cmd_with_cb(FROM_HERE, HCI_READ_ENCR_KEY_SIZE, param, len,
+-                            base::Bind(&read_encryption_key_size_complete, base::Passed(&cb)));
++  btu_hcif_send_cmd_with_cb(
++      FROM_HERE, HCI_READ_ENCR_KEY_SIZE, param, len,
 +      base::Bind(&read_encryption_key_size_complete, base::Passed(&cb), handle));
  }
  

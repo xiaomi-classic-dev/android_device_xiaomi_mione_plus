@@ -1,4 +1,4 @@
-From d89fa0481c16a1ac1c31b5c579af8c704f609110 Mon Sep 17 00:00:00 2001
+From e2f701f7a88365205bc8d0736d828f12857002f1 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:51:19 +0800
 Subject: [PATCH] Bluetooth: skip LE identity generation on classic controllers
@@ -11,18 +11,18 @@ Change-Id: I74e8869e8a4f904415bf49f79737edce22e3eac3
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/stack/btm/btm_sec.cc b/stack/btm/btm_sec.cc
-index e054b3111..71be462c1 100644
+index d5d698c27..a3f61800b 100644
 --- a/stack/btm/btm_sec.cc
 +++ b/stack/btm/btm_sec.cc
-@@ -254,8 +254,9 @@ bool BTM_SecRegister(const tBTM_APPL_INFO* p_cb_info) {
-   if (p_cb_info->p_le_callback) {
+@@ -363,8 +363,9 @@ bool BTM_SecRegister(const tBTM_APPL_INFO* p_cb_info) {
      BTM_TRACE_EVENT("%s SMP_Register( btm_proc_smp_cback )", __func__);
      SMP_Register(btm_proc_smp_cback);
+     Octet16 zero{0};
 -    /* if no IR is loaded, need to regenerate all the keys */
--    if (memcmp(btm_cb.devcb.id_keys.ir, &temp_value, sizeof(BT_OCTET16)) == 0) {
+-    if (btm_cb.devcb.id_keys.ir == zero) {
 +    /* LE identity generation sends LE Rand, which classic controllers lack. */
 +    if (controller_get_interface()->supports_ble() &&
-+        memcmp(btm_cb.devcb.id_keys.ir, &temp_value, sizeof(BT_OCTET16)) == 0) {
++        btm_cb.devcb.id_keys.ir == zero) {
        btm_ble_reset_id();
      }
    } else {

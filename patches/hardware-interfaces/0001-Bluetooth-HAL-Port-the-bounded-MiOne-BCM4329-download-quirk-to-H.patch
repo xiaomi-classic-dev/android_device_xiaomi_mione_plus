@@ -1,4 +1,4 @@
-From 79ac83cfa6eb981535db03795dfbcd6d60daa45f Mon Sep 17 00:00:00 2001
+From 97d1c505eebf40a61218f724458eb27fbdf0eac5 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:08:44 +0800
 Subject: [PATCH] Bluetooth HAL: Port the bounded MiOne BCM4329 download quirk
@@ -16,10 +16,10 @@ Change-Id: I885495046e596ce97c7b742766ffa549e351da38
  3 files changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/bluetooth/1.0/default/h4_protocol.cc b/bluetooth/1.0/default/h4_protocol.cc
-index df405077..0ce9b4f0 100644
+index 98e3273f3..e46b523bb 100644
 --- a/bluetooth/1.0/default/h4_protocol.cc
 +++ b/bluetooth/1.0/default/h4_protocol.cc
-@@ -87,6 +87,15 @@ void H4Protocol::OnDataReady(int fd) {
+@@ -88,6 +88,15 @@ void H4Protocol::OnDataReady(int fd) {
      if (hci_packet_type_ != HCI_PACKET_TYPE_ACL_DATA &&
          hci_packet_type_ != HCI_PACKET_TYPE_SCO_DATA &&
          hci_packet_type_ != HCI_PACKET_TYPE_EVENT) {
@@ -36,7 +36,7 @@ index df405077..0ce9b4f0 100644
                         static_cast<int>(hci_packet_type_));
      }
 diff --git a/bluetooth/1.0/default/h4_protocol.h b/bluetooth/1.0/default/h4_protocol.h
-index 0d0a1caf..81550f1b 100644
+index 0d0a1caf1..81550f1bb 100644
 --- a/bluetooth/1.0/default/h4_protocol.h
 +++ b/bluetooth/1.0/default/h4_protocol.h
 @@ -31,12 +31,13 @@ namespace hci {
@@ -65,7 +65,7 @@ index 0d0a1caf..81550f1b 100644
  
  }  // namespace hci
 diff --git a/bluetooth/1.0/default/vendor_interface.cc b/bluetooth/1.0/default/vendor_interface.cc
-index a8f5bb40..f7577f92 100644
+index d56e344e7..1a887e513 100644
 --- a/bluetooth/1.0/default/vendor_interface.cc
 +++ b/bluetooth/1.0/default/vendor_interface.cc
 @@ -248,7 +248,8 @@ bool VendorInterface::Open(InitializeCompleteCallback initialize_complete_cb,

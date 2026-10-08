@@ -1,4 +1,4 @@
-From 05273f7bc4f3b02de79df360262834fb26be0dd0 Mon Sep 17 00:00:00 2001
+From d4b7fedd9df5c36701346296925841d7000cb843 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:05:39 +0800
 Subject: [PATCH] soong: Pass the optional device non-PIE allowlist directory
@@ -13,7 +13,7 @@ Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
  2 files changed, 7 insertions(+)
 
 diff --git a/build/soong/android/variable.go b/build/soong/android/variable.go
-index 2136f01e..311f9bb2 100644
+index 04aa4f5a..67198f88 100644
 --- a/build/soong/android/variable.go
 +++ b/build/soong/android/variable.go
 @@ -1,5 +1,10 @@
@@ -27,7 +27,7 @@ index 2136f01e..311f9bb2 100644
  	Additional_gralloc_10_usage_bits struct {
  		Cppflags []string
  	}
-@@ -74,6 +79,7 @@ type Product_variables struct {
+@@ -70,6 +75,7 @@ type Product_variables struct {
  }
  
  type ProductVariables struct {
@@ -36,11 +36,11 @@ index 2136f01e..311f9bb2 100644
  	Apply_msm8974_1440p_egl_workaround  *bool `json:",omitempty"`
  	Bootloader_message_offset  *int `json:",omitempty"`
 diff --git a/build/soong/soong_config.mk b/build/soong/soong_config.mk
-index 0820d67b..9b5a51e2 100644
+index 9474a15c..e4173a5e 100644
 --- a/build/soong/soong_config.mk
 +++ b/build/soong/soong_config.mk
 @@ -4,6 +4,7 @@ add_json_val_default = $(call add_json_val, $(1), $(if $(strip $(2)), $(2), $(3)
- _contents := $(_contents)    "Lineage":{$(newline)
+ _json_contents := $(_json_contents)    "Lineage":{$(newline)
  
  # See build/core/soong_config.mk for the add_json_* functions you can use here.
 +$(call add_json_str_omitempty, Non_pie_executables_header_dir, $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR))

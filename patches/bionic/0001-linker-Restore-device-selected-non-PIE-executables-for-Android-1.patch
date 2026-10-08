@@ -1,14 +1,20 @@
-From 25712ad5a608a90898e4e24a3d47ea72787cf575 Mon Sep 17 00:00:00 2001
+From d75a7f53bf38a32de8bf8d08a17574ef9b78c8e7 Mon Sep 17 00:00:00 2001
 From: Matt Mower <mowerm@gmail.com>
 Date: Wed, 7 Oct 2026 21:05:39 +0800
-Subject: [PATCH] linker: Restore device-selected non-PIE executables for Oreo
+Subject: [PATCH] linker: Restore device-selected non-PIE executables for
+ Android 10
 
-Port the CM14 per-device exact-path allowlist to Oreo and expose its header through a nullable Soong product variable. Keep ET_EXEC at its kernel-selected fixed load address. Unlisted executables retain the normal rejection. MiOne vendor executables have no R_ARM_COPY relocations, so do not port the old COPY relocation machinery.
+Port the CM14 per-device exact-path allowlist to Android 10 and expose its header through a nullable Soong product variable. Keep ET_EXEC at its kernel-selected fixed load address. Unlisted executables retain the normal rejection. MiOne vendor executables have no R_ARM_COPY relocations, so do not port the old COPY relocation machinery.
 
 Adapted from LineageOS CM14 commit 55db1141913a77289abd293bca807e0520fd600a (original upstream 91b06f97680cfceabba61c1b7859de18d1709312).
 
 Change-Id: Ie57c42763ccec1f95d44f8f48194f6f15926ef21
 Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
+
+Adapted-from: 25712ad5a608a90898e4e24a3d47ea72787cf575
+Android 10 resolves the executable name through exe_path; retain exact-path opt-in after the ExecutableInfo refactor.
+
+Change-Id: I2ce40d9c275c62b5d223dd7733f6f1ecfb7cf0cc
 ---
  linker/Android.bp         |  5 +++++
  linker/linker_main.cpp    |  9 ++++++++-
@@ -19,10 +25,10 @@ Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
  create mode 100644 linker/linker_non_pie.h
 
 diff --git a/linker/Android.bp b/linker/Android.bp
-index 50fcf07fd..857a610fd 100644
+index d0ff9856e..69cff8f13 100644
 --- a/linker/Android.bp
 +++ b/linker/Android.bp
-@@ -167,6 +167,11 @@ cc_binary {
+@@ -199,6 +199,11 @@ cc_defaults {
              cppflags: ["-DUSE_LD_CONFIG_FILE"],
          },
          lineage: {
@@ -35,7 +41,7 @@ index 50fcf07fd..857a610fd 100644
                  cppflags: ["-DSDK_VERSION_OVERRIDES=\"%s\""],
              },
 diff --git a/linker/linker_main.cpp b/linker/linker_main.cpp
-index ba7037759..dc3ec81f9 100644
+index 1e0801a64..b77bc7648 100644
 --- a/linker/linker_main.cpp
 +++ b/linker/linker_main.cpp
 @@ -27,6 +27,9 @@
@@ -46,16 +52,16 @@ index ba7037759..dc3ec81f9 100644
 +#include "linker_non_pie.h"
 +#endif
  
- #include "linker_debug.h"
- #include "linker_cfi.h"
-@@ -340,7 +343,11 @@ static ElfW(Addr) __linker_init_post_relocation(KernelArgumentBlock& args) {
+ #include <link.h>
+ #include <sys/auxv.h>
+@@ -385,7 +388,11 @@ static ElfW(Addr) linker_main(KernelArgumentBlock& args, const char* exe_to_load
    ElfW(Ehdr)* elf_hdr = reinterpret_cast<ElfW(Ehdr)*>(si->base);
  
    // We haven't supported non-PIE since Lollipop for security reasons.
 -  if (elf_hdr->e_type != ET_DYN) {
 +  if (elf_hdr->e_type != ET_DYN
 +#ifdef ENABLE_NON_PIE_SUPPORT
-+      && !(elf_hdr->e_type == ET_EXEC && allow_non_pie(executable_path))
++      && !(elf_hdr->e_type == ET_EXEC && allow_non_pie(exe_path.c_str()))
 +#endif
 +      ) {
      // We don't use async_safe_fatal here because we don't want a tombstone:

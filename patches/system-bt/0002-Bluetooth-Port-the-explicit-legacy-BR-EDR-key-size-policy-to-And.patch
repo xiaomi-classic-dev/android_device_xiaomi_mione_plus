@@ -1,14 +1,19 @@
-From 47bcdd36047697a9f77d07337e46a16ca0871130 Mon Sep 17 00:00:00 2001
+From e7f74882f6640c3601a01f17a9c41f12f7458e29 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
 Subject: [PATCH] Bluetooth: Port the explicit legacy BR/EDR key-size policy to
- Oreo
+ Android 10
 
 Retain the previously approved device opt-in for the exact BCM4329B1 firmware version. Permit startup only for that version and mark an exact one-byte Unknown HCI Command response as unverified. Carry the real requested handle and originating encryption event through independent callbacks. Do not fabricate a key length or accept malformed successful replies, mismatched handles, other errors, or short keys. Builds without the policy remain fail-closed.
 
 Adapted from CM14.1 commit 6b3580e84da1554302a524a0fdf330b9841247ee; Oreo uses typed, per-command C++ callbacks.
 
 Change-Id: I00c299aaccf2c7a7f65992214508678c5adc6f64
+
+Adapted-from: 47bcdd36047697a9f77d07337e46a16ca0871130
+Keep Android 10 handling for stopped encryption and its existing short-key rejection; the device-selected exception remains limited to an unsupported-command response from the pinned BCM4329 firmware.
+
+Change-Id: Ieb2f03306dc69f9ffa708ddef2fe6c37f202e431
 ---
  device/src/controller.cc |  9 ++++++++-
  stack/btu/btu_hcif.cc    | 17 +++++++++++++++--
@@ -17,10 +22,10 @@ Change-Id: I00c299aaccf2c7a7f65992214508678c5adc6f64
  4 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/device/src/controller.cc b/device/src/controller.cc
-index 2cf024f9a..b4c66c761 100644
+index 6525c14f1..b914fff3f 100644
 --- a/device/src/controller.cc
 +++ b/device/src/controller.cc
-@@ -275,7 +275,14 @@ static future_t* start_up(void) {
+@@ -282,7 +282,14 @@ static future_t* start_up(void) {
    }
  
    if (!HCI_READ_ENCR_KEY_SIZE_SUPPORTED(supported_commands)) {
@@ -37,42 +42,42 @@ index 2cf024f9a..b4c66c761 100644
  
    readable = true;
 diff --git a/stack/btu/btu_hcif.cc b/stack/btu/btu_hcif.cc
-index 8c83fa10e..854803b38 100644
+index 615d3c689..ab263a35d 100644
 --- a/stack/btu/btu_hcif.cc
 +++ b/stack/btu/btu_hcif.cc
-@@ -725,7 +725,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
+@@ -1147,7 +1147,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
  constexpr uint8_t MIN_KEY_SIZE = 7;
  
- static void read_encryption_key_size_complete_after_encryption_change(
--    uint8_t status, uint16_t handle, uint8_t key_size) {
-+    uint8_t status, uint16_t handle, uint8_t key_size, bool key_size_unverified) {
+ static void read_encryption_key_size_complete_after_encryption_change(uint8_t status, uint16_t handle,
+-                                                                      uint8_t key_size) {
++                                                                      uint8_t key_size, bool key_size_unverified) {
 +  if (key_size_unverified) {
-+    HCI_TRACE_WARNING("%s legacy device policy accepts an unverified key size on 0x%02x",
-+                      __func__, handle);
++    LOG(WARNING) << __func__ << ": legacy device policy accepts an unverified key size on "
++                 << loghex(handle);
 +    btm_acl_encrypt_change(handle, HCI_SUCCESS, 1);
 +    btm_sec_encrypt_change(handle, HCI_SUCCESS, 1);
 +    return;
 +  }
-   int ret = android::util::stats_write(
-       android::util::BLUETOOTH_CLASSIC_PAIRING_EVENT_REPORTED, "", handle,
-       HCI_READ_ENCR_KEY_SIZE, HCI_COMMAND_COMPLETE_EVT, status, 0, key_size);
-@@ -1695,7 +1702,13 @@ static void btu_hcif_enhanced_flush_complete_evt(void) {
+   if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
+     /* If remote device stop the encryption before we call "Read Encryption Key
+      * Size", we might receive Insufficient Security, which means that link is
+@@ -2087,7 +2094,13 @@ static void btu_hcif_enhanced_flush_complete_evt(void) {
+  * End of Simple Pairing Events
   **********************************************/
  
- static void read_encryption_key_size_complete_after_key_refresh(
--    uint8_t status, uint16_t handle, uint8_t key_size) {
-+    uint8_t status, uint16_t handle, uint8_t key_size, bool key_size_unverified) {
+-static void read_encryption_key_size_complete_after_key_refresh(uint8_t status, uint16_t handle, uint8_t key_size) {
++static void read_encryption_key_size_complete_after_key_refresh(uint8_t status, uint16_t handle, uint8_t key_size, bool key_size_unverified) {
 +  if (key_size_unverified) {
-+    HCI_TRACE_WARNING("%s legacy device policy accepts an unverified key size on 0x%02x",
-+                      __func__, handle);
++    LOG(WARNING) << __func__ << ": legacy device policy accepts an unverified key size on "
++                 << loghex(handle);
 +    btm_sec_encrypt_change(handle, HCI_SUCCESS, 1);
 +    return;
 +  }
-   int ret = android::util::stats_write(
-       android::util::BLUETOOTH_CLASSIC_PAIRING_EVENT_REPORTED, "", handle,
-       HCI_READ_ENCR_KEY_SIZE, HCI_COMMAND_COMPLETE_EVT, status, 0, key_size);
+   if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
+     /* If remote device stop the encryption before we call "Read Encryption Key
+      * Size", we might receive Insufficient Security, which means that link is
 diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
-index ccf6e9fe3..5194e065b 100644
+index e4072155d..10c94b5d4 100644
 --- a/stack/hcic/hcicmds.cc
 +++ b/stack/hcic/hcicmds.cc
 @@ -28,6 +28,7 @@
@@ -83,7 +88,7 @@ index ccf6e9fe3..5194e065b 100644
  
  #include <stddef.h>
  #include <string.h>
-@@ -1314,13 +1315,21 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+@@ -1312,13 +1313,21 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
  static void read_encryption_key_size_complete(
      ReadEncKeySizeCb cb, uint16_t expected_handle, uint8_t* return_parameters,
      uint16_t return_parameters_length) {
@@ -106,7 +111,7 @@ index ccf6e9fe3..5194e065b 100644
      return;
    }
    uint8_t status;
-@@ -1331,10 +1340,10 @@ static void read_encryption_key_size_complete(
+@@ -1329,10 +1338,10 @@ static void read_encryption_key_size_complete(
    STREAM_TO_UINT8(key_size, return_parameters);
  
    if (handle != expected_handle) {
@@ -120,15 +125,15 @@ index ccf6e9fe3..5194e065b 100644
  
  void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
 diff --git a/stack/include/hcimsgs.h b/stack/include/hcimsgs.h
-index 63ea8f49f..07a1cc839 100644
+index 285ae419b..8f7271511 100644
 --- a/stack/include/hcimsgs.h
 +++ b/stack/include/hcimsgs.h
-@@ -612,7 +612,7 @@ extern void btsnd_hcic_write_cur_iac_lap(
+@@ -610,7 +610,7 @@ extern void btsnd_hcic_write_cur_iac_lap(
  
  extern void btsnd_hcic_get_link_quality(uint16_t handle); /* Get Link Quality */
  extern void btsnd_hcic_read_rssi(uint16_t handle);        /* Read RSSI */
 -using ReadEncKeySizeCb = base::OnceCallback<void(uint8_t, uint16_t, uint8_t)>;
 +using ReadEncKeySizeCb = base::OnceCallback<void(uint8_t, uint16_t, uint8_t, bool)>;
- extern void btsnd_hcic_read_encryption_key_size(uint16_t handle,
-                                                 ReadEncKeySizeCb cb);
+ extern void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb);
  extern void btsnd_hcic_read_failed_contact_counter(uint16_t handle);
+ extern void btsnd_hcic_read_automatic_flush_timeout(uint16_t handle);
