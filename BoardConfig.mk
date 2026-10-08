@@ -221,6 +221,7 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/vendor/bin/hw/android.hardware.audio@2.0-service=22 \
     /system/vendor/bin/hw/android.hardware.sensors@1.0-service=22 \
     /system/vendor/bin/hw/android.hardware.gnss@1.0-service.mione=22 \
+    /system/vendor/bin/hw/android.hardware.media.omx@1.0-service=22 \
     /system/vendor/bin/hw/rild=22 \
     /system/vendor/bin/mione_bdaddr=22 \
     /system/vendor/bin/cnd=22 \
