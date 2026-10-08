@@ -5,7 +5,7 @@ LOCAL_MODULE := libril_mione
 LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := ril_mione.c
-LOCAL_C_INCLUDES := $(call project-path-for,ril)/include
+LOCAL_HEADER_LIBRARIES := ril_headers
 LOCAL_CFLAGS := -DRIL_SHLIB -Wall -Wextra -Werror
 LOCAL_SHARED_LIBRARIES := libdl liblog
 include $(BUILD_SHARED_LIBRARY)
