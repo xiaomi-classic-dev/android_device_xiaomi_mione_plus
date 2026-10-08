@@ -22,7 +22,8 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_OVERRIDES_MODULES := healthd android.hardware.health@2.0-service
 LOCAL_INIT_RC := android.hardware.health@2.0-service.mione.rc
 LOCAL_SRC_FILES := health_service.cpp
-LOCAL_STATIC_LIBRARIES := libhealthd.mione libhealthservice \
+LOCAL_WHOLE_STATIC_LIBRARIES := libhealthd.mione
+LOCAL_STATIC_LIBRARIES := libhealthservice \
     android.hardware.health@2.0-impl android.hardware.health@1.0-convert \
     libhealthstoragedefault libbatterymonitor
 LOCAL_SHARED_LIBRARIES := libbase libcutils libhidlbase libhidltransport \
