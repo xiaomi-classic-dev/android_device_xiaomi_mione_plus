@@ -31,9 +31,9 @@ LOCAL_CFLAGS += \
 
 ## Includes
 LOCAL_C_INCLUDES := \
-    $(TOP)/vendor/qcom/proprietary/qmi-framework/inc \
-    $(TOP)/vendor/qcom/proprietary/qmi-framework/qcci/inc \
-    $(TOP)/vendor/qcom/proprietary/qmi-framework/common/inc \
+    vendor/qcom/proprietary/qmi-framework/inc \
+    vendor/qcom/proprietary/qmi-framework/qcci/inc \
+    vendor/qcom/proprietary/qmi-framework/common/inc \
     $(TARGET_OUT_HEADERS)/libloc_eng \
     $(TARGET_OUT_HEADERS)/gps.utils
 

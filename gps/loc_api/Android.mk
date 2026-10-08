@@ -15,7 +15,7 @@ ifeq ($(filter 50000 20000 1240,$(BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION)),)
 
 GPS_DIR_LIST :=
 
-ifeq (exists, $(shell test -d $(TOP)/vendor/qcom/proprietary/qmi-framework && echo exists))
+ifeq (exists, $(shell test -d vendor/qcom/proprietary/qmi-framework && echo exists))
 
 # add RPC dirs if RPC is available
 ifneq ($(TARGET_NO_RPC),true)
