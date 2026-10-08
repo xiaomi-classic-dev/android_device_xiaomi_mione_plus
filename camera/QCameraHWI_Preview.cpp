@@ -225,7 +225,7 @@ status_t QCameraStream_preview::getBufferFromSurface() {
 #endif
 		mHalCamCtrl->mPreviewMemory.camera_memory[cnt] =
 		    mHalCamCtrl->mGetMemory(mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->fd,
-			mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->size, 1, (void *)this);
+			mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->size, 1, mHalCamCtrl->mCallbackCookie);
 		ALOGE("%s: idx = %d, fd = %d, size = %d, offset = %d", __func__,
             cnt, mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->fd,
       mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->size,

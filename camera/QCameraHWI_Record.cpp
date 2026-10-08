@@ -474,7 +474,7 @@ status_t QCameraStream_record::initEncodeBuffers()
 #endif
 		  mHalCamCtrl->mRecordingMemory.camera_memory[cnt] =
 		    mHalCamCtrl->mGetMemory(mHalCamCtrl->mRecordingMemory.fd[cnt],
-		    mHalCamCtrl->mRecordingMemory.size, 1, (void *)this);
+		    mHalCamCtrl->mRecordingMemory.size, 1, mHalCamCtrl->mCallbackCookie);
       if (!mHalCamCtrl->mRecordingMemory.camera_memory[cnt] ||
           !mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->data ||
           mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->data == MAP_FAILED)
@@ -483,7 +483,7 @@ status_t QCameraStream_record::initEncodeBuffers()
       if (mHalCamCtrl->mStoreMetaDataInFrame) {
         mHalCamCtrl->mRecordingMemory.metadata_memory[cnt] =
           mHalCamCtrl->mGetMemory(-1,
-          sizeof(struct encoder_media_buffer_type), 1, (void *)this);
+          sizeof(struct encoder_media_buffer_type), 1, mHalCamCtrl->mCallbackCookie);
         if (!mHalCamCtrl->mRecordingMemory.metadata_memory[cnt] ||
             !mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data ||
             mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data == MAP_FAILED)

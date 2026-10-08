@@ -308,7 +308,7 @@ end:
     }
     if(!fail_cb_flag) {
         camera_memory_t *encodedMem = mHalCamCtrl->mGetMemory(
-            mHalCamCtrl->mJpegMemory.fd[0], mJpegOffset, 1, mHalCamCtrl);
+            mHalCamCtrl->mJpegMemory.fd[0], mJpegOffset, 1, mHalCamCtrl->mCallbackCookie);
         if (!encodedMem || !encodedMem->data) {
             ALOGE("%s: mGetMemory failed.\n", __func__);
         }
@@ -2569,4 +2569,3 @@ status_t QCameraStream_Snapshot::sendWDenoiseStartMsg(mm_camera_ch_data_buf_t * 
 }
 
 }; // namespace android
-
