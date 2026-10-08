@@ -16,8 +16,10 @@
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
-# Extend the platform boot profile for synchronous wallpaper color extraction.
-PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION := $(OUT_DIR)/target/common/obj/PACKAGING/mione_boot_image_profile_intermediates/boot-image-profile.txt
+# Android 10 Soong merges the platform profile with the device additions.
+PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION := \
+    frameworks/base/config/boot-image-profile.txt \
+    device/xiaomi/mione_plus/dexpreopt/wallpaper-profile.txt
 
 # Copy Bluetooth firmware, since BCM4329 is a BT/WiFi chip
 PRODUCT_COPY_FILES += \
