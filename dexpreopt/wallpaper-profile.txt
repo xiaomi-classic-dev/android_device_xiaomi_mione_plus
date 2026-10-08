@@ -1,0 +1,15 @@
+# system_server disables JIT; compile the wallpaper quantization hot path.
+HSPLandroid/app/WallpaperColors;->fromBitmap(Landroid/graphics/Bitmap;)Landroid/app/WallpaperColors;
+HSPLandroid/app/WallpaperColors;->calculateDarkHints(Landroid/graphics/Bitmap;)I
+HSPLandroid/app/WallpaperColors;->calculateOptimalSize(II)Landroid/util/Size;
+HSPLcom/android/internal/graphics/ColorUtils;->colorToHSL(I[F)V
+HSPLcom/android/internal/graphics/palette/VariationalKMeansQuantizer;->getOptimalKMeans(I[[F)Ljava/util/List;
+HSPLcom/android/internal/graphics/palette/VariationalKMeansQuantizer;->quantize([II[Lcom/android/internal/graphics/palette/Palette$Filter;)V
+HSPLcom/android/internal/ml/clustering/KMeans;->checkDataSetSanity([[F)V
+HSPLcom/android/internal/ml/clustering/KMeans;->nearestMean([FLjava/util/List;)Lcom/android/internal/ml/clustering/KMeans$Mean;
+HSPLcom/android/internal/ml/clustering/KMeans;->predict(I[[F)Ljava/util/List;
+HSPLcom/android/internal/ml/clustering/KMeans;->score(Ljava/util/List;)D
+HSPLcom/android/internal/ml/clustering/KMeans;->sqDistance([F[F)F
+HSPLcom/android/internal/ml/clustering/KMeans;->step(Ljava/util/ArrayList;[[F)Z
+HSPLcom/android/internal/ml/clustering/KMeans$Mean;->getCentroid()[F
+HSPLcom/android/internal/ml/clustering/KMeans$Mean;->getItems()Ljava/util/List;
