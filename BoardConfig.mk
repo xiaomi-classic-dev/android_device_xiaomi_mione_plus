@@ -253,6 +253,7 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/vendor/bin/thermald=22
 
 # Fit the image and dex metadata in the verified 1 GiB system partition.
+WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
 MALLOC_SVELTE := true
 EXCLUDE_SERIF_FONTS := true
 USE_REDUCED_CJK_FONT_WEIGHTS := true
