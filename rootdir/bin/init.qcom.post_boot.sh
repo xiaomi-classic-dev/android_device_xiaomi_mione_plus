@@ -251,7 +251,8 @@ esac
 case "$target" in
      "msm8660")
         start qosmgrd
-        echo 0,1,2,4,9,12 > /sys/module/lowmemorykiller/parameters/adj
+        # Android lmkd supplies oom_score_adj levels paired with its minfree
+        # thresholds. Legacy oom_adj values overwrite that pairing on boot.
         echo 5120 > /proc/sys/vm/min_free_kbytes
      ;;
 esac
