@@ -51,15 +51,15 @@ TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
 # QCOM hardware
 BOARD_USES_QCOM_HARDWARE := true
 
-# Keep the MSM8660 HAL repositories at their existing standalone paths.
+# Use the Android 11 CAF layout with the MSM8660 HAL repositories.
 USE_DEVICE_SPECIFIC_AUDIO := true
-DEVICE_SPECIFIC_AUDIO_PATH := hardware/qcom/audio-caf/msm8660
+DEVICE_SPECIFIC_AUDIO_PATH := hardware/qcom-caf/msm8660/audio
 USE_DEVICE_SPECIFIC_DISPLAY := true
-DEVICE_SPECIFIC_DISPLAY_PATH := hardware/qcom/display-caf/msm8660
+DEVICE_SPECIFIC_DISPLAY_PATH := hardware/qcom-caf/msm8660/display
 USE_DEVICE_SPECIFIC_MEDIA := true
-DEVICE_SPECIFIC_MEDIA_PATH := hardware/qcom/media-caf/msm8660
-# These legacy HALs use Android.mk and need no consolidated QCOM namespace.
-QCOM_SOONG_NAMESPACE :=
+DEVICE_SPECIFIC_MEDIA_PATH := hardware/qcom-caf/msm8660/media
+# Export the matching display header library to platform Soong consumers.
+QCOM_SOONG_NAMESPACE := hardware/qcom-caf/msm8660
 BOARD_GLOBAL_CFLAGS += -DQCOM_HARDWARE
 TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
 TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
