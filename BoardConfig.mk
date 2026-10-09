@@ -203,6 +203,8 @@ TARGET_RIL_VARIANT := caf
 # Filesystem
 TARGET_FS_CONFIG_GEN := $(MIONE_PATH)/config.fs
 TARGET_USERIMAGES_USE_EXT4 := true
+# Preserve the build launcher's Android ext4 defaults for APEX packaging.
+BUILD_BROKEN_NINJA_USES_ENV_VARS += MKE2FS_CONFIG
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
 # The current MiOne partition layout provides 1 GiB at mmcblk0p15.
