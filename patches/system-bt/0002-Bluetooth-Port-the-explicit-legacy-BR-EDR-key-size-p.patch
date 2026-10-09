@@ -1,8 +1,8 @@
-From e7f74882f6640c3601a01f17a9c41f12f7458e29 Mon Sep 17 00:00:00 2001
+From 7d265237241966cc09a5772331df572ad3a8f4e0 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
-Subject: [PATCH] Bluetooth: Port the explicit legacy BR/EDR key-size policy to
- Android 10
+Subject: [PATCH 2/4] Bluetooth: Port the explicit legacy BR/EDR key-size
+ policy to Android 10
 
 Retain the previously approved device opt-in for the exact BCM4329B1 firmware version. Permit startup only for that version and mark an exact one-byte Unknown HCI Command response as unverified. Carry the real requested handle and originating encryption event through independent callbacks. Do not fabricate a key length or accept malformed successful replies, mismatched handles, other errors, or short keys. Builds without the policy remain fail-closed.
 
@@ -22,10 +22,10 @@ Change-Id: Ieb2f03306dc69f9ffa708ddef2fe6c37f202e431
  4 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/device/src/controller.cc b/device/src/controller.cc
-index 6525c14f1..b914fff3f 100644
+index ce19f5ca3..d369de9a3 100644
 --- a/device/src/controller.cc
 +++ b/device/src/controller.cc
-@@ -282,7 +282,14 @@ static future_t* start_up(void) {
+@@ -279,7 +279,14 @@ static future_t* start_up(void) {
    }
  
    if (!HCI_READ_ENCR_KEY_SIZE_SUPPORTED(supported_commands)) {
@@ -42,10 +42,10 @@ index 6525c14f1..b914fff3f 100644
  
    readable = true;
 diff --git a/stack/btu/btu_hcif.cc b/stack/btu/btu_hcif.cc
-index 615d3c689..ab263a35d 100644
+index 82f23365e..afb9412cf 100644
 --- a/stack/btu/btu_hcif.cc
 +++ b/stack/btu/btu_hcif.cc
-@@ -1147,7 +1147,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
+@@ -1187,7 +1187,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
  constexpr uint8_t MIN_KEY_SIZE = 7;
  
  static void read_encryption_key_size_complete_after_encryption_change(uint8_t status, uint16_t handle,
@@ -61,7 +61,7 @@ index 615d3c689..ab263a35d 100644
    if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
      /* If remote device stop the encryption before we call "Read Encryption Key
       * Size", we might receive Insufficient Security, which means that link is
-@@ -2087,7 +2094,13 @@ static void btu_hcif_enhanced_flush_complete_evt(void) {
+@@ -2133,7 +2140,13 @@ static void btu_hcif_enhanced_flush_complete_evt(void) {
   * End of Simple Pairing Events
   **********************************************/
  

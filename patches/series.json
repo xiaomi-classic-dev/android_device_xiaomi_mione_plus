@@ -1,81 +1,75 @@
 {
-  "android_branch": "lineage-17.1",
+  "android_branch": "lineage-18.1",
   "projects": [
     {
       "path": "bionic",
-      "base_commit": "40e6fdba0b80a99c240603eecfb5b1d7c2ee1ed2",
-      "source_head": "d75a7f53bf38a32de8bf8d08a17574ef9b78c8e7",
+      "base_commit": "b67b03356ceb6171bd0cfdb88c3ee9413c476935",
+      "source_head": "042355cdf4e20631e7e3ebc8d3704492f05d8915",
       "patches": [
         {
-          "file": "bionic/0001-linker-Restore-device-selected-non-PIE-executables-for-Android-1.patch",
-          "source_commit": "d75a7f53bf38a32de8bf8d08a17574ef9b78c8e7",
-          "patch_id": "fee9be7da8369a2e33cfee38e2edbcbefba28c59",
-          "sha256": "ca1af36882987a49de7fe15ea5433232279833cd60827bf19ddc3f946a0398f0"
+          "file": "bionic/0001-linker-Preserve-device-selected-non-PIE-execution-on.patch",
+          "source_commit": "042355cdf4e20631e7e3ebc8d3704492f05d8915",
+          "patch_id": "d65bffe0225c04edafb9c566015a3b0378a0ba39",
+          "sha256": "5abf2a7f4d63034a09beb93601d9852da7795ca9d25c917e10ebd4abe677108e"
         }
       ]
     },
     {
       "path": "vendor/lineage",
-      "base_commit": "e85694867b50377d7cfc82edd7417dde0b5ac386",
-      "source_head": "d4b7fedd9df5c36701346296925841d7000cb843",
+      "base_commit": "9acedc7d0e3866d90911a0112074fc312ca11ed5",
+      "source_head": "19ea49a149672158dc63a4537d738dd6fc1b9c51",
       "patches": [
         {
-          "file": "vendor-lineage/0001-soong-Pass-the-optional-device-non-PIE-allowlist-directory.patch",
-          "source_commit": "d4b7fedd9df5c36701346296925841d7000cb843",
-          "patch_id": "278cc8a37c2933bfe86a615bda5954d3d6c292f7",
-          "sha256": "8fe0fedcbdf4bd6b52896282e37318630d580e2a7f1046a8de34066585f97d84"
+          "file": "vendor-lineage/0001-soong-Export-the-optional-device-non-PIE-allowlist-o.patch",
+          "source_commit": "19ea49a149672158dc63a4537d738dd6fc1b9c51",
+          "patch_id": "31bfab945af1961a2d4ddea7369ddee29b9b14ab",
+          "sha256": "eac263700111c026148a035a9f81d4619c9b5d1b4691c96841f9807e9ab5a5b2"
         }
       ]
     },
     {
       "path": "system/bt",
-      "base_commit": "a15831c01596b53d57482812678bcc8276f3c401",
-      "source_head": "e2f701f7a88365205bc8d0736d828f12857002f1",
+      "base_commit": "bcca9a572f1cc539ba21ebe940c3642ce8707d1a",
+      "source_head": "6ee8ff5d768c384050a53c855c6eddde865b82ae",
       "patches": [
         {
-          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-length-and-handl.patch",
-          "source_commit": "42255f0a48a74611b1aa2a98ec57b361425f896e",
+          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-leng.patch",
+          "source_commit": "ccb0b5a09b05d32c5ec68574be5ca300656f9596",
           "patch_id": "3682b7d5685440c34fe3aa7cb5fe8c70228819f8",
-          "sha256": "8bbffc869740574388007e37ca3023363ee4bcd0f26fed89e9970b392243ab2f"
+          "sha256": "41c47d53891f41e7eab21a11f95e3b1cf43ba14e45aba7177f8bfab34e5e5357"
         },
         {
-          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-policy-to-And.patch",
-          "source_commit": "e7f74882f6640c3601a01f17a9c41f12f7458e29",
+          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-p.patch",
+          "source_commit": "7d265237241966cc09a5772331df572ad3a8f4e0",
           "patch_id": "bfed74931975ed92f87af938bb70eeaff4b50c31",
-          "sha256": "7a6f8c9e949bf469e87dc00a8dab736a5f67f87ccca9ddda6466ac7f04a1d259"
+          "sha256": "893c98bc1f9d3097797cf5b30c0feeff2ae6b52f932baf909ffbac59e2198469"
         },
         {
-          "file": "system-bt/0003-Bluetooth-Avoid-LE-advertising-and-feature-queries-on-classic-co.patch",
-          "source_commit": "8335cde963663230c8056f463dfad3b2f8aee5a0",
-          "patch_id": "2be5f7b54422ae5500c5f5dfd09b3188b8f2c271",
-          "sha256": "b9f64cde17f43887d1a95de26b969c466da9761bfa9c3cc464d04a8f6282040c"
+          "file": "system-bt/0003-Bluetooth-Avoid-LE-advertising-and-feature-queries-o.patch",
+          "source_commit": "026e526c317034adbf353ffc9eace95881b69767",
+          "patch_id": "a3de51df2f64221034117d2b958e22cf13e9b8e3",
+          "sha256": "72a69243880999f022738676d5d6cb14a4db2abaa0024f2a732f72aab3bfdcdd"
         },
         {
-          "file": "system-bt/0004-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
-          "source_commit": "e2f701f7a88365205bc8d0736d828f12857002f1",
+          "file": "system-bt/0004-Bluetooth-skip-LE-identity-generation-on-classic-con.patch",
+          "source_commit": "6ee8ff5d768c384050a53c855c6eddde865b82ae",
           "patch_id": "87ff89c59aea4f4617ceebce78b83bcf3c1b6c39",
-          "sha256": "1dc862e55ce39ed34b81a7ae0cfb8442b7cd900ffe776a9a41f34c5b13aaf032"
+          "sha256": "823da9d437e6b91295f7def99c85468840b2007cc12ab59192a74419927ebf54"
         }
       ]
     },
     {
       "path": "hardware/interfaces",
-      "base_commit": "02951860e9c95f19384fa07522925537d8c17a18",
-      "source_head": "97d1c505eebf40a61218f724458eb27fbdf0eac5",
+      "base_commit": "203e87a39c04f30bc1f09f6c2306b701d6b97fe0",
+      "source_head": "9d640eb1c7075c670dc07e11effc31d964dec9bc",
       "patches": [
         {
-          "file": "hardware-interfaces/0001-Bluetooth-HAL-Port-the-bounded-MiOne-BCM4329-download-quirk-to-H.patch",
-          "source_commit": "97d1c505eebf40a61218f724458eb27fbdf0eac5",
-          "patch_id": "d8afbc87fa158150ce1f939aa54f5922c5db2df3",
-          "sha256": "ee9ec44ffb3964e976fc421bf8e5c539074a4380612d2a653f1dd13ec7b3258f"
+          "file": "hardware-interfaces/0001-Bluetooth-HAL-Port-the-bounded-MiOne-BCM4329-downloa.patch",
+          "source_commit": "9d640eb1c7075c670dc07e11effc31d964dec9bc",
+          "patch_id": "996aa2881d55070915b6a44bf2d6ee368ae06de0",
+          "sha256": "c5d8ef75418989d06dc53527e9d3f4f3f3ae108a946d48651f80300a91e1bb7d"
         }
       ]
-    },
-    {
-      "path": "frameworks/base",
-      "base_commit": "3eb409bcc54f50cc05b7e252ef235519d2fb20aa",
-      "source_head": "3eb409bcc54f50cc05b7e252ef235519d2fb20aa",
-      "patches": []
     }
   ]
 }

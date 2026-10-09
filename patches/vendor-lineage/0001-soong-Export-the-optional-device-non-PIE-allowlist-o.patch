@@ -1,0 +1,63 @@
+From 19ea49a149672158dc63a4537d738dd6fc1b9c51 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Wed, 7 Oct 2026 21:05:39 +0800
+Subject: [PATCH] soong: Export the optional device non-PIE allowlist on
+ Android 11
+
+Use the upstream Soong config module mechanism. Leave the value unset when no device allowlist is provided, preserving PIE-only behavior for other products.
+
+Adapted-from: d4b7fedd9df5c36701346296925841d7000cb843
+Change-Id: Idd24bd603f22969f662654d3c5b92a745e7877a2
+---
+ build/soong/Android.bp     | 19 +++++++++++++++++++
+ config/BoardConfigSoong.mk |  6 ++++++
+ 2 files changed, 25 insertions(+)
+
+diff --git a/build/soong/Android.bp b/build/soong/Android.bp
+index dc07f490..3a59f993 100644
+--- a/build/soong/Android.bp
++++ b/build/soong/Android.bp
+@@ -502,3 +502,22 @@ stagefright_qcom_legacy {
+         },
+     },
+ }
++
++// Optional exact-path compatibility for legacy vendor executables.
++soong_config_module_type {
++    name: "non_pie_executables",
++    module_type: "cc_defaults",
++    config_namespace: "lineageGlobalVars",
++    value_variables: ["non_pie_executables_header_dir"],
++    properties: ["cppflags", "include_dirs"],
++}
++
++non_pie_executables {
++    name: "non_pie_executables_defaults",
++    soong_config_variables: {
++        non_pie_executables_header_dir: {
++            cppflags: ["-DENABLE_NON_PIE_SUPPORT"],
++            include_dirs: ["%s"],
++        },
++    },
++}
+diff --git a/config/BoardConfigSoong.mk b/config/BoardConfigSoong.mk
+index 4dfc61b2..027dba79 100644
+--- a/config/BoardConfigSoong.mk
++++ b/config/BoardConfigSoong.mk
+@@ -28,6 +28,7 @@ $(foreach v,$(EXPORT_TO_SOONG),$(eval $(call addVar,$(v))))
+ 
+ SOONG_CONFIG_NAMESPACES += lineageGlobalVars
+ SOONG_CONFIG_lineageGlobalVars += \
++    non_pie_executables_header_dir \
+     additional_gralloc_10_usage_bits \
+     bootloader_message_offset \
+     disable_postrender_cleanup \
+@@ -104,3 +105,8 @@ endif
+ ifneq ($(TARGET_USE_QTI_BT_STACK),true)
+ PRODUCT_SOONG_NAMESPACES += packages/apps/Bluetooth
+ endif #TARGET_USE_QTI_BT_STACK
++
++# Unset devices keep the normal PIE-only linker contract.
++ifneq ($(strip $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)),)
++SOONG_CONFIG_lineageGlobalVars_non_pie_executables_header_dir := $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)
++endif

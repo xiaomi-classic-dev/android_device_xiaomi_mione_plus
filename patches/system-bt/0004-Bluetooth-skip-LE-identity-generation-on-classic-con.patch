@@ -1,7 +1,8 @@
-From e2f701f7a88365205bc8d0736d828f12857002f1 Mon Sep 17 00:00:00 2001
+From 6ee8ff5d768c384050a53c855c6eddde865b82ae Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:51:19 +0800
-Subject: [PATCH] Bluetooth: skip LE identity generation on classic controllers
+Subject: [PATCH 4/4] Bluetooth: skip LE identity generation on classic
+ controllers
 
 BTM_SecRegister regenerates missing LE identity keys with HCI LE Rand even when the controller reports no LE support. After a clean data format the BCM4329 returns an unsupported-command status and the LE Rand completion CHECK aborts the Bluetooth process repeatedly. Gate LE identity generation on the controller capability; preserve classic link-key callbacks and LE-controller key generation without replacing random data or weakening command validation.
 
@@ -11,10 +12,10 @@ Change-Id: I74e8869e8a4f904415bf49f79737edce22e3eac3
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/stack/btm/btm_sec.cc b/stack/btm/btm_sec.cc
-index d5d698c27..a3f61800b 100644
+index aa067ef92..8e68e6420 100644
 --- a/stack/btm/btm_sec.cc
 +++ b/stack/btm/btm_sec.cc
-@@ -363,8 +363,9 @@ bool BTM_SecRegister(const tBTM_APPL_INFO* p_cb_info) {
+@@ -368,8 +368,9 @@ bool BTM_SecRegister(const tBTM_APPL_INFO* p_cb_info) {
      BTM_TRACE_EVENT("%s SMP_Register( btm_proc_smp_cback )", __func__);
      SMP_Register(btm_proc_smp_cback);
      Octet16 zero{0};

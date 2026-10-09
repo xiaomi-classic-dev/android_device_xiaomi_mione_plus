@@ -1,7 +1,7 @@
-From 8335cde963663230c8056f463dfad3b2f8aee5a0 Mon Sep 17 00:00:00 2001
+From 026e526c317034adbf353ffc9eace95881b69767 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:18:41 +0800
-Subject: [PATCH] Bluetooth: Avoid LE advertising and feature queries on
+Subject: [PATCH 3/4] Bluetooth: Avoid LE advertising and feature queries on
  classic controllers
 
 Oreo initializes advertising unconditionally when vendor BLE extensions are absent. A BCM4329 classic-only controller then hits the ble_supported assertion in supports_ble_extended_advertising. Gate advertising initialization on the reported controller capability, and return zeroed LE adapter properties without querying LE-only accessors. Preserve the LE-controller behavior and the existing key-size compatibility policy.
@@ -14,18 +14,18 @@ Signed-off-by: GuaiYiHu <guaiyihu@foxmail.com>
  2 files changed, 17 insertions(+), 6 deletions(-)
 
 diff --git a/bta/dm/bta_dm_act.cc b/bta/dm/bta_dm_act.cc
-index 77c782235..83eb12ee6 100644
+index 3900594bf..6a75fdcf6 100644
 --- a/bta/dm/bta_dm_act.cc
 +++ b/bta/dm/bta_dm_act.cc
 @@ -44,6 +44,7 @@
  #include "btm_int.h"
  #include "btu.h"
- #include "gap_api.h" /* For GAP_BleReadPeerPrefConnParams */
+ #include "device/include/interop.h"
 +#include "device/include/controller.h"
+ #include "gap_api.h" /* For GAP_BleReadPeerPrefConnParams */
  #include "l2c_api.h"
  #include "osi/include/log.h"
- #include "osi/include/osi.h"
-@@ -428,14 +429,15 @@ static void bta_dm_sys_hw_cback(tBTA_SYS_HW_EVT status) {
+@@ -429,14 +430,15 @@ static void bta_dm_sys_hw_cback(tBTA_SYS_HW_EVT status) {
      BTM_RegBusyLevelNotif(bta_dm_bl_change_cback, NULL,
                            BTM_BL_UPDATE_MASK | BTM_BL_ROLE_CHG_MASK);
  
@@ -47,10 +47,10 @@ index 77c782235..83eb12ee6 100644
      /* Earlier, we used to invoke BTM_ReadLocalAddr which was just copying the
         bd_addr
 diff --git a/btif/src/btif_dm.cc b/btif/src/btif_dm.cc
-index d22bc2fb6..ae21734f1 100644
+index 3bf32f0d1..8344fa82d 100644
 --- a/btif/src/btif_dm.cc
 +++ b/btif/src/btif_dm.cc
-@@ -1850,13 +1850,22 @@ static void btif_dm_upstreams_evt(uint16_t event, char* p_param) {
+@@ -1883,13 +1883,22 @@ static void btif_dm_upstreams_evt(uint16_t event, char* p_param) {
  
      case BTA_DM_LE_FEATURES_READ: {
        tBTM_BLE_VSC_CB cmn_vsc_cb;

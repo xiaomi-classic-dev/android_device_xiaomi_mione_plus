@@ -1,4 +1,4 @@
-From 97d1c505eebf40a61218f724458eb27fbdf0eac5 Mon Sep 17 00:00:00 2001
+From 9d640eb1c7075c670dc07e11effc31d964dec9bc Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:08:44 +0800
 Subject: [PATCH] Bluetooth HAL: Port the bounded MiOne BCM4329 download quirk
@@ -11,15 +11,15 @@ Adapted from CM14.1 system/bt commit 319a6db1c8b3f976dab71aeedc9fc553fd917b7f. O
 Change-Id: I885495046e596ce97c7b742766ffa549e351da38
 ---
  bluetooth/1.0/default/h4_protocol.cc      | 9 +++++++++
- bluetooth/1.0/default/h4_protocol.h       | 7 +++++--
+ bluetooth/1.0/default/h4_protocol.h       | 8 ++++++--
  bluetooth/1.0/default/vendor_interface.cc | 3 ++-
- 3 files changed, 16 insertions(+), 3 deletions(-)
+ 3 files changed, 17 insertions(+), 3 deletions(-)
 
 diff --git a/bluetooth/1.0/default/h4_protocol.cc b/bluetooth/1.0/default/h4_protocol.cc
-index 98e3273f3..e46b523bb 100644
+index 8c24f7645..f4e8abd63 100644
 --- a/bluetooth/1.0/default/h4_protocol.cc
 +++ b/bluetooth/1.0/default/h4_protocol.cc
-@@ -88,6 +88,15 @@ void H4Protocol::OnDataReady(int fd) {
+@@ -91,6 +91,15 @@ void H4Protocol::OnDataReady(int fd) {
      if (hci_packet_type_ != HCI_PACKET_TYPE_ACL_DATA &&
          hci_packet_type_ != HCI_PACKET_TYPE_SCO_DATA &&
          hci_packet_type_ != HCI_PACKET_TYPE_EVENT) {
@@ -36,26 +36,28 @@ index 98e3273f3..e46b523bb 100644
                         static_cast<int>(hci_packet_type_));
      }
 diff --git a/bluetooth/1.0/default/h4_protocol.h b/bluetooth/1.0/default/h4_protocol.h
-index 0d0a1caf1..81550f1bb 100644
+index 0c82fd6aa..893066d23 100644
 --- a/bluetooth/1.0/default/h4_protocol.h
 +++ b/bluetooth/1.0/default/h4_protocol.h
-@@ -31,12 +31,13 @@ namespace hci {
+@@ -31,13 +31,15 @@ namespace hci {
  class H4Protocol : public HciProtocol {
   public:
    H4Protocol(int fd, PacketReadCallback event_cb, PacketReadCallback acl_cb,
--             PacketReadCallback sco_cb)
-+             PacketReadCallback sco_cb, bool bcm4329_patch_quirk = false)
+-             PacketReadCallback sco_cb, PacketReadCallback iso_cb)
++             PacketReadCallback sco_cb, PacketReadCallback iso_cb,
++             bool bcm4329_patch_quirk = false)
        : uart_fd_(fd),
          event_cb_(event_cb),
          acl_cb_(acl_cb),
          sco_cb_(sco_cb),
+         iso_cb_(iso_cb),
 -        hci_packetizer_([this]() { OnPacketReady(); }) {}
 +        hci_packetizer_([this]() { OnPacketReady(); }),
 +        bcm4329_patch_quirk_(bcm4329_patch_quirk) {}
  
    size_t Send(uint8_t type, const uint8_t* data, size_t length);
  
-@@ -53,6 +54,8 @@ class H4Protocol : public HciProtocol {
+@@ -55,6 +57,8 @@ class H4Protocol : public HciProtocol {
  
    HciPacketType hci_packet_type_{HCI_PACKET_TYPE_UNKNOWN};
    hci::HciPacketizer hci_packetizer_;
@@ -65,15 +67,15 @@ index 0d0a1caf1..81550f1bb 100644
  
  }  // namespace hci
 diff --git a/bluetooth/1.0/default/vendor_interface.cc b/bluetooth/1.0/default/vendor_interface.cc
-index d56e344e7..1a887e513 100644
+index d809313db..732214b8a 100644
 --- a/bluetooth/1.0/default/vendor_interface.cc
 +++ b/bluetooth/1.0/default/vendor_interface.cc
-@@ -248,7 +248,8 @@ bool VendorInterface::Open(InitializeCompleteCallback initialize_complete_cb,
+@@ -249,7 +249,8 @@ bool VendorInterface::Open(InitializeCompleteCallback initialize_complete_cb,
  
    if (fd_count == 1) {
      hci::H4Protocol* h4_hci =
--        new hci::H4Protocol(fd_list[0], intercept_events, acl_cb, sco_cb);
-+        new hci::H4Protocol(fd_list[0], intercept_events, acl_cb, sco_cb,
+-        new hci::H4Protocol(fd_list[0], intercept_events, acl_cb, sco_cb, iso_cb);
++        new hci::H4Protocol(fd_list[0], intercept_events, acl_cb, sco_cb, iso_cb,
 +                            property_get_bool("ro.bluetooth.bcm4329_patch_quirk", false));
      fd_watcher_.WatchFdForNonBlockingReads(
          fd_list[0], [h4_hci](int fd) { h4_hci->OnDataReady(fd); });
