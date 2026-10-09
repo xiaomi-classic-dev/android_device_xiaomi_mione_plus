@@ -1,0 +1,34 @@
+From a7928d92051f66ec29bbecfb4754c4618a07d4ab Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Fri, 9 Oct 2026 23:22:07 +0800
+Subject: [PATCH] Wi-Fi: Ignore picker callbacks after the fragment detaches
+
+WifiPickerTracker may deliver an entries-changed callback after the Wi-Fi
+fragment loses its Activity. The setup Next-button path then dereferences
+a null host and crashes Settings.
+
+Use the same Activity guard as onWifiStateChanged before updating the
+entry preferences or Next button.
+
+Observed while leaving the MiOne Wi-Fi setup screen with scans active.
+Verified with the LineageOS 18.1 Settings build.
+
+Change-Id: Icc7fe241604c46bf56b90ce56a800b3149c14315
+---
+ src/com/android/settings/wifi/WifiSettings2.java | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/com/android/settings/wifi/WifiSettings2.java b/src/com/android/settings/wifi/WifiSettings2.java
+index 1be364c979..b6c60a91df 100644
+--- a/src/com/android/settings/wifi/WifiSettings2.java
++++ b/src/com/android/settings/wifi/WifiSettings2.java
+@@ -699,6 +699,9 @@ public class WifiSettings2 extends RestrictedSettingsFragment
+ 
+     @Override
+     public void onWifiEntriesChanged() {
++        if (getActivity() == null) {
++            return;
++        }
+         updateWifiEntryPreferencesDelayed();
+         changeNextButtonState(mWifiPickerTracker.getConnectedWifiEntry() != null);
+ 

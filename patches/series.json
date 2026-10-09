@@ -83,6 +83,19 @@
         }
       ],
       "source_head": "8d760a1b2f93181ed573f64b2e86ddee1ab26003"
+    },
+    {
+      "path": "packages/apps/Settings",
+      "base_commit": "31468874b701614b372765ee02d723b507f33004",
+      "patches": [
+        {
+          "file": "packages-apps-Settings/0001-Wi-Fi-Ignore-picker-callbacks-after-the-fragment-detaches.patch",
+          "source_commit": "a7928d92051f66ec29bbecfb4754c4618a07d4ab",
+          "patch_id": "8972d076b98ce2cb07ed46ce190bd1237fddf849",
+          "sha256": "243fd346ae2f8ac287e7f9acf7043f43d0abef197fb85cb6069b8312bc683e4b"
+        }
+      ],
+      "source_head": "a7928d92051f66ec29bbecfb4754c4618a07d4ab"
     }
   ]
 }
