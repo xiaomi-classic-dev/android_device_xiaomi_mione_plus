@@ -146,3 +146,8 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 include $(BUILD_PREBUILT)
 MIONE_STLPORT_MK
+
+cat >> ../../../$OUTDIR/Android.mk <<'MIONE_WEBVIEW_MK'
+
+include $(LOCAL_PATH)/prebuilt/webview/Android.mk
+MIONE_WEBVIEW_MK
