@@ -54,12 +54,7 @@ ifeq ($(BOARD_VENDOR_QCOM_GPS_LOC_API_AMSS_VERSION),1240)
     LOCAL_CFLAGS += -DLIBLOC_USE_DEFAULT_RESPONSE_TIME_AND_ACCURACY=1
 endif
 
-LOCAL_C_INCLUDES:= \
-	$(TARGET_OUT_HEADERS)/libloc_api-rpc \
-	$(TARGET_OUT_HEADERS)/libloc_api-rpc/inc \
-	$(TARGET_OUT_HEADERS)/libcommondefs-rpc/inc \
-	$(TARGET_OUT_HEADERS)/librpc
-
+LOCAL_HEADER_LIBRARIES := mione_rpc_headers mione_loc_api_rpc_headers
 
 LOCAL_MODULE_RELATIVE_PATH := hw
 include $(BUILD_SHARED_LIBRARY)

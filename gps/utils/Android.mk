@@ -25,13 +25,7 @@ LOCAL_CFLAGS += \
 ## Includes
 LOCAL_C_INCLUDES:=
 
-LOCAL_COPY_HEADERS_TO:= gps.utils/
-LOCAL_COPY_HEADERS:= \
-   loc_log.h \
-   loc_cfg.h \
-   log_util.h \
-   linked_list.h \
-   msg_q.h
+
 
 LOCAL_MODULE := libgps.utils
 LOCAL_VENDOR_MODULE := true
@@ -41,6 +35,12 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione_gps_utils_headers
+LOCAL_VENDOR_MODULE := true
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+include $(BUILD_HEADER_LIBRARY)
 endif # not BUILD_TINY_ANDROID
 endif # BOARD_VENDOR_QCOM_GPS_LOC_API_HARDWARE
 endif#TARGET_PROVIDES_GPS_LOC_API

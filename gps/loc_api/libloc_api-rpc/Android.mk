@@ -25,7 +25,7 @@ LOCAL_SRC_FILES:= $(generated_files)
 #	src/loc_api_cb_server.c
 
 LOCAL_CFLAGS:=-fno-short-enums
-LOCAL_CFLAGS+=-include $(RPC_INC)/loc_api_common.h
+LOCAL_CFLAGS+=-include $(LOCAL_PATH)/$(RPC_INC)/loc_api_common.h
 LOCAL_CFLAGS+=-DDEBUG
 # LOCAL_CFLAGS+=-DDEBUG -DVERBOSE
 
@@ -35,27 +35,25 @@ LOCAL_SHARED_LIBRARIES:= librpc
 
 
 
-LOCAL_COPY_HEADERS_TO:= libloc_api-rpc/inc
-LOCAL_COPY_HEADERS:= \
-	$(RPC_INC)/loc_api_cb.h \
-	$(RPC_INC)/loc_api_common.h \
-	$(RPC_INC)/loc_api.h \
-	$(RPC_INC)/loc_api_fixup.h \
-	$(RPC_INC)/loc_apicb_appinit.h \
-	inc/debug.h \
-	inc/loc_api_rpc_glue.h \
-	inc/loc_api_sync_call.h
+
 
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH) \
 	$(LOCAL_PATH)/inc \
-	$(LOCAL_PATH)/$(RPC_INC) \
-	$(TARGET_OUT_HEADERS)/librpc
+	$(LOCAL_PATH)/$(RPC_INC)
+
+LOCAL_HEADER_LIBRARIES := mione_rpc_headers
 
 LOCAL_MODULE:= libloc_api-rpc
 LOCAL_VENDOR_MODULE := true
 
 include $(BUILD_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione_loc_api_rpc_headers
+LOCAL_VENDOR_MODULE := true
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/inc $(LOCAL_PATH)/$(RPC_INC)
+include $(BUILD_HEADER_LIBRARY)
 
 endif
 endif

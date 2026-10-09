@@ -37,4 +37,5 @@ LOCAL_PRELINK_MODULE   := false
 LOCAL_SHARED_LIBRARIES := libdl libcutils liblog
 LOCAL_MODULE_TAGS := optional
 
+LOCAL_HEADER_LIBRARIES := camera_common_headers
 include $(BUILD_SHARED_LIBRARY)

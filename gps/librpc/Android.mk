@@ -11,15 +11,7 @@ LOCAL_CFLAGS:= -fno-short-enums
 LOCAL_CFLAGS+=-DRPC_OFFSET=0
 #LOCAL_CFLAGS+=-DDEBUG -DVERBOSE
 
-LOCAL_COPY_HEADERS_TO:= librpc/rpc
-LOCAL_COPY_HEADERS:= \
-	rpc/clnt.h \
-	rpc/pmap_clnt.h \
-	rpc/rpc.h \
-	rpc/rpc_router_ioctl.h \
-	rpc/svc.h \
-	rpc/types.h \
-	rpc/xdr.h
+
 
 LOCAL_MODULE:= librpc
 LOCAL_VENDOR_MODULE := true
@@ -27,6 +19,12 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione_rpc_headers
+LOCAL_VENDOR_MODULE := true
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+include $(BUILD_HEADER_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := librpc
