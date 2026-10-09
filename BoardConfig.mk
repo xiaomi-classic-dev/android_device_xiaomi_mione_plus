@@ -276,3 +276,4 @@ WIFI_HIDL_FEATURE_DISABLE_AP_MAC_RANDOMIZATION := true
 
 # Device-owned first-stage LVM bootstrap; stock init is preserved.
 BOARD_CUSTOM_BOOTIMG_MK := device/xiaomi/mione_plus/lvm/bootimage.mk
+TARGET_RELEASETOOLS_EXTENSIONS := device/xiaomi/mione_plus
