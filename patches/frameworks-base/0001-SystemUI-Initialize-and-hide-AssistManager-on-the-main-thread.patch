@@ -1,0 +1,43 @@
+From 8d760a1b2f93181ed573f64b2e86ddee1ab26003 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Fri, 9 Oct 2026 23:22:07 +0800
+Subject: [PATCH] SystemUI: Initialize and hide AssistManager on the main
+ thread
+
+Activity and pending-intent launches run dismiss-keyguard actions on a
+background executor. Calling the lazy AssistManager there constructs a
+default Handler without a Looper and crashes SystemUI on first use.
+
+Post both hideAssist calls through the existing main-thread helper, so
+AssistManager and AssistDisclosure are initialized on the UI thread.
+
+Observed on MiOne Plus during notification-shade activity launches.
+Verified with the LineageOS 18.1 SystemUI build.
+
+Change-Id: Iea7f7d0302917bdcf1f916804a3aef0a7b6dfe91
+---
+ .../src/com/android/systemui/statusbar/phone/StatusBar.java   | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/StatusBar.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/StatusBar.java
+index ebbefbe4524..b90e1b6cc2b 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/StatusBar.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/StatusBar.java
+@@ -2907,7 +2907,7 @@ public class StatusBar extends SystemUI implements DemoMode,
+         final boolean afterKeyguardGone = mActivityIntentHelper.wouldLaunchResolverActivity(
+                 intent, mLockscreenUserManager.getCurrentUserId());
+         Runnable runnable = () -> {
+-            mAssistManagerLazy.get().hideAssist();
++            postOnUiThread(() -> mAssistManagerLazy.get().hideAssist());
+             intent.setFlags(
+                     Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+             intent.addFlags(flags);
+@@ -4517,7 +4517,7 @@ public class StatusBar extends SystemUI implements DemoMode,
+                 // TODO: Dismiss Keyguard.
+             }
+             if (intent.isActivity()) {
+-                mAssistManagerLazy.get().hideAssist();
++                postOnUiThread(() -> mAssistManagerLazy.get().hideAssist());
+             }
+             if (intentSentUiThreadCallback != null) {
+                 postOnUiThread(intentSentUiThreadCallback);

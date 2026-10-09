@@ -70,6 +70,19 @@
           "sha256": "c5d8ef75418989d06dc53527e9d3f4f3f3ae108a946d48651f80300a91e1bb7d"
         }
       ]
+    },
+    {
+      "path": "frameworks/base",
+      "base_commit": "8d14a16b5d75cd471925b45b96a05ee417248673",
+      "patches": [
+        {
+          "file": "frameworks-base/0001-SystemUI-Initialize-and-hide-AssistManager-on-the-main-thread.patch",
+          "source_commit": "8d760a1b2f93181ed573f64b2e86ddee1ab26003",
+          "patch_id": "f3d9e25df48eacde1216874a154f0faf603ceb88",
+          "sha256": "8a11f8779d1080901aad518c30a3dbe6ca53d4c691a12f2c610e8294987666ca"
+        }
+      ],
+      "source_head": "8d760a1b2f93181ed573f64b2e86ddee1ab26003"
     }
   ]
 }
