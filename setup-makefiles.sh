@@ -236,5 +236,7 @@ LOCAL_CXX_STL := none
 LOCAL_SHARED_LIBRARIES := libc libstdc++ libm
 include $(BUILD_PREBUILT)
 
+include $(LOCAL_PATH)/prebuilt/webview/Android.mk
+
 endif
 MIONE_PREBUILT_MK
