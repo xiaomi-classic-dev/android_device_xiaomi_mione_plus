@@ -130,6 +130,8 @@ BOARD_USES_LEGACY_MMAP := true
 
 # SELinux
 -include device/qcom/sepolicy-legacy/sepolicy.mk
+# Keep the legacy perf executable type aligned with Lineage's domain alias.
+BOARD_SEPOLICY_M4DEFS += hal_perf_default_exec=vendor_hal_perf_default_exec
 
 # Legacy vendor baseline: stock MIUI 4.12.5 (Android 4.1.2).
 # Stock has no SPL metadata; use its 2014-12-05 build date as the reference.
