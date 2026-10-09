@@ -7,6 +7,7 @@ import os
 import shutil
 import hashlib
 import re
+import struct
 import sys
 import xml.etree.ElementTree as ET
 
@@ -76,6 +77,18 @@ os.makedirs(os.path.join(root, 'lvm', 'etc')) if not os.path.isdir(os.path.join(
 shutil.copyfile(os.path.join(local, 'prebuilt', 'lvm'), os.path.join(root, 'sbin', 'mione-lvm2'))
 os.chmod(os.path.join(root, 'sbin', 'mione-lvm2'), 0o755)
 shutil.copyfile(os.path.join(local, 'lvm.conf'), os.path.join(root, 'lvm', 'etc', 'lvm.conf'))
+settings_hook = os.path.join(root, 'sbin', 'postrecoveryboot.sh')
+shutil.copyfile(os.path.join(local, 'postrecoveryboot.sh'), settings_hook)
+os.chmod(settings_hook, 0o755)
+# Match the current TWRP InfoManager format without changing recovery code.
+data_source = os.path.join(os.path.dirname(source), '..', '..', '..', 'data.cpp')
+settings_version = int(re.search(r'#define\s+FILE_VERSION\s+(0x[0-9a-fA-F]+)',
+                                 open(data_source).read()).group(1), 16)
+with open(os.path.join(root, 'etc', 'mione-twrp-defaults'), 'wb') as stream:
+    stream.write(struct.pack('<I', settings_version))
+    for value in (b'tw_storage_path\0', b'/data/media\0'):
+        stream.write(struct.pack('<H', len(value)))
+        stream.write(value)
 with open(os.path.join(root, 'etc', 'mione-lvm-ready'), 'w') as stream:
     stream.write('mione-lvm-v1\n')
 # The build system records these hashes before invoking this device hook.
@@ -98,7 +111,8 @@ if os.path.exists(hash_path):
     with open(hash_path, 'w') as stream:
         stream.writelines(lines)
         old_names = set(line.rstrip('\n').split('  ', 1)[1] for line in lines)
-        for name in ('sbin/init.android', 'etc/recovery.fstab.physical', 'sbin/mione-lvm2', 'lvm/etc/lvm.conf', 'etc/mione-lvm-ready'):
+        for name in ('sbin/init.android', 'etc/recovery.fstab.physical', 'sbin/mione-lvm2', 'lvm/etc/lvm.conf', 'etc/mione-lvm-ready',
+                     'sbin/postrecoveryboot.sh', 'etc/mione-twrp-defaults'):
             if name not in old_names:
                 with open(os.path.join(root, name), 'rb') as source_stream:
                     stream.write(hashlib.sha256(source_stream.read()).hexdigest() + '  ' + name + '\n')

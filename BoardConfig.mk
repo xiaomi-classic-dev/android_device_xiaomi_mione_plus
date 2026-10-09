@@ -50,6 +50,8 @@ TARGET_RECOVERY_LCD_BACKLIGHT_PATH      := "/sys/class/leds/lcd-backlight/bright
 TW_NO_CPU_TEMP := true
 TW_NEW_ION_HEAP := true
 TW_NO_SCREEN_BLANK                      := true
+# Recreate internal storage on freshly formatted Data before the GUI loads.
+RECOVERY_SDCARD_ON_DATA := true
 TARGET_RECOVERY_QCOM_RTC_FIX            := true
 BOARD_SUPPRESS_SECURE_ERASE             := true
 BOARD_SUPPRESS_EMMC_WIPE                := true
