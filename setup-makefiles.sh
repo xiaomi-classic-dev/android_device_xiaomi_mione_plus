@@ -123,7 +123,9 @@ LOCAL_SRC_FILES := proprietary/vendor/lib/libacdbloader.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 LOCAL_CXX_STL := none
-LOCAL_SHARED_LIBRARIES := libcutils libutils liblog libaudcal libc libstdc++ libm
+# The old ARM blob imports libcrt symbols hidden from the public libc stub.
+# Check against the implementation, which exports these as LIBC_PRIVATE.
+LOCAL_SHARED_LIBRARIES := libcutils libutils liblog libaudcal libc.bootstrap libstdc++ libm
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
@@ -201,7 +203,9 @@ LOCAL_SRC_FILES := proprietary/vendor/lib/libdiag.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 LOCAL_CXX_STL := none
-LOCAL_SHARED_LIBRARIES := libc libstdc++ libm
+# The old ARM blob imports libcrt symbols hidden from the public libc stub.
+# Check against the implementation, which exports these as LIBC_PRIVATE.
+LOCAL_SHARED_LIBRARIES := libc.bootstrap libstdc++ libm
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
@@ -214,7 +218,9 @@ LOCAL_SRC_FILES := proprietary/vendor/lib/libdsm.so
 LOCAL_VENDOR_MODULE := true
 LOCAL_STRIP_MODULE := false
 LOCAL_CXX_STL := none
-LOCAL_SHARED_LIBRARIES := libqueue libdiag libc libstdc++ libm
+# The old ARM blob imports libcrt symbols hidden from the public libc stub.
+# Check against the implementation, which exports these as LIBC_PRIVATE.
+LOCAL_SHARED_LIBRARIES := libqueue libdiag libc.bootstrap libstdc++ libm
 include $(BUILD_PREBUILT)
 
 include $(CLEAR_VARS)
