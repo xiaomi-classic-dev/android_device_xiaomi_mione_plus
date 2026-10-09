@@ -1,9 +1,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include "cnd_shim.h"
+#include <cutils/jstring.h>
 #include <assert.h>
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static int checks;
@@ -92,6 +94,38 @@ static int fd_count(void)
     return count;
 }
 
+static int legacy_strings(void)
+{
+    const char16_t source[] = {'A', 0, 0x4e2d, 0xd83d, 0xde00};
+    const char modified[] = "A\xc0\x80\xe4\xb8\xad\xed\xa0\xbd\xed\xb8\x80";
+    const char standard[] = "A\xe4\xb8\xad\xf0\x9f\x98\x80";
+    const char16_t standard16[] = {'A', 0x4e2d, 0xd83d, 0xde00};
+    size_t length = 0;
+    char *s8 = strndup16to8(source, sizeof(source) / sizeof(source[0]));
+    char16_t *s16;
+    CHECK(s8 && memcmp(s8, modified, sizeof(modified)) == 0);
+    s16 = strdup8to16(s8, &length);
+    CHECK(s16 && length == sizeof(source) / sizeof(source[0]));
+    CHECK(memcmp(s16, source, sizeof(source)) == 0);
+    free(s8); free(s16);
+    s16 = strdup8to16(standard, &length);
+    CHECK(s16 && length == sizeof(standard16) / sizeof(standard16[0]));
+    CHECK(memcmp(s16, standard16, sizeof(standard16)) == 0);
+    free(s16);
+    s8 = strndup16to8(source, 1);
+    CHECK(s8 && strcmp(s8, "A") == 0);
+    free(s8);
+    s8 = strndup16to8(source, 0);
+    CHECK(s8 && s8[0] == 0);
+    free(s8);
+    s16 = strdup8to16("", &length);
+    CHECK(s16 && length == 0);
+    free(s16);
+    CHECK(strndup16to8(NULL, 0) == NULL);
+    CHECK(strdup8to16(NULL, &length) == NULL);
+    return 0;
+}
+
 int main(void)
 {
     const char utf8[] = "A\xe4\xb8\xad\xf0\x9f\x98\x80";
@@ -99,6 +133,7 @@ int main(void)
     UErrorCode status = U_ZERO_ERROR;
     int mtu, expected_mtu, before, i;
     FILE *file;
+    CHECK(legacy_strings() == 0);
     CHECK(convert("UTF-8", "UTF-16LE", utf8, sizeof(utf8)-1,
                   utf16, sizeof(utf16), 0) == 0);
     CHECK(convert("UTF-16LE", "UTF-8", utf16, sizeof(utf16),
@@ -119,6 +154,6 @@ int main(void)
     for (i = 0; i < 100; ++i)
         CHECK(ifc_get_mtu("lo", &mtu) == 0 && mtu == expected_mtu);
     CHECK(fd_count() == before);
-    printf("PASS: %d checks (ICU conversion, streaming, STOP callbacks, MTU, FD lifetime)\n", checks);
+    printf("PASS: %d checks (legacy strings, ICU conversion, streaming, STOP callbacks, MTU, FD lifetime)\n", checks);
     return 0;
 }
