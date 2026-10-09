@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="mione_continue">Continue to data-loss confirmation</string>
+  <string name="mione_current">Current System: %mione_current% MiB</string>
+  <string name="mione_danger">DESTRUCTIVE operation</string>
+  <string name="mione_data">Remaining Data: about %mione_data_mib% MiB</string>
+  <string name="mione_erase1">WARNING: ALL internal data will be LOST!</string>
+  <string name="mione_erase2">Apps, photos, videos and backups are erased.</string>
+  <string name="mione_erase3">System and Data contents will be destroyed.</string>
+  <string name="mione_failure">FAILED. Check the log; unsafe raw fallback is disabled.</string>
+  <string name="mione_keep">MBR/EBR / Recovery / persist / cache stay unchanged.</string>
+  <string name="mione_legacy">System1 is excluded; its physical layout stays unchanged.</string>
+  <string name="mione_log">Detailed output is in /tmp/recovery.log.</string>
+  <string name="mione_power">Keep power stable. This operation reboots Recovery.</string>
+  <string name="mione_range">Factory: @MIN_MIB@ MiB; max: 2560 MiB (2.5 GiB)</string>
+  <string name="mione_reboot">Reboot Recovery</string>
+  <string name="mione_resize">MiOne System / Data size</string>
+  <string name="mione_rollback_data">Use this Recovery and an LVM-aware ROM after conversion.</string>
+  <string name="mione_sd">Only System/Data become LVM physical volumes.</string>
+  <string name="mione_target">New System size (MiB):</string>
+  <string name="mione_userbackup">Copy personal files to a PC / external SD FIRST.</string>
+  <string name="mione_work">Creating / verifying / formatting logical volumes...</string>
+  <string name="mione_yes">Type exactly yes, then press the keyboard check.</string>
+</resources>

@@ -27,7 +27,8 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 
 # fix this up by examining /proc/mtd on a running device
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x105c0000
-BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x105c0000
+# Actual merged MiOne recovery partition: 20 MiB.
+BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 0x105c0000
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 0x105c0000
 BOARD_FLASH_BLOCK_SIZE := 131072
@@ -52,3 +53,10 @@ TW_NO_SCREEN_BLANK                      := true
 TARGET_RECOVERY_QCOM_RTC_FIX            := true
 BOARD_SUPPRESS_SECURE_ERASE             := true
 BOARD_SUPPRESS_EMMC_WIPE                := true
+
+# Device-owned extension, generated in the ramdisk after stock TWRP resources.
+TW_EXTRA_LANGUAGES := true
+TW_DEFAULT_LANGUAGE := zh_CN
+TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_RECOVERY_DEVICE_MODULES += mione-lvm mione-lvm-init
+BOARD_RECOVERY_IMAGE_PREPARE = python device/xiaomi/mione_plus/lvm/prepare-theme.py bootable/recovery/gui/theme/common/portrait.xml $(TARGET_RECOVERY_ROOT_OUT) device/xiaomi/mione_plus/lvm

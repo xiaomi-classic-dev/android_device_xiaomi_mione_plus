@@ -25,6 +25,6 @@
 
 LOCAL_PATH := $(call my-dir)
 
-ifneq ($(filter mione_plus,$(TARGET_DEVICE)),)
-include $(call all-makefiles-under,$(LOCAL_PATH))
-endif
+
+# Include theme changes in incremental recovery builds.
+$(PRODUCT_OUT)/recovery.img $(PRODUCT_OUT)/ramdisk-recovery.img $(PRODUCT_OUT)/ramdisk-recovery.cpio: $(wildcard device/xiaomi/mione_plus/lvm/*)

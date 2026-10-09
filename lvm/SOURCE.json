@@ -1,0 +1,13 @@
+{
+  "lvm2_repository": "https://github.com/steven676/lvm2",
+  "lvm2_commit": "ea6a8078b41df75344aecff4c54aab9c78b67193",
+  "reference": "https://github.com/steven676/android-lvm-mod",
+  "musl_source": "https://musl.libc.org/releases/musl-1.2.5.tar.gz",
+  "patch": "musl-port.patch",
+  "compiler": "Android arm-linux-androideabi GCC 4.9",
+  "sha256": {
+    "lvm2-ea6a8078-src.tar.gz": "88bff093ab24f834b8de877c30264d94977cf834e0c82a23340608ea6de9ab0d",
+    "musl-1.2.5.tar.gz": "a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4",
+    "prebuilt/lvm": "dc87fefd8cf62a46490c3069dcadabc708d9acf1929765c29fd62f181b594e75"
+  }
+}

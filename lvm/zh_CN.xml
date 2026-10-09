@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="mione_resize">MiOne 系统 / 数据分区容量</string>
+  <string name="mione_erase1">危险：全部内部数据将永久丢失！</string>
+  <string name="mione_erase2">应用、照片、视频及内部备份都会清除。</string>
+  <string name="mione_erase3">原 System / Data 内容会永久清除。</string>
+  <string name="mione_current">当前 System：%mione_current% MiB</string>
+  <string name="mione_range">原厂 214 MiB；上限 2560 MiB（2.5 GiB）</string>
+  <string name="mione_target">调整后的 System 容量（MiB）：</string>
+  <string name="mione_data">调整后 Data：约 %mione_data_mib% MiB</string>
+  <string name="mione_sd">只用现有 System / Data 作为 LVM 容量池。</string>
+  <string name="mione_legacy">System1 不加入容量池，物理布局保持不变。</string>
+  <string name="mione_keep">分区表、Recovery、persist、cache 原位保留。</string>
+  <string name="mione_continue">继续查看数据清除确认</string>
+  <string name="mione_reboot">第一步完成：重启 Recovery</string>
+  <string name="mione_danger">危险操作：不可恢复数据</string>
+  <string name="mione_userbackup">先把个人文件备份到电脑或外置 SD 卡！</string>
+  <string name="mione_rollback_data">转换后必须使用本 Recovery 和支持 LVM 的 ROM。</string>
+  <string name="mione_power">保持供电稳定，操作后自动重启 Recovery。</string>
+  <string name="mione_yes">输入小写 yes，再按键盘确认键执行。</string>
+  <string name="mione_work">正在建立、校验及格式化逻辑卷……</string>
+  <string name="mione_log">详细记录位于 /tmp/recovery.log。</string>
+  <string name="mione_failure">失败！检查日志；已禁止回退操作原始分区。</string>
+  <string name="mione_done">调整完成。请刷入 ROM 后再启动系统。</string>
+  </resources>

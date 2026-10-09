@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mione>
+  <listitem name="{@mione_resize=MiOne System / Data size}">
+    <actions>
+      <action function="cmd">/sbin/mione-lvm probe</action>
+      <action function="set">mione_confirm=</action>
+      <action function="set">mione_ready=%property.mione.resize.ready%</action>
+      <action function="set">mione_phase=%property.mione.resize.phase%</action>
+      <action function="set">mione_restore=%property.mione.resize.restore%</action>
+      <action function="set">mione_current=%property.mione.resize.current%</action>
+      <action function="set">mione_system_mib=%property.mione.resize.current%</action>
+      <action function="set">mione_error=%property.mione.resize.error%</action>
+      <action function="set">mione_data_mib=%property.mione.resize.budget%</action>
+      <action function="compute">mione_data_mib-%mione_system_mib%</action>
+      <action function="page">mione_resize</action>
+    </actions>
+  </listitem>
+  <pages>
+    <page name="mione_resize">
+      <template name="page" />
+      <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_resize=MiOne System / Data size}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row2_y%" /><text>{@mione_erase1=WARNING: ALL internal data will be LOST!}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row3_y%" /><text>{@mione_erase2=Apps, photos, videos and backups are erased.}</text></text>
+      <text style="text_m"><placement x="%indent%" y="%row5_y%" /><text>{@mione_current=Current System: %mione_current% MiB}</text></text>
+      <text style="text_m"><placement x="%indent%" y="%row6_y%" /><text>{@mione_range=Factory: @MIN_MIB@ MiB; max: 2560 MiB (2.5 GiB)}</text></text>
+      <slidervalue style="slidervalue">
+        <condition var1="mione_ready" var2="1" />
+        <placement x="%indent%" y="%row8_y%" w="%content_width%" />
+        <text>{@mione_target=New System size (MiB):}</text>
+        <data variable="mione_system_mib" min="@MIN_MIB@" max="2560" showrange="1" showcurr="1" changeondrag="1" />
+        <actions>
+          <action function="set">mione_data_mib=%property.mione.resize.budget%</action>
+          <action function="compute">mione_data_mib-%mione_system_mib%</action>
+        </actions>
+      </slidervalue>
+      <text style="text_m"><condition var1="mione_ready" var2="1" /><placement x="%indent%" y="%row12_y%" /><text>{@mione_data=Remaining Data: about %mione_data_mib% MiB}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row14_y%" /><text>{@mione_sd=Only System/Data become LVM physical volumes.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row15_y%" /><text>{@mione_legacy=System1 is excluded; its physical layout stays unchanged.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row16_y%" /><text>{@mione_keep=MBR/EBR / Recovery / persist / cache stay unchanged.}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row17_y%" /><text>%mione_error%</text></text>
+      <button style="main_button_half_height_full_width">
+        <condition var1="mione_ready" var2="1" />
+        <placement x="%indent%" y="%row19_y%" />
+        <text>{@mione_continue=Continue to data-loss confirmation}</text>
+        <actions><action function="set">mione_mode=apply</action><action function="set">mione_confirm=</action><action function="page">mione_confirm</action></actions>
+      </button>
+      <action><touch key="back" /><action function="page">advanced</action></action>
+      <action><touch key="home" /><action function="page">main</action></action>
+    </page>
+    <page name="mione_confirm">
+      <template name="page" />
+      <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_danger=DESTRUCTIVE operation}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row2_y%" /><text>{@mione_erase1=WARNING: ALL internal data will be LOST!}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row3_y%" /><text>{@mione_erase2=Apps, photos, videos and backups are erased.}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row4_y%" /><text>{@mione_erase3=System and Data contents will be destroyed.}</text></text>
+      <text style="text_m"><placement x="%indent%" y="%row5_y%" /><text>{@mione_userbackup=Copy personal files to a PC / external SD FIRST.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row6_y%" /><text>{@mione_rollback_data=Use this Recovery and an LVM-aware ROM after conversion.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row7_y%" /><text>{@mione_power=Keep power stable. This operation reboots Recovery.}</text></text>
+      <text style="text_m"><placement x="%indent%" y="%row8_y%" /><text>{@mione_yes=Type exactly yes, then press the keyboard check.}</text></text>
+      <input>
+        <placement x="%indent%" y="%row10_y%" w="%content_width%" h="%input_height%" />
+        <text>%mione_confirm%</text><data name="mione_confirm" />
+        <restrict minlen="3" maxlen="3" allow="yes" />
+        <action function="page">mione_gate</action>
+      </input>
+      <template name="keyboardtemplate" />
+      <action><touch key="back" /><actions><action function="set">mione_confirm=</action><action function="page">mione_resize</action></actions></action>
+      <action><touch key="home" /><actions><action function="set">mione_confirm=</action><action function="page">main</action></actions></action>
+    </page>
+    <page name="mione_gate">
+      <action><condition var1="mione_confirm" var2="yes" /><actions><action function="set">mione_run=1</action><action function="set">mione_complete=0</action><action function="page">mione_work</action></actions></action>
+      <action><condition var1="mione_confirm" op="!=" var2="yes" /><action function="page">mione_confirm</action></action>
+    </page>
+    <page name="mione_work">
+      <template name="page" />
+      <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_work=Creating / verifying / formatting logical volumes...}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row2_y%" /><text>{@mione_power=Keep power stable. This operation reboots Recovery.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row3_y%" /><text>{@mione_log=Detailed output is in /tmp/recovery.log.}</text></text>
+      <template name="console" /><template name="progress_bar" />
+      <action>
+        <condition var1="mione_run" var2="1" /><condition var1="mione_mode" var2="apply" /><condition var1="mione_confirm" var2="yes" />
+        <actions>
+          <action function="set">mione_run=0</action><action function="stopmtp" />
+          <action function="unmount">%property.mione.resize.system_path%</action><action function="unmount">/data</action><action function="cmd">/sbin/mione-lvm apply %mione_system_mib% %mione_confirm%</action>
+          <action function="set">mione_complete=1</action>
+        </actions>
+      </action>
+      <action>
+        <condition var1="mione_complete" var2="1" />
+        <actions>
+          <action function="set">mione_phase=%property.mione.resize.phase%</action>
+          <action function="set">mione_error=%property.mione.resize.error%</action>
+          <action function="set">mione_confirm=</action><action function="page">mione_result</action>
+        </actions>
+      </action>
+    </page>
+    <page name="mione_result">
+      <template name="page" />
+      <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_resize=MiOne System / Data size}</text></text>
+      <text style="text_m_fail"><condition var1="tw_operation_status" op="!=" var2="0" /><placement x="%indent%" y="%row2_y%" /><text>{@mione_failure=FAILED. Check the log; unsafe raw fallback is disabled.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row3_y%" /><text>%mione_error%</text></text>
+      <button style="main_button_half_height_full_width"><placement x="%indent%" y="%row12_y%" /><text>{@mione_reboot=Reboot Recovery}</text><action function="reboot">recovery</action></button>
+      <button style="main_button_half_height_full_width"><placement x="%indent%" y="%row15_y%" /><text>{@back_btn=Back}</text><action function="page">advanced</action></button>
+      <action><touch key="back" /><action function="page">advanced</action></action>
+      <action><touch key="home" /><action function="page">main</action></action>
+    <action><condition var1="mione_phase" var2="reboot" /><action function="reboot">recovery</action></action></page>
+  </pages>
+</mione>
