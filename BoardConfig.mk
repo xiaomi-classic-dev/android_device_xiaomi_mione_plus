@@ -207,8 +207,8 @@ TARGET_USERIMAGES_USE_EXT4 := true
 BUILD_BROKEN_NINJA_USES_ENV_VARS += MKE2FS_CONFIG
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
-# The current MiOne partition layout provides 1 GiB at mmcblk0p15.
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1073741824
+# Requires a MiOne partition layout with a 2.5 GiB system partition.
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2684354560
 # Raw capacities from the device partition table (cache p19, userdata p20).
 BOARD_CACHEIMAGE_PARTITION_SIZE := 188743680
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
@@ -256,7 +256,7 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/vendor/bin/rmt_storage=22 \
     /system/vendor/bin/thermald=22
 
-# Fit the image and dex metadata in the verified 1 GiB system partition.
+# Limit installed dex metadata on the legacy device.
 WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
 MALLOC_SVELTE := true
 EXCLUDE_SERIF_FONTS := true
