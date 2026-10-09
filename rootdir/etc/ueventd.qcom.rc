@@ -65,6 +65,11 @@
 /dev/hw_random            0660   system     system
 
 #permissions for audio
+# Q removed these legacy msm nodes from the generic ueventd rules.
+/dev/msm_pcm_in           0660   system     audio
+/dev/msm_pcm_out          0660   system     audio
+/dev/msm_audio_dev_ctrl   0660   system     audio
+/dev/msm_mp3              0660   system     audio
 /dev/msm_qcelp            0660   system     audio
 /dev/msm_evrc             0660   system     audio
 /dev/msm_wma              0660   system     audio
