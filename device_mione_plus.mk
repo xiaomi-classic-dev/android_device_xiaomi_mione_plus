@@ -18,6 +18,9 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
 PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/msm8660
 
+# MiOne Plus originally shipped Android 2.3, before Treble and FBE.
+PRODUCT_SHIPPING_API_LEVEL := 10
+
 # Android 10 Soong merges the platform profile with the device additions.
 PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION := \
     frameworks/base/config/boot-image-profile.txt \
