@@ -59,6 +59,9 @@ PRODUCT_PACKAGES += \
     libaudioutils \
     libaudio-resampler
 
+# Software Gatekeeper for the legacy platform.
+PRODUCT_PACKAGES += android.hardware.gatekeeper@1.0-service.software
+
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8660
