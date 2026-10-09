@@ -25,7 +25,7 @@ def prepare(top, project):
     if subprocess.call(["git", "-C", str(repo), "merge-base", "--is-ancestor",
                         base, "HEAD"]) != 0:
         raise RuntimeError("Expected recorded baseline missing: " + project["path"])
-    history = git(repo, "log", "--no-merges", "--format=medium", "-p",
+    history = git(repo, "log", "--no-merges", "--format=medium", "--binary", "-p",
                   base + "..HEAD")
     ids = subprocess.check_output(["git", "patch-id", "--stable"], input=history)
     applied = {line.split()[0].decode() for line in ids.splitlines()}
