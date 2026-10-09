@@ -125,3 +125,9 @@
 subsystem msm_camera
     devname uevent_devname
     dirname /dev/msm_camera
+
+# Legacy ONCRPC clients use /dev/oncrpc and its existing permission rules.
+# Q removed the old implicit subsystem directory mapping.
+subsystem oncrpc
+    devname uevent_devname
+    dirname /dev/oncrpc
