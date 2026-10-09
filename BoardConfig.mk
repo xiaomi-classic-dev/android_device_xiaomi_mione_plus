@@ -118,7 +118,9 @@ TARGET_LD_SHIM_LIBS := \
     /vendor/bin/cnd|libmione_cnd_shim.so \
     /vendor/bin/netmgrd|libmione_cnd_shim.so \
     /vendor/lib/libnetmgr.so|libmione_cnd_shim.so \
-    /vendor/lib/hw/sensors.vendor.msm8660.so|libmione_sensors_shim.so
+    /vendor/lib/hw/sensors.vendor.msm8660.so|libmione_sensors_shim.so \
+    /vendor/bin/mm-qcamera-daemon|libmione_camera_unwind_shim.so \
+    /vendor/bin/hw/android.hardware.camera.provider@2.4-service|libmione_camera_unwind_shim.so
 
 # Misc
 BOARD_USES_LEGACY_MMAP := true

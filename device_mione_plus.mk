@@ -200,6 +200,7 @@ PRODUCT_PACKAGES += \
     hostapd
 
 PRODUCT_PACKAGES += libmione_cnd_shim libmione_sensors_shim
+PRODUCT_PACKAGES += libmione_camera_unwind_shim
 
 # Vendor init configuration and scripts.  MiOne needs a small ramdisk
 # bootstrap because /vendor is supplied by /system rather than a partition.

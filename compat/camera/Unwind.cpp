@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-/* void __gnu_Unwind_Backtrace(void*, void*, void*) */
-extern "C" void __gnu_Unwind_Backtrace(void* arg1, void* arg2, void* arg3)
+#include <unwind.h>
+
+// The legacy camera blobs use this entry point for diagnostic stack dumps.
+// Android 10's libc binds the ARM personality to libdl_android's trap.
+// Report that a backtrace cannot be collected, without replacing exception
+// unwinding or the personality routine for any other process.
+extern "C" _Unwind_Reason_Code __gnu_Unwind_Backtrace(
+        _Unwind_Control_Block*, _Unwind_Trace_Fn, void*)
 {
+    return _URC_FAILURE;
 }
