@@ -1,0 +1,87 @@
+diff --git a/lib/commands/toolcontext.c b/lib/commands/toolcontext.c
+index d72b0c0e6..a76888b85 100644
+--- a/lib/commands/toolcontext.c
++++ b/lib/commands/toolcontext.c
+@@ -1314,7 +1314,10 @@ struct cmd_context *create_toolcontext(unsigned is_long_lived,
+ 				       unsigned threaded)
+ {
+ 	struct cmd_context *cmd;
++
++#if !defined(VALGRIND_POOL) && !defined(MIONE_MUSL)
+ 	FILE *new_stream;
++#endif
+ 
+ #ifdef M_MMAP_MAX
+ 	mallopt(M_MMAP_MAX, 0);
+@@ -1349,7 +1352,7 @@ struct cmd_context *create_toolcontext(unsigned is_long_lived,
+ 	/* FIXME Make this configurable? */
+ 	reset_lvm_errno(1);
+ 
+-#ifndef VALGRIND_POOL
++#if !defined(VALGRIND_POOL) && !defined(MIONE_MUSL)
+ 	/* Set in/out stream buffering before glibc */
+ 	if (set_buffering) {
+ 		/* Allocate 2 buffers */
+@@ -1628,7 +1631,10 @@ int refresh_toolcontext(struct cmd_context *cmd)
+ void destroy_toolcontext(struct cmd_context *cmd)
+ {
+ 	struct dm_config_tree *cft_cmdline;
++
++#if !defined(VALGRIND_POOL) && !defined(MIONE_MUSL)
+ 	FILE *new_stream;
++#endif
+ 
+ 	if (cmd->dump_filter)
+ 		persistent_filter_dump(cmd->filter, 1);
+@@ -1651,7 +1657,7 @@ void destroy_toolcontext(struct cmd_context *cmd)
+ 	if (cmd->libmem)
+ 		dm_pool_destroy(cmd->libmem);
+ 
+-#ifndef VALGRIND_POOL
++#if !defined(VALGRIND_POOL) && !defined(MIONE_MUSL)
+ 	if (cmd->linebuffer) {
+ 		/* Reset stream buffering to defaults */
+ 		if (is_valid_fd(STDIN_FILENO)) {
+diff --git a/libdm/mm/pool-fast.c b/libdm/mm/pool-fast.c
+index 61e076a1e..479adc0f1 100644
+--- a/libdm/mm/pool-fast.c
++++ b/libdm/mm/pool-fast.c
+@@ -12,6 +12,7 @@
+  * along with this program; if not, write to the Free Software Foundation,
+  * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
++#include <stddef.h>
+ 
+ #ifdef VALGRIND_POOL
+ #include "memcheck.h"
+diff --git a/tools/lvmcmdline.c b/tools/lvmcmdline.c
+index 39a8c5812..db3284c52 100644
+--- a/tools/lvmcmdline.c
++++ b/tools/lvmcmdline.c
+@@ -1196,7 +1196,7 @@ static int _check_standard_fds(void)
+ 	int err = is_valid_fd(STDERR_FILENO);
+ 
+ 	if (!is_valid_fd(STDIN_FILENO) &&
+-	    !(stdin = fopen(_PATH_DEVNULL, "r"))) {
++	    !(freopen(_PATH_DEVNULL, "r", stdin))) {
+ 		if (err)
+ 			perror("stdin stream open");
+ 		else
+@@ -1206,7 +1206,7 @@ static int _check_standard_fds(void)
+ 	}
+ 
+ 	if (!is_valid_fd(STDOUT_FILENO) &&
+-	    !(stdout = fopen(_PATH_DEVNULL, "w"))) {
++	    !(freopen(_PATH_DEVNULL, "w", stdout))) {
+ 		if (err)
+ 			perror("stdout stream open");
+ 		/* else no stdout */
+@@ -1214,7 +1214,7 @@ static int _check_standard_fds(void)
+ 	}
+ 
+ 	if (!is_valid_fd(STDERR_FILENO) &&
+-	    !(stderr = fopen(_PATH_DEVNULL, "w"))) {
++	    !(freopen(_PATH_DEVNULL, "w", stderr))) {
+ 		printf("stderr stream open: %s\n",
+ 		       strerror(errno));
+ 		return 0;
