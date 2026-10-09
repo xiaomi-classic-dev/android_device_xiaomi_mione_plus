@@ -1,8 +1,8 @@
 From ccb0b5a09b05d32c5ec68574be5ca300656f9596 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
-Subject: [PATCH 1/4] Bluetooth: Validate encryption key-size response length
- and handle
+Subject: [PATCH] Bluetooth: Validate encryption key-size response length and
+ handle
 
 The legacy controller can answer Unknown HCI Command with only one byte. Capture the requested handle in the callback and validate the exact successful response shape before parsing. Report truncated and mismatched replies as errors rather than reading beyond the received payload. Key-size enforcement remains enabled.
 

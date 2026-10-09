@@ -36,25 +36,25 @@
           "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-leng.patch",
           "source_commit": "ccb0b5a09b05d32c5ec68574be5ca300656f9596",
           "patch_id": "3682b7d5685440c34fe3aa7cb5fe8c70228819f8",
-          "sha256": "41c47d53891f41e7eab21a11f95e3b1cf43ba14e45aba7177f8bfab34e5e5357"
+          "sha256": "d4ec68499d71b41bc7af4e0376089129311ac8b74a0481b680340d9992e29983"
         },
         {
           "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-p.patch",
           "source_commit": "7d265237241966cc09a5772331df572ad3a8f4e0",
           "patch_id": "bfed74931975ed92f87af938bb70eeaff4b50c31",
-          "sha256": "893c98bc1f9d3097797cf5b30c0feeff2ae6b52f932baf909ffbac59e2198469"
+          "sha256": "1d45b51d7b20bc9cf83076ca36de45f5e9b3141f5e142d11adcab0a4592a0ebd"
         },
         {
           "file": "system-bt/0003-Bluetooth-Avoid-LE-advertising-and-feature-queries-o.patch",
           "source_commit": "026e526c317034adbf353ffc9eace95881b69767",
           "patch_id": "a3de51df2f64221034117d2b958e22cf13e9b8e3",
-          "sha256": "72a69243880999f022738676d5d6cb14a4db2abaa0024f2a732f72aab3bfdcdd"
+          "sha256": "e39a4af7feb8eb007abd347f7c595f2c005f3e61b13763c77548ee599b146b87"
         },
         {
           "file": "system-bt/0004-Bluetooth-skip-LE-identity-generation-on-classic-con.patch",
           "source_commit": "6ee8ff5d768c384050a53c855c6eddde865b82ae",
           "patch_id": "87ff89c59aea4f4617ceebce78b83bcf3c1b6c39",
-          "sha256": "823da9d437e6b91295f7def99c85468840b2007cc12ab59192a74419927ebf54"
+          "sha256": "77210e72ce337aebcee0f342c9ab7de3dace008010f3f963278786c151d28dde"
         }
       ]
     },

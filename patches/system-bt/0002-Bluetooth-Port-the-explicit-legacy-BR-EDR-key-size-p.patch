@@ -1,8 +1,8 @@
 From 7d265237241966cc09a5772331df572ad3a8f4e0 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
-Subject: [PATCH 2/4] Bluetooth: Port the explicit legacy BR/EDR key-size
- policy to Android 10
+Subject: [PATCH] Bluetooth: Port the explicit legacy BR/EDR key-size policy to
+ Android 10
 
 Retain the previously approved device opt-in for the exact BCM4329B1 firmware version. Permit startup only for that version and mark an exact one-byte Unknown HCI Command response as unverified. Carry the real requested handle and originating encryption event through independent callbacks. Do not fabricate a key length or accept malformed successful replies, mismatched handles, other errors, or short keys. Builds without the policy remain fail-closed.
 

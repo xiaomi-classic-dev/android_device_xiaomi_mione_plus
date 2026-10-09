@@ -1,8 +1,7 @@
 From 6ee8ff5d768c384050a53c855c6eddde865b82ae Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:51:19 +0800
-Subject: [PATCH 4/4] Bluetooth: skip LE identity generation on classic
- controllers
+Subject: [PATCH] Bluetooth: skip LE identity generation on classic controllers
 
 BTM_SecRegister regenerates missing LE identity keys with HCI LE Rand even when the controller reports no LE support. After a clean data format the BCM4329 returns an unsupported-command status and the LE Rand completion CHECK aborts the Bluetooth process repeatedly. Gate LE identity generation on the controller capability; preserve classic link-key callbacks and LE-controller key generation without replacing random data or weakening command validation.
 

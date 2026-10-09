@@ -1,7 +1,7 @@
 From 026e526c317034adbf353ffc9eace95881b69767 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:18:41 +0800
-Subject: [PATCH 3/4] Bluetooth: Avoid LE advertising and feature queries on
+Subject: [PATCH] Bluetooth: Avoid LE advertising and feature queries on
  classic controllers
 
 Oreo initializes advertising unconditionally when vendor BLE extensions are absent. A BCM4329 classic-only controller then hits the ble_supported assertion in supports_ble_extended_advertising. Gate advertising initialization on the reported controller capability, and return zeroed LE adapter properties without querying LE-only accessors. Preserve the LE-controller behavior and the existing key-size compatibility policy.
