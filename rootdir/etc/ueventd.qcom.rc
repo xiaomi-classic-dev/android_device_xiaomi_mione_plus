@@ -114,3 +114,9 @@
 
 # Apply on every module add event, including Wi-Fi driver reloads.
 /sys/module/bcmdhd parameters/firmware_path 0660 wifi wifi
+
+# Legacy camera blobs open /dev/msm_camera/config0. Q no longer supplies
+# the implicit Qualcomm subsystem directory used by the older ueventd.
+subsystem msm_camera
+    devname uevent_devname
+    dirname /dev/msm_camera
