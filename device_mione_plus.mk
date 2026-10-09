@@ -64,6 +64,11 @@ PRODUCT_PACKAGES += \
 # Software Gatekeeper for the legacy platform.
 PRODUCT_PACKAGES += android.hardware.gatekeeper@1.0-service.software
 
+# The legacy framework matrix requires the default DRM factories.
+PRODUCT_PACKAGES += \
+    android.hardware.drm@1.0-service \
+    android.hardware.drm@1.0-impl
+
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8660

@@ -234,6 +234,8 @@ TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE := true
 TARGET_USES_64_BIT_BINDER := false
 BOARD_KERNEL_IMAGE_NAME := zImage
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
+# Enforce the declared HIDL transports without enabling full Treble.
+PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
 
 # Preserve the API-22 loading contract only in services using legacy blobs.
 # /vendor resolves to /system/vendor on this non-Treble device.
@@ -242,7 +244,7 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/bin/mediaserver=22 \
     /system/bin/audioserver=22 \
     /system/vendor/bin/hw/android.hardware.camera.provider@2.4-service=22 \
-    /system/vendor/bin/hw/android.hardware.audio@2.0-service=22 \
+    /system/vendor/bin/hw/android.hardware.audio.service=22 \
     /system/vendor/bin/hw/android.hardware.sensors@1.0-service=22 \
     /system/vendor/bin/hw/android.hardware.gnss@1.0-service.mione=22 \
     /system/vendor/bin/hw/android.hardware.media.omx@1.0-service=22 \
