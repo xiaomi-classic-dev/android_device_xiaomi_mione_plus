@@ -21,7 +21,8 @@ portrait = ET.parse(source)
 pages = portrait.getroot().find('pages')
 advanced = next(p for p in pages if p.get('name') == 'advanced')
 listing = next(n for n in advanced if n.tag == 'listbox' and n.get('style') == 'advanced_listbox')
-listing.insert(1, extension.find('listitem'))
+for index, item in enumerate(extension.findall('listitem'), 1):
+    listing.insert(index, item)
 for page in extension.find('pages'):
     for node in page.iter():
         for key, value in list(node.attrib.items()):
@@ -34,7 +35,9 @@ ui_path = os.path.join(root, 'twres', 'ui.xml')
 ui = ET.parse(ui_path)
 variables = ui.getroot().find('variables')
 for name, value in [('mione_system_mib', '1024'), ('mione_confirm', ''), ('mione_ready', '0'),
-                    ('mione_phase', 'idle'), ('mione_restore', '0'), ('mione_mode', 'apply')]:
+                    ('mione_phase', 'idle'), ('mione_restore', '0'), ('mione_mode', 'apply'),
+                    ('mione_rollback_ready', '0'), ('mione_return', 'mione_resize'),
+                    ('mione_raw_system', '0'), ('mione_raw_data', '0')]:
     old = next((v for v in variables if v.get('name') == name), None)
     if old is not None:
         variables.remove(old)

@@ -22,4 +22,12 @@
   <string name="mione_log">详细记录位于 /tmp/recovery.log。</string>
   <string name="mione_failure">失败！检查日志；已禁止回退操作原始分区。</string>
   <string name="mione_done">调整完成。请刷入 ROM 后再启动系统。</string>
+  <string name="mione_rollback">回退原厂分区</string>
+  <string name="mione_raw_system">物理 System：%mione_raw_system% MiB</string>
+  <string name="mione_raw_data">物理 Data：%mione_raw_data% MiB</string>
+  <string name="mione_rollback_layout">退出 LVM；保留当前已合并的物理分区表。</string>
+  <string name="mione_rollback_keep">Recovery、persist、Cache、System1 原位保留。</string>
+  <string name="mione_rollback_rom">完成后请刷支持物理 System/Data 分区的 ROM。</string>
+  <string name="mione_already_raw">当前已是物理分区，无需回退。</string>
+  <string name="mione_rollback_work">正在移除 LVM、格式化物理分区……</string>
   </resources>

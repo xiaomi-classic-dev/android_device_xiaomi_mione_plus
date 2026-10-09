@@ -21,4 +21,12 @@
   <string name="mione_userbackup">Copy personal files to a PC / external SD FIRST.</string>
   <string name="mione_work">Creating / verifying / formatting logical volumes...</string>
   <string name="mione_yes">Type exactly yes, then press the keyboard check.</string>
+  <string name="mione_rollback">Restore stock partitions</string>
+  <string name="mione_raw_system">Physical System: %mione_raw_system% MiB</string>
+  <string name="mione_raw_data">Physical Data: %mione_raw_data% MiB</string>
+  <string name="mione_rollback_layout">Remove LVM; keep the current merged partition table.</string>
+  <string name="mione_rollback_keep">Recovery, persist, Cache and System1 stay in place.</string>
+  <string name="mione_rollback_rom">Then install a ROM for physical System/Data.</string>
+  <string name="mione_already_raw">Already using physical partitions; no rollback needed.</string>
+  <string name="mione_rollback_work">Removing LVM / formatting physical partitions...</string>
 </resources>

@@ -12,7 +12,21 @@
       <action function="set">mione_error=%property.mione.resize.error%</action>
       <action function="set">mione_data_mib=%property.mione.resize.budget%</action>
       <action function="compute">mione_data_mib-%mione_system_mib%</action>
+      <action function="set">mione_return=mione_resize</action>
       <action function="page">mione_resize</action>
+    </actions>
+  </listitem>
+  <listitem name="{@mione_rollback=Restore stock partitions}">
+    <actions>
+      <action function="cmd">/sbin/mione-lvm probe</action>
+      <action function="set">mione_confirm=</action>
+      <action function="set">mione_rollback_ready=%property.mione.resize.rollback%</action>
+      <action function="set">mione_phase=%property.mione.resize.phase%</action>
+      <action function="set">mione_raw_system=%property.mione.resize.raw_system%</action>
+      <action function="set">mione_raw_data=%property.mione.resize.raw_data%</action>
+      <action function="set">mione_error=%property.mione.resize.error%</action>
+      <action function="set">mione_return=mione_rollback</action>
+      <action function="page">mione_rollback</action>
     </actions>
   </listitem>
   <pages>
@@ -47,6 +61,27 @@
       <action><touch key="back" /><action function="page">advanced</action></action>
       <action><touch key="home" /><action function="page">main</action></action>
     </page>
+    <page name="mione_rollback">
+      <template name="page" />
+      <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_rollback=Restore stock partitions}</text></text>
+      <text style="text_m"><condition var1="mione_phase" var2="legacy" /><placement x="%indent%" y="%row2_y%" /><text>{@mione_already_raw=Already using physical partitions; no rollback needed.}</text></text>
+      <text style="text_m_fail"><condition var1="mione_rollback_ready" var2="1" /><placement x="%indent%" y="%row2_y%" /><text>{@mione_erase1=WARNING: ALL internal data will be LOST!}</text></text>
+      <text style="text_m_fail"><condition var1="mione_rollback_ready" var2="1" /><placement x="%indent%" y="%row3_y%" /><text>{@mione_erase3=System and Data contents will be destroyed.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row5_y%" /><text>{@mione_raw_system=Physical System: %mione_raw_system% MiB}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row6_y%" /><text>{@mione_raw_data=Physical Data: %mione_raw_data% MiB}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row8_y%" /><text>{@mione_rollback_layout=Remove LVM; keep the current merged partition table.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row9_y%" /><text>{@mione_rollback_keep=Recovery, persist, Cache and System1 stay in place.}</text></text>
+      <text style="text_s"><placement x="%indent%" y="%row10_y%" /><text>{@mione_rollback_rom=Then install a ROM for physical System/Data.}</text></text>
+      <text style="text_m_fail"><placement x="%indent%" y="%row13_y%" /><text>%mione_error%</text></text>
+      <button style="main_button_half_height_full_width">
+        <condition var1="mione_rollback_ready" var2="1" />
+        <placement x="%indent%" y="%row17_y%" />
+        <text>{@mione_continue=Continue to data-loss confirmation}</text>
+        <actions><action function="set">mione_mode=rollback</action><action function="set">mione_confirm=</action><action function="page">mione_confirm</action></actions>
+      </button>
+      <action><touch key="back" /><action function="page">advanced</action></action>
+      <action><touch key="home" /><action function="page">main</action></action>
+    </page>
     <page name="mione_confirm">
       <template name="page" />
       <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_danger=DESTRUCTIVE operation}</text></text>
@@ -54,7 +89,8 @@
       <text style="text_m_fail"><placement x="%indent%" y="%row3_y%" /><text>{@mione_erase2=Apps, photos, videos and backups are erased.}</text></text>
       <text style="text_m_fail"><placement x="%indent%" y="%row4_y%" /><text>{@mione_erase3=System and Data contents will be destroyed.}</text></text>
       <text style="text_m"><placement x="%indent%" y="%row5_y%" /><text>{@mione_userbackup=Copy personal files to a PC / external SD FIRST.}</text></text>
-      <text style="text_s"><placement x="%indent%" y="%row6_y%" /><text>{@mione_rollback_data=Use this Recovery and an LVM-aware ROM after conversion.}</text></text>
+      <text style="text_s"><condition var1="mione_mode" var2="apply" /><placement x="%indent%" y="%row6_y%" /><text>{@mione_rollback_data=Use this Recovery and an LVM-aware ROM after conversion.}</text></text>
+      <text style="text_s"><condition var1="mione_mode" var2="rollback" /><placement x="%indent%" y="%row6_y%" /><text>{@mione_rollback_rom=Then install a ROM for physical System/Data.}</text></text>
       <text style="text_s"><placement x="%indent%" y="%row7_y%" /><text>{@mione_power=Keep power stable. This operation reboots Recovery.}</text></text>
       <text style="text_m"><placement x="%indent%" y="%row8_y%" /><text>{@mione_yes=Type exactly yes, then press the keyboard check.}</text></text>
       <input>
@@ -64,7 +100,7 @@
         <action function="page">mione_gate</action>
       </input>
       <template name="keyboardtemplate" />
-      <action><touch key="back" /><actions><action function="set">mione_confirm=</action><action function="page">mione_resize</action></actions></action>
+      <action><touch key="back" /><actions><action function="set">mione_confirm=</action><action function="page">%mione_return%</action></actions></action>
       <action><touch key="home" /><actions><action function="set">mione_confirm=</action><action function="page">main</action></actions></action>
     </page>
     <page name="mione_gate">
@@ -73,7 +109,8 @@
     </page>
     <page name="mione_work">
       <template name="page" />
-      <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_work=Creating / verifying / formatting logical volumes...}</text></text>
+      <text style="text_l"><condition var1="mione_mode" var2="apply" /><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_work=Creating / verifying / formatting logical volumes...}</text></text>
+      <text style="text_l"><condition var1="mione_mode" var2="rollback" /><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_rollback_work=Removing LVM / formatting physical partitions...}</text></text>
       <text style="text_m_fail"><placement x="%indent%" y="%row2_y%" /><text>{@mione_power=Keep power stable. This operation reboots Recovery.}</text></text>
       <text style="text_s"><placement x="%indent%" y="%row3_y%" /><text>{@mione_log=Detailed output is in /tmp/recovery.log.}</text></text>
       <template name="console" /><template name="progress_bar" />
@@ -82,6 +119,15 @@
         <actions>
           <action function="set">mione_run=0</action><action function="stopmtp" />
           <action function="unmount">%property.mione.resize.system_path%</action><action function="unmount">/data</action><action function="cmd">/sbin/mione-lvm apply %mione_system_mib% %mione_confirm%</action>
+          <action function="set">mione_complete=1</action>
+        </actions>
+      </action>
+      <action>
+        <condition var1="mione_run" var2="1" /><condition var1="mione_mode" var2="rollback" /><condition var1="mione_confirm" var2="yes" />
+        <actions>
+          <action function="set">mione_run=0</action><action function="stopmtp" />
+          <action function="unmount">%property.mione.resize.system_path%</action><action function="unmount">/data</action>
+          <action function="cmd">/sbin/mione-lvm rollback %mione_confirm%</action>
           <action function="set">mione_complete=1</action>
         </actions>
       </action>
@@ -98,7 +144,8 @@
       <template name="page" />
       <text style="text_l"><placement x="%indent%" y="%row3_header_y%" /><text>{@mione_resize=MiOne System / Data size}</text></text>
       <text style="text_m_fail"><condition var1="tw_operation_status" op="!=" var2="0" /><placement x="%indent%" y="%row2_y%" /><text>{@mione_failure=FAILED. Check the log; unsafe raw fallback is disabled.}</text></text>
-      <text style="text_s"><placement x="%indent%" y="%row3_y%" /><text>%mione_error%</text></text>
+      <text style="text_s"><condition var1="mione_phase" op="!=" var2="legacy" /><placement x="%indent%" y="%row3_y%" /><text>%mione_error%</text></text>
+      <text style="text_m"><condition var1="mione_phase" var2="legacy" /><placement x="%indent%" y="%row3_y%" /><text>{@mione_already_raw=Already using physical partitions; no rollback needed.}</text></text>
       <button style="main_button_half_height_full_width"><placement x="%indent%" y="%row12_y%" /><text>{@mione_reboot=Reboot Recovery}</text><action function="reboot">recovery</action></button>
       <button style="main_button_half_height_full_width"><placement x="%indent%" y="%row15_y%" /><text>{@back_btn=Back}</text><action function="page">advanced</action></button>
       <action><touch key="back" /><action function="page">advanced</action></action>

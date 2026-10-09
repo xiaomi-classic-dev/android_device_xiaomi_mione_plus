@@ -25,12 +25,13 @@
 #include "capacity.h"
 static bool mutationStarted=false;
 static void prop(const char *key,const std::string &value);
+static void closeRollbackStore();
 // Static Android 7 ARM exception unwinding crashes before reaching a catch.
 // Guard failures are terminal: publish the recovery state and exit directly.
 [[noreturn]] static void fail(const std::string &message) {
     fprintf(stderr,"MiOne LVM: %s\n",message.c_str());
-    prop("ready","0"); prop("phase",mutationStarted?"reboot":"failed");
-    prop("error",message); fflush(nullptr); _exit(1);
+    prop("ready","0"); prop("rollback","0"); prop("phase",mutationStarted?"reboot":"failed");
+    prop("error",message); closeRollbackStore(); fflush(nullptr); _exit(1);
 }
 static void need(bool ok,const std::string &s) { if(!ok) fail(s); }
 static std::string num(uint64_t n) { return std::to_string(n); }
@@ -236,6 +237,12 @@ static void idle() {
         if(!s.empty() && !stat(s.c_str(),&st)) need(!depends(S_ISBLK(st.st_mode)?st.st_rdev:st.st_dev),"System/Data USB export active");
     }
 }
+#ifdef MIONE_RECOVERY
+#include "rollback.h"
+#else
+static void closeRollbackStore() {}
+static bool rollbackPending(const Layout &) { return false; }
+#endif
 static unsigned budget(const Layout &g,bool converted) {
     if(converted) { auto r=rows(lvm({"vgs","--units","m","--nosuffix","--noheadings","-o","vg_extent_count","mione"}));
         need(r.size()==1 && r[0].size()==1,"bad capacity report"); return integer(r[0][0]); }
@@ -245,6 +252,7 @@ static unsigned budget(const Layout &g,bool converted) {
 static bool resizeReady(unsigned target,const Layout &g) {
     need(access("/sbin/recovery",X_OK)==0,"destructive operation requires recovery");
     need(exists("/etc/mione-lvm-ready"),"LVM-aware recovery packaging incomplete");
+    need(!rollbackPending(g),"Rollback pending; finish Restore stock partitions first");
     bool converted=pool(true);
     need(target>=MIONE_SYSTEM_MIN_MIB && target<=2560 && target+512<=budget(g,converted),"size outside safe capacity range");
     need(access("/sbin/make_ext4fs",X_OK)==0,"formatter unavailable");
@@ -282,23 +290,46 @@ int main(int argc,char **argv) {
         need(lock>=0 && !flock(lock,LOCK_EX|LOCK_NB),"another LVM operation is active");
         need(argc>=2,"command required"); std::string cmd=argv[1]; Layout g=geometry();
         if(cmd=="apply") { need(argc==4,"apply requires MiB and yes"); uint64_t n=integer(argv[2]); need(n<=2560,"size overflow"); apply(n,argv[3],g); }
+#ifdef MIONE_RECOVERY
+        else if(cmd=="rollback") { need(argc==3,"rollback requires yes"); rollback(argv[2],g); }
+        else if(cmd=="check-rollback") {
+            need(argc==2,"check-rollback takes no arguments");
+            if(!rollbackPending(g) && !label(pv[0]) && !label(pv[1])) puts("Already using physical System/Data; no rollback needed.");
+            else { rollbackReady(g); puts("MiOne LVM: rollback preflight passed; no partition writes performed"); }
+        }
+#endif
         else if(cmd=="check-resize") {
             need(argc==3,"check-resize requires MiB"); uint64_t n=integer(argv[2]); need(n<=2560,"size overflow");
             resizeReady(n,g); puts("MiOne LVM: resize preflight passed; no partition writes performed");
         } else if(cmd=="probe") {
             prop("system_path",exists("/system_root")?"/system_root":"/system");
-            prop("ready","0"); prop("reload","0"); prop("error",""); bool c=pool(true); unsigned current=part(g.n[11]).size/2048;
+            prop("ready","0"); prop("rollback","0"); prop("reload","0"); prop("error","");
+            prop("raw_system",num(part(g.n[11]).size/2048)); prop("raw_data",num(part(g.n[16]).size/2048));
+            if(rollbackPending(g)) {
+#ifdef MIONE_RECOVERY
+                RollbackRecord pending; need(readRollback(g,pending),"rollback record disappeared"); validateRollbackPvs(pending);
+#endif
+                prop("phase","rollback"); prop("rollback","1");
+                prop("error","Rollback interrupted; confirm yes to finish. System/Data mounts are disabled.");
+                closeRollbackStore(); close(lock); return 0;
+            }
+            bool c=pool(true); unsigned current=part(g.n[11]).size/2048;
             if(c) { bool foundSystem=false; auto r=rows(lvm({"lvs","--noheadings","--units","m","--nosuffix","-o","lv_name,lv_size","--separator","|","mione"}));
                 for(auto &v:r) { need(v.size()==2,"bad LV size report"); if(v[0]=="system") { current=static_cast<unsigned>(strtod(v[1].c_str(),nullptr)); foundSystem=true; } }
                 if(!foundSystem) prop("error","Incomplete LV layout; confirm yes to recreate System/Data");
             } else if(label(pv[0]) || label(pv[1])) prop("error","Incomplete first conversion; confirm yes to resume initialization");
-            prop("current",num(current)); prop("budget",num(budget(g,c))); prop("phase",c?"lvm":"legacy"); prop("ready","1");
+            prop("current",num(current)); prop("budget",num(budget(g,c)));
+            prop("phase",c?"lvm":((label(pv[0]) || label(pv[1]))?"incomplete":"legacy"));
+            prop("ready","1"); prop("rollback",c?"1":"0");
         } else if(cmd=="prepare") {
-            need(argc==4,"prepare source-fstab output-fstab"); bool c=pool(); if(c) activate(); fstab(argv[2],argv[3],c);
+            need(argc==4,"prepare source-fstab output-fstab");
+            need(!rollbackPending(g),"Rollback pending; System/Data mounts disabled until completion");
+            bool c=pool(); if(c) activate(); fstab(argv[2],argv[3],c);
         } else if(cmd=="check-install") {
+            need(!rollbackPending(g),"Rollback pending; installation refused until completion");
             need(argc==3,"check-install required image bytes"); need(pool(),"convert System/Data in the new recovery first"); activate();
             int f=open(lv[0],O_RDONLY); uint64_t n=0; need(f>=0 && !ioctl(f,BLKGETSIZE64,&n),"cannot read LV capacity"); close(f);
             need(n>=integer(argv[2]),"System LV is too small for this ROM; resize in Recovery first");
         } else fail("unknown command");
-        close(lock); return 0;
+        closeRollbackStore(); close(lock); return 0;
 }
