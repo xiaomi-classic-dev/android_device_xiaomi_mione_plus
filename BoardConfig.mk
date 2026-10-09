@@ -207,12 +207,14 @@ TARGET_USERIMAGES_USE_EXT4 := true
 BUILD_BROKEN_NINJA_USES_ENV_VARS += MKE2FS_CONFIG
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
-# Requires a MiOne partition layout with a 2.5 GiB system partition.
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 2684354560
-# Raw capacities from the device partition table (cache p19, userdata p20).
+# Requires at least a 1.5 GiB System logical volume in the MiOne LVM pool.
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1610612736
+# Cache keeps its physical p19 capacity.
 BOARD_CACHEIMAGE_PARTITION_SIZE := 188743680
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
-BOARD_USERDATAIMAGE_PARTITION_SIZE := 2537488384
+# Optional userdata images must fit the smallest supported Data LV.
+# Recovery formats to the actual LV size at conversion/reset time.
+BOARD_USERDATAIMAGE_PARTITION_SIZE := 536870912
 BOARD_FLASH_BLOCK_SIZE := 32768
 BOARD_VOLD_MAX_PARTITIONS := 28
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
@@ -223,7 +225,7 @@ BOARD_USES_MMCUTILS := true
 BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
-TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/rootdir/etc/fstab.qcom
+TARGET_RECOVERY_FSTAB := device/xiaomi/mione_plus/lvm/recovery.fstab
 RECOVERY_FSTAB_VERSION := 2
 
 # Legacy Qualcomm HAL1, built against the MiOne camera ABI.
@@ -271,3 +273,6 @@ BOARD_ROOT_EXTRA_FOLDERS += firmware persist
 
 # BCM4329 firmware cannot reconfigure its SoftAP MAC at runtime.
 WIFI_HIDL_FEATURE_DISABLE_AP_MAC_RANDOMIZATION := true
+
+# Device-owned first-stage LVM bootstrap; stock init is preserved.
+BOARD_CUSTOM_BOOTIMG_MK := device/xiaomi/mione_plus/lvm/bootimage.mk

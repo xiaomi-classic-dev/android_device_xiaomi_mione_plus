@@ -13,3 +13,35 @@ mode: 0755
 user: AID_WIFI
 group: AID_WIFI
 caps: NET_ADMIN NET_RAW SYS_MODULE
+
+# Boot/recovery helpers must stay executable in mkbootfs and OTA ramdisks.
+
+[sbin/init.android]
+mode: 0755
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
+[sbin/mione-lvm]
+mode: 0755
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
+[sbin/mione-lvm-init]
+mode: 0755
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
+[sbin/mione-lvm-recovery-init]
+mode: 0755
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
+[sbin/mione-lvm2]
+mode: 0755
+user: AID_ROOT
+group: AID_ROOT
+caps: 0

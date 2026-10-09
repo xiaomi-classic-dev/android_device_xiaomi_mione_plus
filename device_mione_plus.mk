@@ -347,3 +347,9 @@ PRODUCT_COPY_FILES += \
 # Preserve the legacy Wi-Fi loader capability in images and OTA metadata.
 PRODUCT_PACKAGES += fs_config_files
 
+
+# LVM utilities: bootstrap in the ramdisk and runtime fstab preparation in vendor.
+PRODUCT_PACKAGES += mione-lvm-ramdisk mione-lvm-init mione-lvm-recovery-init mione-lvm
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/lvm/prebuilt/lvm:$(TARGET_COPY_OUT_VENDOR)/bin/mione-lvm2 \
+    device/xiaomi/mione_plus/lvm/lvm.conf:$(TARGET_COPY_OUT_VENDOR)/etc/lvm/lvm.conf

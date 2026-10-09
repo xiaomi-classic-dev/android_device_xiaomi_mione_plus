@@ -1,0 +1,41 @@
+LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione-lvm-ramdisk
+LOCAL_MODULE_STEM := mione-lvm
+LOCAL_MODULE_PATH := $(TARGET_RAMDISK_OUT)/sbin
+LOCAL_SRC_FILES := mione_lvm.cpp
+LOCAL_CPPFLAGS := -std=c++11 -fno-exceptions -Wall -Wextra -Werror
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_PACK_MODULE_RELOCATIONS := false
+LOCAL_CXX_STL := libc++_static
+LOCAL_STATIC_LIBRARIES := libc
+include $(BUILD_EXECUTABLE)
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione-lvm-init
+LOCAL_MODULE_PATH := $(TARGET_RAMDISK_OUT)/sbin
+LOCAL_SRC_FILES := early_init.c
+LOCAL_CFLAGS := -Wall -Wextra -Werror
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_PACK_MODULE_RELOCATIONS := false
+LOCAL_STATIC_LIBRARIES := libc
+include $(BUILD_EXECUTABLE)
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione-lvm
+LOCAL_VENDOR_MODULE := true
+LOCAL_SRC_FILES := mione_lvm.cpp
+LOCAL_CPPFLAGS := -std=c++11 -fno-exceptions -Wall -Wextra -Werror
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_PACK_MODULE_RELOCATIONS := false
+LOCAL_CXX_STL := libc++_static
+LOCAL_STATIC_LIBRARIES := libc
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mione-lvm-recovery-init
+LOCAL_MODULE_PATH := $(TARGET_RAMDISK_OUT)/sbin
+LOCAL_SRC_FILES := early_init.c
+LOCAL_CFLAGS := -DMIONE_AOSP_RECOVERY -Wall -Wextra -Werror
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_PACK_MODULE_RELOCATIONS := false
+LOCAL_STATIC_LIBRARIES := libc
+include $(BUILD_EXECUTABLE)
