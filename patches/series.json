@@ -96,6 +96,19 @@
         }
       ],
       "source_head": "a7928d92051f66ec29bbecfb4754c4618a07d4ab"
+    },
+    {
+      "path": "prebuilts/clang/host/linux-x86",
+      "base_commit": "7e2d7f3e8dba20760df041bf90ca5a15913631c8",
+      "source_head": "901fcb89ef1c7c64df6a4df8d8d40aa780d5bfb3",
+      "patches": [
+        {
+          "file": "prebuilts-clang-host-linux-x86/0001-compiler-rt-Backport-the-ARM-inexact-status-bit-correction.patch",
+          "source_commit": "901fcb89ef1c7c64df6a4df8d8d40aa780d5bfb3",
+          "patch_id": "d41aba3d71f7e3aa8d56b29aefb2c2a8e60167ec",
+          "sha256": "90cf2d49c91251e0a1363fcdb26bee36664063f40a49fa510c2be9155bbb5e54"
+        }
+      ]
     }
   ]
 }

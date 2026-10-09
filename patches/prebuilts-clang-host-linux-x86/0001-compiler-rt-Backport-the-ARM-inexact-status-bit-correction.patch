@@ -1,0 +1,48 @@
+From 901fcb89ef1c7c64df6a4df8d8d40aa780d5bfb3 Mon Sep 17 00:00:00 2001
+From: Alex Richardson <Alexander.Richardson@cl.cam.ac.uk>
+Date: Fri, 12 Mar 2021 11:15:17 +0000
+Subject: [PATCH] compiler-rt: Backport the ARM inexact status-bit correction
+
+Adapt upstream LLVM e2cd2f7d08ce4391f19c0ce5c4ea63bb9a985fcf
+([builtins] Fix value of ARM_INEXACT) to the active Android 11.0.2
+r383902b1 ARM builtins prebuilt.
+
+ARM_INEXACT must set FPSCR IXC (0x10), not IXE (0x1000). The old
+value turns an ordinary inexact __aeabi_fadd result into an enabled
+VFP trap. MiOne's legacy eCompass subsequently dies with SIGFPE
+FPE_FLTRES in sqrtf, taking down SensorService and system_server.
+
+Keep the existing archive and replace only the ORR immediate in
+fp_mode.c.o's .text.__fe_raise_inexact: ORR r0,r0,#4096 becomes
+ORR r0,r0,#16. Exactly two bytes change at archive offsets 5764/5765;
+archive size, symbols, index, and every other object are unchanged.
+No blanket floating-point exception suppression is added.
+
+Before SHA256: c78d0076fb86e3a7428649cb1b611251373f4e572b67ef8f6956ad59b2cf40ea
+After SHA256: 611ca36071ee503d03363425703c7d3a2184a92c2edf6d92706144aaf5a9d6d9
+Upstream: https://github.com/llvm/llvm-project/commit/e2cd2f7d08ce4391f19c0ce5c4ea63bb9a985fcf
+Reviewed upstream by: kongyi, peter.smith
+Differential Revision: https://reviews.llvm.org/D98353
+
+Test: bounded Android build; disassemble the resulting runtime/bootstrap
+libc; run the legacy sensor HAL on MiOne with the screen on. Magnetic,
+orientation and geomagnetic samples arrive; no SIGFPE, SensorService
+abort or system_server replacement. Wi-Fi scans with the original MAC.
+
+Change-Id: I4f7f5236483c5b37656c3024d2c602023a5d7d99
+---
+ .../linux/libclang_rt.builtins-arm-android.a  | Bin 193284 -> 193284 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+diff --git a/clang-r383902b1/lib64/clang/11.0.2/lib/linux/libclang_rt.builtins-arm-android.a b/clang-r383902b1/lib64/clang/11.0.2/lib/linux/libclang_rt.builtins-arm-android.a
+index 7cd5a90f73ffda079beec3b9f19053808e85e8d0..bbc8892f29fdab0d27140b4d373b5a880e2c544c 100644
+GIT binary patch
+delta 25
+gcmZp9#@+IadqayDlK?|=n^=3B7~}RfF{ZjZ0DUY8IRF3v
+
+delta 25
+gcmZp9#@+IadqayD6C+o1n^=3B7~}RfF{ZjZ0DRX8Gynhq
+
+-- 
+2.53.0
+
