@@ -8,5 +8,5 @@ LOCAL_PROPRIETARY_MODULE := true
 LOCAL_SRC_FILES := ../../../../../hardware/interfaces/gnss/1.0/default/service.cpp
 LOCAL_INIT_RC := android.hardware.gnss@1.0-service.mione.rc
 LOCAL_SHARED_LIBRARIES := liblog libcutils libdl libbase libutils libhardware \
-    libbinder libhidlbase libhidltransport android.hardware.gnss@1.0
+    libbinder libhidlbase android.hardware.gnss@1.0
 include $(BUILD_EXECUTABLE)

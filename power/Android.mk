@@ -10,7 +10,7 @@ LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_TAGS := optional
 LOCAL_INIT_RC := android.hardware.power@1.0-service.mione.rc
 LOCAL_SRC_FILES := power.c Power.cpp service.cpp
-LOCAL_SHARED_LIBRARIES := liblog libcutils libutils libhidlbase libhidltransport android.hardware.power@1.0
+LOCAL_SHARED_LIBRARIES := liblog libcutils libutils libhidlbase android.hardware.power@1.0
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 include $(BUILD_EXECUTABLE)
 
@@ -26,8 +26,8 @@ LOCAL_WHOLE_STATIC_LIBRARIES := libhealthd.mione
 LOCAL_STATIC_LIBRARIES := libhealthservice \
     android.hardware.health@2.0-impl android.hardware.health@1.0-convert \
     libhealthstoragedefault libbatterymonitor
-LOCAL_SHARED_LIBRARIES := libbase libcutils libhidlbase libhidltransport \
-    libhwbinder liblog libutils android.hardware.health@2.0
+LOCAL_SHARED_LIBRARIES := libbase libcutils libhidlbase \
+    liblog libutils android.hardware.health@2.0
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 include $(BUILD_EXECUTABLE)
 
