@@ -193,6 +193,25 @@ static void activate() {
         unlink(lv[i]); need(!symlink(path.c_str(),lv[i]),"cannot link LV");
     }
 }
+// Stock init replaces the bootstrap's temporary /dev. Restore aliases in the
+// final tmpfs after validating both active maps; never activate or replace one.
+static void linkActive() {
+    std::string paths[2]; bool missing[2]={false,false};
+    for(unsigned i=0;i<2;i++) {
+        paths[i]=dmNode(i?"mione-userdata":"mione-system");
+        struct stat expected,actual;
+        need(!stat(paths[i].c_str(),&expected) && S_ISBLK(expected.st_mode),"missing active LV block node");
+        if(lstat(lv[i],&actual)) {
+            need(errno==ENOENT,"cannot inspect LV alias"); missing[i]=true;
+        } else {
+            need(!stat(lv[i],&actual) && S_ISBLK(actual.st_mode) && actual.st_rdev==expected.st_rdev,
+                 "existing LV alias does not match the active map");
+        }
+    }
+    for(unsigned i=0;i<2;i++) if(missing[i])
+        need(!symlink(paths[i].c_str(),lv[i]),"cannot restore active LV alias");
+    puts("MiOne LVM: active System/Data aliases ready for OTA installation");
+}
 static void replace(std::string &s,const std::string &from,const std::string &to) {
     size_t at=0; while((at=s.find(from,at))!=std::string::npos) { s.replace(at,from.size(),to); at+=to.size(); }
 }
@@ -325,6 +344,10 @@ int main(int argc,char **argv) {
             need(argc==4,"prepare source-fstab output-fstab");
             need(!rollbackPending(g),"Rollback pending; System/Data mounts disabled until completion");
             bool c=pool(); if(c) activate(); fstab(argv[2],argv[3],c);
+        } else if(cmd=="link-active") {
+            need(argc==2,"link-active takes no arguments");
+            need(!rollbackPending(g),"Rollback pending; LV aliases remain disabled");
+            if(pool()) linkActive();
         } else if(cmd=="check-install") {
             need(!rollbackPending(g),"Rollback pending; installation refused until completion");
             need(argc==3,"check-install required image bytes"); need(pool(),"convert System/Data in the new recovery first"); activate();

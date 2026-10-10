@@ -6,6 +6,10 @@
 if ! grep -q ' /cache ' /proc/mounts; then
     mount /cache || exit 1
 fi
+# The bootstrap used a temporary /dev that stock init has now replaced.
+# Recreate only verified active LV aliases in the final tmpfs, before the
+# existing-preferences early return. This does not activate or resize volumes.
+/sbin/mione-lvm link-active || exit 1
 mkdir -p /cache/TWRP || exit 1
 
 if [ -e /cache/TWRP/.twrps ]; then
