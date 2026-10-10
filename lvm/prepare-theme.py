@@ -23,6 +23,13 @@ advanced = next(p for p in pages if p.get('name') == 'advanced')
 listing = next(n for n in advanced if n.tag == 'listbox' and n.get('style') == 'advanced_listbox')
 for index, item in enumerate(extension.findall('listitem'), 1):
     listing.insert(index, item)
+# Menu entries need distinct values: GUIListBox treats an empty value as
+# selected on page focus and scrolls every matching entry into view.
+ET.SubElement(listing, 'data', name='mione_advanced_selection', default='0')
+for index, item in enumerate(listing.findall('listitem')):
+    item.text = str(index)
+reset = ET.SubElement(advanced, 'action')
+ET.SubElement(reset, 'action', function='set').text = 'mione_advanced_selection=0'
 for page in extension.find('pages'):
     for node in page.iter():
         for key, value in list(node.attrib.items()):
