@@ -21,6 +21,9 @@ PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/msm8660
 # MiOne Plus originally shipped Android 2.3, before Treble and FBE.
 PRODUCT_SHIPPING_API_LEVEL := 10
 
+# Enable Android networking with the backported BPF kernel support.
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.kernel.ebpf.supported=1
+
 # Android 10 Soong merges the platform profile with the device additions.
 PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION := \
     frameworks/base/config/boot-image-profile.txt \
