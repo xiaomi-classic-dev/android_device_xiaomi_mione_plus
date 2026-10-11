@@ -632,6 +632,9 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
 
                 if (video_stream) {
                     stream->format = HAL_PIXEL_FORMAT_NV12_ENCODEABLE;
+                    // MSM8660 VIDC can only read recording inputs from SMI.
+                    stream->usage |= GRALLOC_USAGE_PRIVATE_MM_HEAP |
+                                     GRALLOC_USAGE_SW_WRITE_OFTEN;
                     __atomic_store_n(&adapter->video_buffer_size, 0,
                                      __ATOMIC_RELEASE);
                     preview_params.setVideoSize(stream->width, stream->height);
@@ -1663,7 +1666,7 @@ skip_mwb:
             usage = GRALLOC_USAGE_HW_COMPOSER;
 
         if (output_buffer.stream->format == HAL_PIXEL_FORMAT_NV12_ENCODEABLE)
-            usage = GRALLOC_USAGE_HW_VIDEO_ENCODER;
+            usage |= GRALLOC_USAGE_HW_VIDEO_ENCODER;
 
         e = GraphicBufferMapper::get().lock(*output_buffer.buffer, usage, rect,
                                             (void **)&buf);
