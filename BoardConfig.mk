@@ -88,6 +88,10 @@ BOARD_EGL_CFG := device/xiaomi/mione_plus/configs/egl.cfg
 BOARD_GLOBAL_CFLAGS += -DQCOM_NO_SECURE_PLAYBACK
 BOARD_GLOBAL_CFLAGS += -DREFRESH_RATE=60
 
+# Video
+# Keep decoder output buffers sized for the current stream.
+TARGET_NO_ADAPTIVE_PLAYBACK := true
+
 # Audio
 BOARD_USES_LEGACY_ALSA_AUDIO := true
 # The legacy CAF policy uses M-only internals; use the Oreo framework manager.
