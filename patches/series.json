@@ -197,9 +197,15 @@
           "source_commit": "213c86d52ec58b8c6a78f71dd51f789f06aa68c2",
           "patch_id": "aed4a7b0e82e224ec365ed7b64bda5fe3811fe6d",
           "sha256": "611fad3feadf8a35bb996f8a81428f7610bc03379e7dc1b4457d320ba354a76a"
+        },
+        {
+          "file": "frameworks-native/0006-binder-Widen-legacy-protocol-integers-before-debug-pointer-casts.patch",
+          "source_commit": "50fae39711fb16ee54f9ac7f359f2655f07027e6",
+          "patch_id": "f84a83228d19e1c57009aa5590ea4cf4276d943f",
+          "sha256": "83d2113ee6437a5f73322f2b8306ad3d42dd778eaf08f3fb8e02bbfbef48ec5f"
         }
       ],
-      "source_head": "213c86d52ec58b8c6a78f71dd51f789f06aa68c2"
+      "source_head": "50fae39711fb16ee54f9ac7f359f2655f07027e6"
     },
     {
       "path": "hardware/ril",
