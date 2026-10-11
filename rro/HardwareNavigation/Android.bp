@@ -1,0 +1,15 @@
+runtime_resource_overlay {
+    name: "MioneHardwareNavigationOverlay",
+    certificate: "platform",
+    sdk_version: "current",
+    product_specific: true,
+    overrides: [
+        "NavigationBarMode3ButtonOverlay",
+        "NavigationBarMode2ButtonOverlay",
+        "NavigationBarModeGesturalOverlay",
+        "NavigationBarModeGesturalOverlayNarrowBack",
+        "NavigationBarModeGesturalOverlayWideBack",
+        "NavigationBarModeGesturalOverlayExtraWideBack",
+        "OneHandedModeGesturalOverlay",
+    ],
+}

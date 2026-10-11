@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.android.internal.systemui.navbar.threebutton"
+    android:versionCode="1" android:versionName="1.0">
+    <overlay android:targetPackage="android"
+        android:category="com.android.internal.navigation_bar_mode"
+        android:isStatic="true" android:priority="10" />
+    <application android:hasCode="false" android:label="Physical navigation keys" />
+</manifest>

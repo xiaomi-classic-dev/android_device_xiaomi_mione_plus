@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="config_showNavigationBar">false</bool>
+    <integer name="config_navBarInteractionMode">0</integer>
+</resources>
