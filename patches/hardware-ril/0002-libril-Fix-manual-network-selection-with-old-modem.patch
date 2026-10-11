@@ -1,0 +1,65 @@
+From 913f31b8ec5ab0a248b66190905742a9a2cb1780 Mon Sep 17 00:00:00 2001
+From: faust93 <monumentum@gmail.com>
+Date: Wed, 19 Sep 2018 14:26:54 +0800
+Subject: [PATCH] libril: Fix manual network selection with old modem
+
+ * Old modem sends and applies mccmnc+network type, but new aosp
+   telephony uses only digits.
+ * Manually cut or append the "+" and strings after that to work around.
+
+Change-Id: I1015e6c0d6afdc0c03d70e9491d49331703eddcc
+(cherry picked from commit 24c0cb70531d9293ec07a3739dfa7a09ebe68f21)
+(cherry picked from commit 8994291cde5933c8534bb79aa74a34361ee20f9a)
+---
+ libril/Android.mk      |  4 ++++
+ libril/ril_service.cpp | 12 ++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/libril/Android.mk b/libril/Android.mk
+index c39c5a9..13c76f8 100644
+--- a/libril/Android.mk
++++ b/libril/Android.mk
+@@ -39,6 +39,10 @@ ifneq ($(DISABLE_RILD_OEM_HOOK),)
+     LOCAL_CFLAGS += -DOEM_HOOK_DISABLED
+ endif
+ 
++ifneq ($(TARGET_USES_OLD_MNC_FORMAT),)
++    LOCAL_CFLAGS += -DOLD_MNC_FORMAT
++endif
++
+ LOCAL_C_INCLUDES += external/nanopb-c
+ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../include
+ LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/../include
+diff --git a/libril/ril_service.cpp b/libril/ril_service.cpp
+index 8009d47..51c354b 100755
+--- a/libril/ril_service.cpp
++++ b/libril/ril_service.cpp
+@@ -1320,8 +1320,15 @@ Return<void> RadioImpl::setNetworkSelectionModeManual(int32_t serial,
+ #if VDBG
+     RLOGD("setNetworkSelectionModeManual: serial %d", serial);
+ #endif
++#ifndef OLD_MNC_FORMAT
+     dispatchString(serial, mSlotId, RIL_REQUEST_SET_NETWORK_SELECTION_MANUAL,
+             operatorNumeric.c_str());
++#else
++    std::string opNum = operatorNumeric;
++    opNum.append("+");
++    dispatchString(serial, mSlotId, RIL_REQUEST_SET_NETWORK_SELECTION_MANUAL,
++            opNum.c_str());
++#endif
+     return Void();
+ }
+ 
+@@ -4565,7 +4572,12 @@ int radio::getAvailableNetworksResponse(int slotId,
+             for (int i = 0, j = 0; i < numStrings; i = i + 4, j++) {
+                 networks[j].alphaLong = convertCharPtrToHidlString(resp[i]);
+                 networks[j].alphaShort = convertCharPtrToHidlString(resp[i + 1]);
++#ifndef OLD_MNC_FORMAT
+                 networks[j].operatorNumeric = convertCharPtrToHidlString(resp[i + 2]);
++#else
++                const char *mccmncIdx = strrchr(resp[i + 2], '+');
++                networks[j].operatorNumeric = hidl_string(resp[i + 2], mccmncIdx - resp[i + 2]);
++#endif
+                 int status = convertOperatorStatusToInt(resp[i + 3]);
+                 if (status == -1) {
+                     if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;

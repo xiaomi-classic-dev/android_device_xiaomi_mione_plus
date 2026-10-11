@@ -1,0 +1,81 @@
+From 36360dc6df0e71889e2aa84a9b89eefa7945a30e Mon Sep 17 00:00:00 2001
+From: Ruthwar Ambeer <rambeer@codeaurora.org>
+Date: Thu, 19 Jul 2018 15:53:23 +0530
+Subject: [PATCH] FR51015: Tuning of Binder buffer for rild.
+
+Tuned the Binder buffer to 500KB as it is not
+going to use the default allocated 1MB which
+saves RAM for 32 bit processors.
+
+Change-Id: Ifea2720f8e853643a37912c3459e923168677b1e
+CRs-Fixed: 2283052
+(cherry picked from commit 4979b0484a7f36694d99729daeabb86be95602af)
+(cherry picked from commit e44662c0652c9e9d96cb9c01df213a593caa3cef)
+---
+ libril/ril.cpp | 13 +++++++++++++
+ rild/rild.c    |  2 ++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/libril/ril.cpp b/libril/ril.cpp
+index f31076d..01f9769 100644
+--- a/libril/ril.cpp
++++ b/libril/ril.cpp
+@@ -21,6 +21,7 @@
+ #include <telephony/ril.h>
+ #include <telephony/ril_cdma_sms.h>
+ #include <cutils/sockets.h>
++#include <hwbinder/ProcessState.h>
+ #include <telephony/record_stream.h>
+ #include <utils/Log.h>
+ #include <utils/SystemClock.h>
+@@ -52,6 +53,10 @@ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responsel
+ 
+ extern "C" void
+ RIL_onRequestAck(RIL_Token t);
++
++extern "C" void
++initWithMmapSize();
++
+ namespace android {
+ 
+ #define PHONE_PROCESS "radio"
+@@ -81,6 +86,9 @@ namespace android {
+ // request, response, and unsolicited msg print macro
+ #define PRINTBUF_SIZE 8096
+ 
++// Set hwbinder buffer size to 512KB
++#define HW_BINDER_MMAP_SIZE 524288
++
+ enum WakeType {DONT_WAKE, WAKE_PARTIAL};
+ 
+ typedef struct {
+@@ -1241,4 +1249,9 @@ rilSocketIdToString(RIL_SOCKET_ID socket_id)
+     }
+ }
+ 
++extern "C" void
++initWithMmapSize() {
++    android::hardware::ProcessState::initWithMmapSize((size_t)(HW_BINDER_MMAP_SIZE));
++}
++
+ } /* namespace android */
+diff --git a/rild/rild.c b/rild/rild.c
+index 781db78..f135e4e 100644
+--- a/rild/rild.c
++++ b/rild/rild.c
+@@ -74,6 +74,7 @@ extern void RIL_onUnsolicitedResponse(int unsolResponse, const void *data,
+ extern void RIL_requestTimedCallback (RIL_TimedCallback callback,
+         void *param, const struct timeval *relativeTime);
+ 
++extern void initWithMmapSize();
+ 
+ static struct RIL_Env s_rilEnv = {
+     RIL_onRequestComplete,
+@@ -125,6 +126,7 @@ int main(int argc, char **argv) {
+     RLOGD("**RIL Daemon Started**");
+     RLOGD("**RILd param count=%d**", argc);
+ 
++    initWithMmapSize();
+     umask(S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH);
+     for (i = 1; i < argc ;) {
+         if (0 == strcmp(argv[i], "-l") && (argc - i > 1)) {

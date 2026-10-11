@@ -1,120 +1,493 @@
 {
-  "android_branch": "lineage-18.1",
+  "android_branch": "lineage-19.1",
+  "camera_framework_hal1_restoration": false,
   "projects": [
     {
+      "path": "build/soong",
+      "base_commit": "59d5b37cce358e0d300392676d64191d3938608f",
+      "patches": [
+        {
+          "file": "build-soong/0001-Prepend-header-jar-for-sharded-javac-compilation.patch",
+          "source_commit": "26c72b6e256228d10ad192b33c0ab05c9fa8ecda",
+          "patch_id": "3c6bfe40c34486a2395869b576f449b17e696df9",
+          "sha256": "bc5e596e0c167106213b3178e1a0ba9656a64dcadcdcd516aa31a751dca11830"
+        }
+      ],
+      "source_head": "26c72b6e256228d10ad192b33c0ab05c9fa8ecda"
+    },
+    {
+      "path": "art",
+      "base_commit": "f192ca3ca279cadc41aecd225c6b4d555bce6360",
+      "patches": [
+        {
+          "file": "art/0001-art-Conditionally-remove-version-check-for-memfd_create.patch",
+          "source_commit": "c692cfa74f82f3d115d19c40eecdbada5657cd26",
+          "patch_id": "ed0ac6f17d4566fe0dec0d1f8bf897da2830a1c7",
+          "sha256": "e576889b583f940718715e7454a990bb99d1b2edc439d7df7603c95b4e03c763"
+        }
+      ],
+      "source_head": "c692cfa74f82f3d115d19c40eecdbada5657cd26"
+    },
+    {
+      "path": "external/perfetto",
+      "base_commit": "90ce65714ac0f62f2f1f0c01042c1b21de5caf57",
+      "patches": [
+        {
+          "file": "external-perfetto/0001-perfetto-Conditionally-remove-version-check-for-memfd_create.patch",
+          "source_commit": "1e8c7e940a357172d11c5ef971f73d4edc449044",
+          "patch_id": "c1f2b7a86283a15a4b8062d3d6ed6bd9a2a5fc2c",
+          "sha256": "0bfa40ea9f3dcb89db587bc39ea053fb1cb02a55bb9fcbbfe198cd3a57ffa19d"
+        }
+      ],
+      "source_head": "1e8c7e940a357172d11c5ef971f73d4edc449044"
+    },
+    {
       "path": "bionic",
-      "base_commit": "b67b03356ceb6171bd0cfdb88c3ee9413c476935",
-      "source_head": "042355cdf4e20631e7e3ebc8d3704492f05d8915",
+      "base_commit": "6e6ed4d6cd4081f0c755d2548a4752d9fcc157a2",
       "patches": [
         {
-          "file": "bionic/0001-linker-Preserve-device-selected-non-PIE-execution-on.patch",
-          "source_commit": "042355cdf4e20631e7e3ebc8d3704492f05d8915",
+          "file": "bionic/0001-Implement-per-process-target-SDK-version-override..patch",
+          "source_commit": "013dcf40814256ba413dee23650811ac752b8343",
+          "patch_id": "1b339394ccc2f57222347533056db4d4403ce9e7",
+          "sha256": "97bd6739f03cf90d74fce81cebc62b77cc010d15e321c1dcd0a96c10aa00229e"
+        },
+        {
+          "file": "bionic/0002-bionic-Squash-of-pre-P-mutex-behavior-restoration.patch",
+          "source_commit": "517682d1d94b9974530150dc0b9a12a600e0763d",
+          "patch_id": "1ea7ddba2f0be7825ac51226624937e06b7cc85b",
+          "sha256": "eade9a14ad995f3e7e5e0fc3ffa8c8559b41c20cf801d592269c5fbc2381ead8"
+        },
+        {
+          "file": "bionic/0003-bionic-Make-libstdc-as-product_available.patch",
+          "source_commit": "fad5fcafeebf08cc43f56997a8c945e5aef25c92",
+          "patch_id": "f92b7f357dfcbd6a6518695aef4be7ee9e0ae180",
+          "sha256": "8a33e430c27d14a392943779b43e3d21cf86e2e123ba34a63ecf65547afcb3a3"
+        },
+        {
+          "file": "bionic/0004-Revert-Add-ability-to-build-scudo-free-32-bit-libc-variant..patch",
+          "source_commit": "44e8a8b56c2d1ffda39644f630fc6f769ad9f829",
+          "patch_id": "99ce8d4143248e55e8961e5a13c7d972337bf2a1",
+          "sha256": "a750d6fa5a4af1f70fe40f9d64ddebcd579f7e4f5845a5adc856a4666d04fe8a"
+        },
+        {
+          "file": "bionic/0005-Switch-to-jemalloc-memory-allocator.patch",
+          "source_commit": "d7fa30785508733b0402cb86453fe84fd9047b0e",
+          "patch_id": "88c17c2051659055e53fb2a0b47057edefb21eea",
+          "sha256": "f327bd6d986738bffb207c5402325b3ea1d4891af0c544539f7785e7f3f202dd"
+        },
+        {
+          "file": "bionic/0006-linker-Preserve-device-selected-non-PIE-execution-on-Android-11.patch",
+          "source_commit": "2ed09a852c45569b668da5f68180182350c0b81f",
           "patch_id": "d65bffe0225c04edafb9c566015a3b0378a0ba39",
-          "sha256": "5abf2a7f4d63034a09beb93601d9852da7795ca9d25c917e10ebd4abe677108e"
+          "sha256": "149d4438a03d1e56ffc2cc251cfaf681a52c34846542a06026afe771d29900f5"
         }
-      ]
+      ],
+      "source_head": "2ed09a852c45569b668da5f68180182350c0b81f"
     },
     {
-      "path": "vendor/lineage",
-      "base_commit": "9acedc7d0e3866d90911a0112074fc312ca11ed5",
-      "source_head": "1e0c49225c95ddb5a69e6165a5ce558593d99ce9",
+      "path": "frameworks/av",
+      "base_commit": "8ad4e1d710fab315ff7ce461eed1efa60f282828",
       "patches": [
         {
-          "file": "vendor-lineage/0001-soong-Export-the-optional-device-non-PIE-allowlist-o.patch",
-          "source_commit": "19ea49a149672158dc63a4537d738dd6fc1b9c51",
-          "patch_id": "31bfab945af1961a2d4ddea7369ddee29b9b14ab",
-          "sha256": "eac263700111c026148a035a9f81d4619c9b5d1b4691c96841f9807e9ab5a5b2"
+          "file": "frameworks-av/0001-stagefright-omx-Don-t-signal-dataspace-change-on-legacy-QCOM.patch",
+          "source_commit": "8072a057f84d184fa6f1084391cb8aaf2be6da0e",
+          "patch_id": "4ab0f0be085a47a4009781607a2313cbf06102f8",
+          "sha256": "8e1946e14bd555afea6697459e150ae456d259e5881b9f511cfd7655249228e6"
         },
         {
-          "file": "vendor-lineage/0002-soong-Register-optional-non-PIE-configuration-only-wh.patch",
-          "source_commit": "1e0c49225c95ddb5a69e6165a5ce558593d99ce9",
-          "patch_id": "287eb37f7c8da35d4a445aad39c8f55c25eb5362",
-          "sha256": "630b7b93cf6304b5e8bd632c4743ebaa81291ed39f0e6a0bcd2d0d3ac956a055"
+          "file": "frameworks-av/0002-stagefright-ACodec-Resolve-empty-vendor-parameters-usage.patch",
+          "source_commit": "852eda8889f258294720e3a671299d19a662df2f",
+          "patch_id": "976716aaca124e11a248a0ed6234a618383deffd",
+          "sha256": "b5a2f7202ea4a565710e13997134c2880c95be1aa1fa5d2bb1e71f375dc53eb6"
+        },
+        {
+          "file": "frameworks-av/0003-libstagefright-Free-buffers-on-observer-died.patch",
+          "source_commit": "b07fc080380b52670e14ab143aee6911de462bdb",
+          "patch_id": "b4775070bd02c1255f9b5be295fe8f8b945eca43",
+          "sha256": "3b14a584f4b6a6eddf949e1582161af13f745ebe243115e4749966588ec5dc63"
+        },
+        {
+          "file": "frameworks-av/0004-libstagefright-use-64-bit-usage-for-native_window_set_usage.patch",
+          "source_commit": "9aa36173b0069ea6aa0853caf9169255cfbcbe2a",
+          "patch_id": "5fe14415f5b09ffec7855f71e45995337556f2bf",
+          "sha256": "4d35c1d231e76bf8d7a7109168ee11b0241676459b46a354be2cb15a00505a44"
+        },
+        {
+          "file": "frameworks-av/0005-libstagefright-Fix-memory-leak-due-to-lock-timeout.patch",
+          "source_commit": "3c93a60055e6bf5cbefeb5410d58dc55ec084c0a",
+          "patch_id": "571fb84a88563ad035ed07844d1e7c02e3044c1f",
+          "sha256": "6a57194a281b6eace761b763847e0cc79325b1cce91f5d7804f26d43cf6d6c7e"
+        },
+        {
+          "file": "frameworks-av/0006-Revert-Remove-support-for-audio-HAL-V2-from-the-framework.patch",
+          "source_commit": "78e6eb129ff871c39fcd95908fdd9e64fa2d58e6",
+          "patch_id": "444bea6b224de06c3cccdb58dd7e60308e325253",
+          "sha256": "63d4170ac1eb18cabdc9b4e887728235421aadd21b87a7ef28894644bffa22b8"
+        },
+        {
+          "file": "frameworks-av/0007-libstagefright-Free-buffers-on-observer-died.patch",
+          "source_commit": "06242587734a0e2783957507ce3be664fae66e09",
+          "patch_id": "b4775070bd02c1255f9b5be295fe8f8b945eca43",
+          "sha256": "5be0c0439e1519ba58dab47c9a1ed407169731b2d39eb6aaa80c522264333214"
+        },
+        {
+          "file": "frameworks-av/0008-Enable-legacy-adaptive-playback-for-QCOM_BSP_LEGACY.patch",
+          "source_commit": "cbbe1d2d3a4901dc9ff33fabf80ef7954d08194f",
+          "patch_id": "a8c69e1e87d76210964ae3f9ada0786c59835f39",
+          "sha256": "d7c60de74a2158149e3720dc88aacca8f8b85f0aaab82c98c7586cc2d19ee7e4"
+        },
+        {
+          "file": "frameworks-av/0009-nuplayer-Avoid-crash-when-codec-fails-to-load.patch",
+          "source_commit": "924fe9aefaac006b0683c48fc5e1ca622828c53c",
+          "patch_id": "351942ac23338a343acfb284be1087076e8eb734",
+          "sha256": "e75669b4646dedd16daa7b5a107ed0d0c6c47cde70b816c9812dbd55b45809da"
         }
-      ]
-    },
-    {
-      "path": "system/bt",
-      "base_commit": "bcca9a572f1cc539ba21ebe940c3642ce8707d1a",
-      "source_head": "6ee8ff5d768c384050a53c855c6eddde865b82ae",
-      "patches": [
-        {
-          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-leng.patch",
-          "source_commit": "ccb0b5a09b05d32c5ec68574be5ca300656f9596",
-          "patch_id": "3682b7d5685440c34fe3aa7cb5fe8c70228819f8",
-          "sha256": "d4ec68499d71b41bc7af4e0376089129311ac8b74a0481b680340d9992e29983"
-        },
-        {
-          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-p.patch",
-          "source_commit": "7d265237241966cc09a5772331df572ad3a8f4e0",
-          "patch_id": "bfed74931975ed92f87af938bb70eeaff4b50c31",
-          "sha256": "1d45b51d7b20bc9cf83076ca36de45f5e9b3141f5e142d11adcab0a4592a0ebd"
-        },
-        {
-          "file": "system-bt/0003-Bluetooth-Avoid-LE-advertising-and-feature-queries-o.patch",
-          "source_commit": "026e526c317034adbf353ffc9eace95881b69767",
-          "patch_id": "a3de51df2f64221034117d2b958e22cf13e9b8e3",
-          "sha256": "e39a4af7feb8eb007abd347f7c595f2c005f3e61b13763c77548ee599b146b87"
-        },
-        {
-          "file": "system-bt/0004-Bluetooth-skip-LE-identity-generation-on-classic-con.patch",
-          "source_commit": "6ee8ff5d768c384050a53c855c6eddde865b82ae",
-          "patch_id": "87ff89c59aea4f4617ceebce78b83bcf3c1b6c39",
-          "sha256": "77210e72ce337aebcee0f342c9ab7de3dace008010f3f963278786c151d28dde"
-        }
-      ]
+      ],
+      "source_head": "924fe9aefaac006b0683c48fc5e1ca622828c53c"
     },
     {
       "path": "hardware/interfaces",
-      "base_commit": "203e87a39c04f30bc1f09f6c2306b701d6b97fe0",
-      "source_head": "9d640eb1c7075c670dc07e11effc31d964dec9bc",
+      "base_commit": "ae469cee0dce6d71489588126a15da8e67a50102",
       "patches": [
         {
-          "file": "hardware-interfaces/0001-Bluetooth-HAL-Port-the-bounded-MiOne-BCM4329-downloa.patch",
-          "source_commit": "9d640eb1c7075c670dc07e11effc31d964dec9bc",
-          "patch_id": "996aa2881d55070915b6a44bf2d6ee368ae06de0",
-          "sha256": "c5d8ef75418989d06dc53527e9d3f4f3f3ae108a946d48651f80300a91e1bb7d"
-        }
-      ]
-    },
-    {
-      "path": "frameworks/base",
-      "base_commit": "8d14a16b5d75cd471925b45b96a05ee417248673",
-      "patches": [
+          "file": "hardware-interfaces/0001-audio-Probe-legacy-2.0-HAL-services.patch",
+          "source_commit": "685f63fba79b8875448a58d39d3bee027a6aaa7b",
+          "patch_id": "37df07f05c2cc8afa9b2d675f92a114fb46fd84a",
+          "sha256": "8d5290646e4bac1ed8d30eeea61af1b0f7d2043a33be933a295e1db665ac6bb8"
+        },
         {
-          "file": "frameworks-base/0001-SystemUI-Initialize-and-hide-AssistManager-on-the-main-thread.patch",
-          "source_commit": "8d760a1b2f93181ed573f64b2e86ddee1ab26003",
-          "patch_id": "f3d9e25df48eacde1216874a154f0faf603ceb88",
-          "sha256": "8a11f8779d1080901aad518c30a3dbe6ca53d4c691a12f2c610e8294987666ca"
+          "file": "hardware-interfaces/0002-Bluetooth-HAL-Retain-the-bounded-BCM4329-firmware-download-quirk.patch",
+          "source_commit": "8a3219d4bb6423aaf0e05a2acab3ff876ffc4255",
+          "patch_id": "d975bb63430d0a875153260cf99c5682518337b7",
+          "sha256": "df135717fa0212df2cb36788495d132c4482dd68c894aa37d1a0851db8e05e8e"
         }
       ],
-      "source_head": "8d760a1b2f93181ed573f64b2e86ddee1ab26003"
+      "source_head": "8a3219d4bb6423aaf0e05a2acab3ff876ffc4255"
     },
     {
-      "path": "packages/apps/Settings",
-      "base_commit": "31468874b701614b372765ee02d723b507f33004",
+      "path": "frameworks/native",
+      "base_commit": "d9596a35d391978fad41dc6ebad82750eabb7aa1",
       "patches": [
         {
-          "file": "packages-apps-Settings/0001-Wi-Fi-Ignore-picker-callbacks-after-the-fragment-detaches.patch",
-          "source_commit": "a7928d92051f66ec29bbecfb4754c4618a07d4ab",
-          "patch_id": "8972d076b98ce2cb07ed46ce190bd1237fddf849",
-          "sha256": "243fd346ae2f8ac287e7f9acf7043f43d0abef197fb85cb6069b8312bc683e4b"
+          "file": "frameworks-native/0001-SF-Bring-back-support-for-disabling-backpressure-propagation.patch",
+          "source_commit": "5593322f3b7bc38294512d6f71cee3d65abfd086",
+          "patch_id": "527852398dcb7ce7770831accbd365e412990355",
+          "sha256": "95dad4fc0ab263009ff50ab8939496cdc06cdbdf2f521408e2693e159ba32dab"
+        },
+        {
+          "file": "frameworks-native/0002-SurfaceFlinger-Don-t-cleanup-resources-from-previous-frame.patch",
+          "source_commit": "9d7d296ea2b0390173265e128c67858d730c4877",
+          "patch_id": "c0ff4b8f155cf5e45c0cd421d492dd56bd1e7775",
+          "sha256": "695a32627f68d03576ebfbf70964e2d4b678ecb6f72c82c749627a456f3e164d"
+        },
+        {
+          "file": "frameworks-native/0003-sf-avoiding-unnecessary-frame-skip-to-reduce-janks..patch",
+          "source_commit": "25247de427448565b27d1e5bdbe4f848e9b17d99",
+          "patch_id": "4b85d610350871226ba354b2042532d08b281a4a",
+          "sha256": "d60c4cbdb866ca3def456dd98f629364d4f5b53b063a86f887ee8c7c30e46c89"
+        },
+        {
+          "file": "frameworks-native/0004-SurfaceFlinger-Don-t-cleanup-resources-from-previous-frame-on-vi.patch",
+          "source_commit": "d04db46e05146d6096eac0f3f4a17a0bd9f1780c",
+          "patch_id": "eeff9835e5c9cd9b36063a19fded3a1c138f59ce",
+          "sha256": "e9949733d4ef7c8df651e7c0d1561b1aacbf29137f044978ac596bf2a20c140b"
+        },
+        {
+          "file": "frameworks-native/0005-binder-Export-either-Binder-offset-ABI-on-32-bit-ARM.patch",
+          "source_commit": "213c86d52ec58b8c6a78f71dd51f789f06aa68c2",
+          "patch_id": "aed4a7b0e82e224ec365ed7b64bda5fe3811fe6d",
+          "sha256": "611fad3feadf8a35bb996f8a81428f7610bc03379e7dc1b4457d320ba354a76a"
         }
       ],
-      "source_head": "a7928d92051f66ec29bbecfb4754c4618a07d4ab"
+      "source_head": "213c86d52ec58b8c6a78f71dd51f789f06aa68c2"
+    },
+    {
+      "path": "hardware/ril",
+      "base_commit": "decca067c5bc0e2eb0c824837506168151d98c10",
+      "patches": [
+        {
+          "file": "hardware-ril/0001-libril-Bounds-check-s_commands.patch",
+          "source_commit": "c0f3d7726fa07a955608deb465453af17b0a383f",
+          "patch_id": "e7cb41a71380b96b1eb5874cd3d76de268e06c7c",
+          "sha256": "0abec8adeaef910f7bc23b3a77494da818303905bcdfd1f18df0b024052e5161"
+        },
+        {
+          "file": "hardware-ril/0002-libril-Fix-manual-network-selection-with-old-modem.patch",
+          "source_commit": "913f31b8ec5ab0a248b66190905742a9a2cb1780",
+          "patch_id": "01f812bac6c7a56ab34f63e03acb7efa9afd17a2",
+          "sha256": "d1b5ae97fbb48eba9ae25a7044d7eb549cca872d491baa3fcca3a5b8c6761481"
+        },
+        {
+          "file": "hardware-ril/0003-libril-Restore-support-for-RIL-v6-v8-and-v9-stacks.patch",
+          "source_commit": "fbfda18bb3253455e06d949d3a75430c3f9f8a9c",
+          "patch_id": "3b5f462391844a0bfa620dd3854a19ea47086d63",
+          "sha256": "d1fe93566ae6b9a7d6a8d86155ec02858f8f4524b9ca04255929935fd55d9a57"
+        },
+        {
+          "file": "hardware-ril/0004-FR51015-Tuning-of-Binder-buffer-for-rild..patch",
+          "source_commit": "36360dc6df0e71889e2aa84a9b89eefa7945a30e",
+          "patch_id": "0440e6f7c57bdf755dcb36a6264af9e6c3e0e5d1",
+          "sha256": "fdabbb2dd86eff66309d9ebd8c670a4b7b96bfa80962bfdaa73c7bc810cd352d"
+        },
+        {
+          "file": "hardware-ril/0005-Make-RIL-command-headers-overlayable-by-devices..patch",
+          "source_commit": "0e2723c434aac119fcba0b726adf34f491572370",
+          "patch_id": "28b625b12e1a6316184e5a10fca2db7121467df3",
+          "sha256": "a881f4328f3881d5cb010a6804635db43caec72131f4cc627637c1b55d448565"
+        },
+        {
+          "file": "hardware-ril/0006-libril-Move-legacy-network-format-handling-to-telephony.patch",
+          "source_commit": "cfe328fb61e387d31aac128660a1e8b7921178c5",
+          "patch_id": "6e8010f1856b4f4dc3c061a5e22c1ac0b9bec9e5",
+          "sha256": "cebb944cc514a8cb8ac263c5ba97892f3b27fa4bc8cda74a5a98a99ecf3ee8e4"
+        },
+        {
+          "file": "hardware-ril/0007-rild-Add-net_raw-group-for-legacy-IPC-Router.patch",
+          "source_commit": "463d08fa27815adba9fdc3802ede55c3233b55a0",
+          "patch_id": "45a83c7ed3f7236a63e2cf3efbd3f23cd61833c6",
+          "sha256": "987edda28b3d2cf83057d80f8582a6d4bc2b5fdba9c88215d1aa179212184b4b"
+        }
+      ],
+      "source_head": "463d08fa27815adba9fdc3802ede55c3233b55a0"
+    },
+    {
+      "path": "frameworks/opt/telephony",
+      "base_commit": "5a6fad640313aff8b493a39467fe0d44c809dfc7",
+      "patches": [
+        {
+          "file": "frameworks-opt-telephony/0001-Avoid-SubscriptionManager-getUriForSubscriptionId-calls-with-inv.patch",
+          "source_commit": "f5a6cc0e62cd22a904d2477c17f771c00bc2059b",
+          "patch_id": "0fd1c77b5ea7fef3f6ef93b83567a43f53e44f7a",
+          "sha256": "d5437ac3396d5f40ec1a5895dd9d1dc07492d32e5d566c558ecf458ee8d6f305"
+        },
+        {
+          "file": "frameworks-opt-telephony/0002-2G-wants-proper-signal-strength-too.patch",
+          "source_commit": "fc1a2fc52799e73396798f17df70e0383f4b95b0",
+          "patch_id": "66ce418b2334ba15fc73c11b9df6c1882f6d3368",
+          "sha256": "57817f7dc24efdd6fca3306551192776246e40072ca98f4f1dd1da7dd99031e9"
+        },
+        {
+          "file": "frameworks-opt-telephony/0003-telephony-Squashed-support-for-simactivation-feature.patch",
+          "source_commit": "1ab2ad2e01bf808b3f075d0f6524153907fd451c",
+          "patch_id": "a7c8072bf2643be35eef44fd5d07bdf2a71d8d9b",
+          "sha256": "337796706990a6b642fe5a77bf84476dc803502378a4c2c25f911a2f361d5673"
+        },
+        {
+          "file": "frameworks-opt-telephony/0004-Telephony-Add-option-for-using-regular-poll-state-for-airplane-m.patch",
+          "source_commit": "829bd3d5a881077acbd1edef82b01cd54d922751",
+          "patch_id": "a21b7ff0eb7a13ca4e4e7c1454132c140a6c59eb",
+          "sha256": "7f281eab81d450f2c36578d53cb9db2c91beb3e13d5efd9b6d57e45c945a48d3"
+        },
+        {
+          "file": "frameworks-opt-telephony/0005-Telephony-Preserve-RAT-in-legacy-manual-network-selection.patch",
+          "source_commit": "197e7325f0192f68affb81d139b9e4e3c4e1d5f6",
+          "patch_id": "0aee075d319b033f79ccdc6a904da90e1cc7d8bc",
+          "sha256": "d485b2ccac56046884f0bb4a606ad9fb32acc112a630aea09acf768dc173d2b0"
+        }
+      ],
+      "source_head": "197e7325f0192f68affb81d139b9e4e3c4e1d5f6"
+    },
+    {
+      "path": "hardware/lineage/interfaces",
+      "base_commit": "1a4cdcc71021c106a7ba56d33440569b9b2871f5",
+      "patches": [
+        {
+          "file": "hardware-lineage-interfaces/0001-wifi-1.0-legacy-Add-provision-to-create-remove-dynamic-interface.patch",
+          "source_commit": "52d3f5bd7b5cfcd5a7ee59b61289c05bc4ca6a65",
+          "patch_id": "ddbd6dabd14acf6bfc77a46f07164bf0a7e14227",
+          "sha256": "0371fd5d3ef9484e489d31e50e8d0997b3b481ef4d283bd6aff3fc00739c42a5"
+        }
+      ],
+      "source_head": "52d3f5bd7b5cfcd5a7ee59b61289c05bc4ca6a65"
+    },
+    {
+      "path": "packages/modules/adb",
+      "base_commit": "ff1aa1f2309bcd12750fb4838ea4ca25fe644042",
+      "patches": [
+        {
+          "file": "packages-modules-adb/0001-adb-Bring-back-support-for-legacy-FunctionFS.patch",
+          "source_commit": "bab5633da826a918be22e53a974bcb64ff41bedb",
+          "patch_id": "0199a16d6d6a87017467505612a564e330450150",
+          "sha256": "f8316071e25953c4c9d4de1068980fbb26b29cf51c8643d78de20a7a031920fd"
+        }
+      ],
+      "source_head": "bab5633da826a918be22e53a974bcb64ff41bedb"
+    },
+    {
+      "path": "system/bpf",
+      "base_commit": "bb1485f836d496570a337f6d7b809a3e44191f71",
+      "patches": [
+        {
+          "file": "system-bpf/0001-Ignore-bpf-errors-for-4.9-kernels.patch",
+          "source_commit": "9c7d22306b50d250a6d5dab607bb6f592812f676",
+          "patch_id": "3c67ab3bea161267b5706a9ac1f341312111443b",
+          "sha256": "bd45bb07521af27f95c3c15ec1c92dfb58e9c504fe2535cd53e03ff529f42bd0"
+        }
+      ],
+      "source_head": "9c7d22306b50d250a6d5dab607bb6f592812f676"
+    },
+    {
+      "path": "system/netd",
+      "base_commit": "bb0df47d330bed1f1bfa59ffa54834da4c87b043",
+      "patches": [
+        {
+          "file": "system-netd/0001-Ignore-netd-errors-for-4.9-kernels.patch",
+          "source_commit": "18181557ffb6a186d358e967b279cd6c4d91f965",
+          "patch_id": "24a63fe47dcd3e5a4ff731680ad70d6309bea6a3",
+          "sha256": "48d197d8df8d7101a6b15028e359076c278ca54fa435691bc147e9e3d85c2a0d"
+        },
+        {
+          "file": "system-netd/0002-netd-Allow-devices-to-force-add-directly-connected-routes.patch",
+          "source_commit": "db5fbdb6329f6484c60c1e5506ed7414ab1d79e0",
+          "patch_id": "7c540f9e63945e1903411d949b068d5d9e57e51d",
+          "sha256": "3391a9de067fce737a7256aa389cae8ccd8e5a76c14661fdcd2eb3a7a44408b7"
+        }
+      ],
+      "source_head": "db5fbdb6329f6484c60c1e5506ed7414ab1d79e0"
+    },
+    {
+      "path": "system/sepolicy",
+      "base_commit": "3ad11c72adae8f5aaf231c18d49bfe673095f43d",
+      "patches": [
+        {
+          "file": "system-sepolicy/0001-Fix-storaged-access-to-sys-block-mmcblk0-stat-after-48027a00.patch",
+          "source_commit": "b1f877393e2227e92281a0da3cd08cafeac9941d",
+          "patch_id": "c7f25e2185d497b57c9a770056221ae6ccb3629d",
+          "sha256": "0a133f575ae09c38330cde3d12f2a52654353300a8b9640dbd59d132f2c36d91"
+        },
+        {
+          "file": "system-sepolicy/0002-sepolicy-Treat-proc-based-DT-fstab-the-same-and-sys-based.patch",
+          "source_commit": "cd38d6daacbf1902f98d7f857128db884ba307d6",
+          "patch_id": "32fafcc1a768e93a04d1440d7d2905e4f810fdf5",
+          "sha256": "a5404376636603a959c7b78f34df250b01272847d81e7255f1c5272d0c9558a6"
+        },
+        {
+          "file": "system-sepolicy/0003-Allow-init-to-write-to-proc-cpu-alignment.patch",
+          "source_commit": "8ddf1ce738df7c24976bbfea64075f8898c9619f",
+          "patch_id": "8d70ad0af133ac2acab6e12fa2aba4669b94aecb",
+          "sha256": "93340d5003091e74e4b965416fc29275318b905c99d32a98db374610954f8366"
+        },
+        {
+          "file": "system-sepolicy/0004-sepolicy-Add-sdcard_posix_contextmount_type-attribute.patch",
+          "source_commit": "70957583b12819b91f9843849c985514a7023bb5",
+          "patch_id": "84a5bff01e8034499199ececbb12f15c9e5bd3f1",
+          "sha256": "b33097d11dcebca3c628dc3a915684ca4434cf0e5b50ac45ab96846a9fe18837"
+        },
+        {
+          "file": "system-sepolicy/0005-sepolicy-Partial-revert-Add-sdcard_posix_contextmount_type-attri.patch",
+          "source_commit": "bb2c7567bf90201460447c1e49f4543f84fc7ea6",
+          "patch_id": "e740ec5f1b05b1180dde42b72eb68989689a33f0",
+          "sha256": "be0d453a4d3fd9b9acca9795cd06ddef49d6049b290e3ba1e2d7b0b59651664c"
+        }
+      ],
+      "source_head": "bb2c7567bf90201460447c1e49f4543f84fc7ea6"
+    },
+    {
+      "path": "system/security",
+      "base_commit": "d8fbb1f86c7405ddaa55dce780f18f5ec19f0422",
+      "patches": [
+        {
+          "file": "system-security/0001-keystore2-Add-groups-for-legacy-QSEE-keymaster.patch",
+          "source_commit": "3e920633f72fec2a163535ef9fca226b49914a9c",
+          "patch_id": "3e5b52899f347dfcd2961de5fb4cff3dbedbd3b4",
+          "sha256": "65c85ae5868eff01da75f12dd2c19c474a01ac88c107b071c89c3b5143a54d6d"
+        }
+      ],
+      "source_head": "3e920633f72fec2a163535ef9fca226b49914a9c"
+    },
+    {
+      "path": "vendor/lineage",
+      "base_commit": "48deacfcdcdd6338c5b1cf88e53364db92adf854",
+      "patches": [
+        {
+          "file": "vendor-lineage/0001-soong-Create-generated-kernel-header-output-directory.patch",
+          "source_commit": "35491405e8a58e9ca810e728abd320f5fcddac8e",
+          "patch_id": "99c32ce3c6efd66df4671b42d19d88240b0297cb",
+          "sha256": "8dc68cc8cd63d70488608fdd8124999dce21fc5d6b355ba2d70bde57767de0e9"
+        },
+        {
+          "file": "vendor-lineage/0002-vendor-Add-legacy-libbfqio-module.patch",
+          "source_commit": "4b108e3e43f73e329507ac47e1e765257d31c670",
+          "patch_id": "c966d5cba013a4cd7a7546c8ad9599e3469026ea",
+          "sha256": "c732482b2f62fc89f6fe325ebc8c5aa769cec00c246873e421c7ff70e7dc6425"
+        },
+        {
+          "file": "vendor-lineage/0003-vendor-Add-libbfqio-public-header.patch",
+          "source_commit": "fb2d3b0f9b9bf2b21458d7641a9825ee80a41d08",
+          "patch_id": "1482359085e3dde94c781e2d4383f888c24dfcfa",
+          "sha256": "90cec1a89122c86b5ccef88c6e126d642847da5ad3921fb187cc4ff1a4a87df3"
+        },
+        {
+          "file": "vendor-lineage/0004-soong-Export-the-optional-device-non-PIE-allowlist-on-Android-11.patch",
+          "source_commit": "7ca1700c9116fd0c65bdb3d927b06d6e72112c48",
+          "patch_id": "31bfab945af1961a2d4ddea7369ddee29b9b14ab",
+          "sha256": "fa3fd9482495ed75be5eabebb9e7800a47afa60bb0f583c1dd63a9584cfd6e97"
+        },
+        {
+          "file": "vendor-lineage/0005-soong-Register-optional-non-PIE-configuration-only-when-enabled.patch",
+          "source_commit": "fa13f020f8e604b1612d0197e5938fe72e462e2b",
+          "patch_id": "287eb37f7c8da35d4a445aad39c8f55c25eb5362",
+          "sha256": "ab1c9acf4f1cf26c09b59cd5f34cd6a504e5247b382e42fce61efe060fcbd6e0"
+        }
+      ],
+      "source_head": "fa13f020f8e604b1612d0197e5938fe72e462e2b"
     },
     {
       "path": "prebuilts/clang/host/linux-x86",
-      "base_commit": "7e2d7f3e8dba20760df041bf90ca5a15913631c8",
-      "source_head": "901fcb89ef1c7c64df6a4df8d8d40aa780d5bfb3",
+      "base_commit": "2cddc8015b6a61bbcb8bb58e55d67e4e4b4db6d2",
       "patches": [
         {
           "file": "prebuilts-clang-host-linux-x86/0001-compiler-rt-Backport-the-ARM-inexact-status-bit-correction.patch",
-          "source_commit": "901fcb89ef1c7c64df6a4df8d8d40aa780d5bfb3",
-          "patch_id": "d41aba3d71f7e3aa8d56b29aefb2c2a8e60167ec",
-          "sha256": "90cf2d49c91251e0a1363fcdb26bee36664063f40a49fa510c2be9155bbb5e54"
+          "source_commit": "064a018fe9ddf29414e3b2a5930468c40a1f56c1",
+          "patch_id": "271917b73137b7bbbbf57010e1cc56647d80d9e8",
+          "sha256": "c3be39203283529b921c34dc52c5a732ed4890e912a0692394b18f3d9d2472a2"
         }
-      ]
+      ],
+      "source_head": "064a018fe9ddf29414e3b2a5930468c40a1f56c1"
+    },
+    {
+      "path": "system/bt",
+      "base_commit": "f6f0c30c842f0c65b91d5ecde0b944aa9dba9729",
+      "patches": [
+        {
+          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-length-and-handl.patch",
+          "source_commit": "71d669ea1661ae68131fd2a0fb1d53faa501777c",
+          "patch_id": "3682b7d5685440c34fe3aa7cb5fe8c70228819f8",
+          "sha256": "3a1bdb6ff38eaf38efa7b63f3cccac6ef315c291ae1bb77fb0dee1f4834b50e3"
+        },
+        {
+          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-policy-to-And.patch",
+          "source_commit": "62fd0dc57b6e5bd1d36435e01fc84f070020daeb",
+          "patch_id": "bfed74931975ed92f87af938bb70eeaff4b50c31",
+          "sha256": "873d0b36ef125607c9515599178742839d2d3a079427aa66d3e37af1e94cd693"
+        },
+        {
+          "file": "system-bt/0003-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
+          "source_commit": "154e034c49660073122ebda9fb6233c462b22bf7",
+          "patch_id": "87ff89c59aea4f4617ceebce78b83bcf3c1b6c39",
+          "sha256": "12f912647d84044315d94bc26c3a24a3ce44857214c7d72e8ff8efd6216be0fc"
+        },
+        {
+          "file": "system-bt/0004-Bluetooth-Guard-LE-advertising-and-feature-access-for-classic-co.patch",
+          "source_commit": "046a0e146cfc1121879d8427ad239d77f456eeec",
+          "patch_id": "f7224d2d6b19c909c6c42bd99ed0003c5bf69b90",
+          "sha256": "f0327eb762c033de4dad01b3dcadd7d3c4a7b6b08c6ffaa4aaa7ae58a83f4e3c"
+        }
+      ],
+      "source_head": "046a0e146cfc1121879d8427ad239d77f456eeec"
+    },
+    {
+      "path": "packages/apps/Settings",
+      "base_commit": "cd9f7949413df68160aa5026e95d9591395e539e",
+      "patches": [
+        {
+          "file": "packages-apps-Settings/0001-Wi-Fi-Ignore-picker-callbacks-after-the-fragment-detaches.patch",
+          "source_commit": "1a97cd729dcf0d504a194e2723745ae9e6e86aca",
+          "patch_id": "4e32da8b3994a9b5291416918e1e7adde141f554",
+          "sha256": "215a9bbcb4a78997263a53aadc1e3d8a15ba386b7a0054c6230b775fcd9270c0"
+        }
+      ],
+      "source_head": "1a97cd729dcf0d504a194e2723745ae9e6e86aca"
     }
   ]
 }

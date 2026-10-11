@@ -1,0 +1,116 @@
+From 197e7325f0192f68affb81d139b9e4e3c4e1d5f6 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Fri, 4 Sep 2026 01:07:46 +0800
+Subject: [PATCH] Telephony: Preserve RAT in legacy manual network selection
+
+Change-Id: Ifaeee8f7ea8ce3879474472725aef89fec126e8a
+(cherry picked from commit f594d8be64876af2484ef433644ae59e6cdbd8e1)
+---
+ .../com/android/internal/telephony/RIL.java   | 21 ++++++++++++-
+ .../internal/telephony/RadioResponse.java     | 31 ++++++++++++++-----
+ 2 files changed, 43 insertions(+), 9 deletions(-)
+
+diff --git a/src/java/com/android/internal/telephony/RIL.java b/src/java/com/android/internal/telephony/RIL.java
+index df0d9276b8..0609145883 100644
+--- a/src/java/com/android/internal/telephony/RIL.java
++++ b/src/java/com/android/internal/telephony/RIL.java
+@@ -2568,7 +2568,7 @@ public class RIL extends BaseCommands implements CommandsInterface {
+                     mRILDefaultWorkSource);
+ 
+             if (mUseOldMncMccFormat && !TextUtils.isEmpty(operatorNumeric)) {
+-                operatorNumeric += "+";
++                operatorNumeric += "+" + convertAntToLegacyRilRadioTechnology(ran);
+             }
+ 
+             try {
+@@ -5443,6 +5443,25 @@ public class RIL extends BaseCommands implements CommandsInterface {
+         }
+     }
+ 
++    /** Converts AccessNetworkType to the radio technology suffix used by legacy RILs. */
++    private static String convertAntToLegacyRilRadioTechnology(int accessNetworkType) {
++        switch (accessNetworkType) {
++            case AccessNetworkType.GERAN:
++                return Integer.toString(ServiceState.RIL_RADIO_TECHNOLOGY_GSM);
++            case AccessNetworkType.UTRAN:
++                return Integer.toString(ServiceState.RIL_RADIO_TECHNOLOGY_UMTS);
++            case AccessNetworkType.EUTRAN:
++                return Integer.toString(ServiceState.RIL_RADIO_TECHNOLOGY_LTE);
++            case AccessNetworkType.CDMA2000:
++                return Integer.toString(ServiceState.RIL_RADIO_TECHNOLOGY_IS95A);
++            case AccessNetworkType.NGRAN:
++                return Integer.toString(ServiceState.RIL_RADIO_TECHNOLOGY_NR);
++            case AccessNetworkType.UNKNOWN:
++            default:
++                return "";
++        }
++    }
++
+     @Override
+     public void setSimCardPower(int state, Message result, WorkSource workSource) {
+         workSource = getDefaultWorkSourceIfInvalid(workSource);
+diff --git a/src/java/com/android/internal/telephony/RadioResponse.java b/src/java/com/android/internal/telephony/RadioResponse.java
+index 7994576da4..81f2985892 100644
+--- a/src/java/com/android/internal/telephony/RadioResponse.java
++++ b/src/java/com/android/internal/telephony/RadioResponse.java
+@@ -54,6 +54,7 @@ import android.telephony.NetworkScanRequest;
+ import android.telephony.PhoneNumberUtils;
+ import android.telephony.RadioAccessFamily;
+ import android.telephony.RadioAccessSpecifier;
++import android.telephony.ServiceState;
+ import android.telephony.SignalStrength;
+ import android.telephony.SubscriptionManager;
+ import android.telephony.TelephonyManager;
+@@ -2554,17 +2555,17 @@ public class RadioResponse extends IRadioResponse.Stub {
+         }
+     }
+ 
+-    private static String convertOpertatorInfoToString(int status) {
++    private static OperatorInfo.State convertOperatorInfoToState(int status) {
+         if (status == android.hardware.radio.V1_0.OperatorStatus.UNKNOWN) {
+-            return "unknown";
++            return OperatorInfo.State.UNKNOWN;
+         } else if (status == android.hardware.radio.V1_0.OperatorStatus.AVAILABLE) {
+-            return "available";
++            return OperatorInfo.State.AVAILABLE;
+         } else if (status == android.hardware.radio.V1_0.OperatorStatus.CURRENT) {
+-            return "current";
++            return OperatorInfo.State.CURRENT;
+         } else if (status == android.hardware.radio.V1_0.OperatorStatus.FORBIDDEN) {
+-            return "forbidden";
++            return OperatorInfo.State.FORBIDDEN;
+         } else {
+-            return "";
++            return OperatorInfo.State.UNKNOWN;
+         }
+     }
+ 
+@@ -2577,12 +2578,26 @@ public class RadioResponse extends IRadioResponse.Stub {
+             ArrayList<OperatorInfo> ret = new ArrayList<OperatorInfo>();
+             for (int i = 0; i < networkInfos.size(); i++) {
+                 String operatorNumeric = networkInfos.get(i).operatorNumeric;
++                int ran = AccessNetworkConstants.AccessNetworkType.UNKNOWN;
+                 if (operatorNumeric != null) {
+-                    operatorNumeric = operatorNumeric.split("\\+")[0];
++                    int separator = operatorNumeric.lastIndexOf('+');
++                    if (separator >= 0) {
++                        if (separator + 1 < operatorNumeric.length()) {
++                            try {
++                                int rilRadioTechnology = Integer.parseInt(
++                                        operatorNumeric.substring(separator + 1));
++                                ran = ServiceState.rilRadioTechnologyToAccessNetworkType(
++                                        rilRadioTechnology);
++                            } catch (NumberFormatException ignored) {
++                                // Keep the access network unknown for malformed legacy responses.
++                            }
++                        }
++                        operatorNumeric = operatorNumeric.substring(0, separator);
++                    }
+                 }
+                 ret.add(new OperatorInfo(networkInfos.get(i).alphaLong,
+                         networkInfos.get(i).alphaShort, operatorNumeric,
+-                        convertOpertatorInfoToString(networkInfos.get(i).status)));
++                        convertOperatorInfoToState(networkInfos.get(i).status), ran));
+             }
+             if (responseInfo.error == RadioError.NONE) {
+                 sendMessageResponse(rr.mResult, ret);

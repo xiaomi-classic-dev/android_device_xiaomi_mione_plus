@@ -1,48 +1,55 @@
-From 901fcb89ef1c7c64df6a4df8d8d40aa780d5bfb3 Mon Sep 17 00:00:00 2001
+From 064a018fe9ddf29414e3b2a5930468c40a1f56c1 Mon Sep 17 00:00:00 2001
 From: Alex Richardson <Alexander.Richardson@cl.cam.ac.uk>
-Date: Fri, 12 Mar 2021 11:15:17 +0000
+Date: Sun, 11 Oct 2026 17:03:12 +0800
 Subject: [PATCH] compiler-rt: Backport the ARM inexact status-bit correction
 
-Adapt upstream LLVM e2cd2f7d08ce4391f19c0ce5c4ea63bb9a985fcf
-([builtins] Fix value of ARM_INEXACT) to the active Android 11.0.2
-r383902b1 ARM builtins prebuilt.
+Adapt upstream LLVM e2cd2f7d08ce4391f19c0ce5c4ea63bb9a985fcf to
+Android 12 clang-r416183b1 (12.0.7) ARM builtins archives.
 
-ARM_INEXACT must set FPSCR IXC (0x10), not IXE (0x1000). The old
-value turns an ordinary inexact __aeabi_fadd result into an enabled
-VFP trap. MiOne's legacy eCompass subsequently dies with SIGFPE
-FPE_FLTRES in sqrtf, taking down SensorService and system_server.
+__fe_raise_inexact currently sets FPSCR IXE (0x1000), enabling a trap,
+instead of the cumulative inexact status IXC (0x10). Preserve the
+Android 11 migration fix when replacing the compiler prebuilt.
 
-Keep the existing archive and replace only the ORR immediate in
-fp_mode.c.o's .text.__fe_raise_inexact: ORR r0,r0,#4096 becomes
-ORR r0,r0,#16. Exactly two bytes change at archive offsets 5764/5765;
-archive size, symbols, index, and every other object are unchanged.
-No blanket floating-point exception suppression is added.
+Replace only ORR r0,r0,#4096 with ORR r0,r0,#16 in fp_mode.c.o.
+Two bytes per archive change; archive lengths, indices and all other
+members remain unchanged. Correct both exported/regular builtins and
+the NDK runtime copy; no floating-point exception masking is added.
 
-Before SHA256: c78d0076fb86e3a7428649cb1b611251373f4e572b67ef8f6956ad59b2cf40ea
-After SHA256: 611ca36071ee503d03363425703c7d3a2184a92c2edf6d92706144aaf5a9d6d9
 Upstream: https://github.com/llvm/llvm-project/commit/e2cd2f7d08ce4391f19c0ce5c4ea63bb9a985fcf
-Reviewed upstream by: kongyi, peter.smith
-Differential Revision: https://reviews.llvm.org/D98353
+Test: disassemble all three archives; verify exactly two changed bytes
+per archive. Build and phone validation are recorded separately.
 
-Test: bounded Android build; disassemble the resulting runtime/bootstrap
-libc; run the legacy sensor HAL on MiOne with the screen on. Magnetic,
-orientation and geomagnetic samples arrive; no SIGFPE, SensorService
-abort or system_server replacement. Wi-Fi scans with the original MAC.
-
-Change-Id: I4f7f5236483c5b37656c3024d2c602023a5d7d99
+Change-Id: I7563e776c38436b4c7d9395682e1ebe5e4ac660d
 ---
- .../linux/libclang_rt.builtins-arm-android.a  | Bin 193284 -> 193284 bytes
- 1 file changed, 0 insertions(+), 0 deletions(-)
+ ...ibclang_rt.builtins-arm-android-exported.a | Bin 216900 -> 216900 bytes
+ .../linux/libclang_rt.builtins-arm-android.a  | Bin 216900 -> 216900 bytes
+ .../libclang_rt.builtins-arm-android.a        | Bin 216900 -> 216900 bytes
+ 3 files changed, 0 insertions(+), 0 deletions(-)
 
-diff --git a/clang-r383902b1/lib64/clang/11.0.2/lib/linux/libclang_rt.builtins-arm-android.a b/clang-r383902b1/lib64/clang/11.0.2/lib/linux/libclang_rt.builtins-arm-android.a
-index 7cd5a90f73ffda079beec3b9f19053808e85e8d0..bbc8892f29fdab0d27140b4d373b5a880e2c544c 100644
+diff --git a/clang-r416183b1/lib64/clang/12.0.7/lib/linux/libclang_rt.builtins-arm-android-exported.a b/clang-r416183b1/lib64/clang/12.0.7/lib/linux/libclang_rt.builtins-arm-android-exported.a
+index 4a42c11e18d50839ccc3ae7b482d81f4e51c727a..25b1baa70a53a62ed0c0a14fd80b3713b04c65a0 100644
 GIT binary patch
-delta 25
-gcmZp9#@+IadqayDlK?|=n^=3B7~}RfF{ZjZ0DUY8IRF3v
+delta 29
+jcmX>ykN3zt-VGH}OacteRZ{I$Qj9>%w7p7-`IHF&pCbv+
 
-delta 25
-gcmZp9#@+IadqayD6C+o1n^=3B7~}RfF{ZjZ0DRX8Gynhq
+delta 29
+jcmX>ykN3zt-VGH}OpIL3RZ{I$Qj9>%w7p7-`IHF&p1KLj
 
--- 
-2.53.0
+diff --git a/clang-r416183b1/lib64/clang/12.0.7/lib/linux/libclang_rt.builtins-arm-android.a b/clang-r416183b1/lib64/clang/12.0.7/lib/linux/libclang_rt.builtins-arm-android.a
+index 1e976dbd7ed7e50e33eaf429af6b049bbf641c1e..ef0450da60a013a13852faf8a563d30d84786161 100644
+GIT binary patch
+delta 29
+jcmX>ykN3zt-VGH}OacteRZ{I$Qj9>%w7p7-`IHF&pCbv+
+
+delta 29
+jcmX>ykN3zt-VGH}OpIL3RZ{I$Qj9>%w7p7-`IHF&p1KLj
+
+diff --git a/clang-r416183b1/runtimes_ndk_cxx/libclang_rt.builtins-arm-android.a b/clang-r416183b1/runtimes_ndk_cxx/libclang_rt.builtins-arm-android.a
+index 1e976dbd7ed7e50e33eaf429af6b049bbf641c1e..ef0450da60a013a13852faf8a563d30d84786161 100644
+GIT binary patch
+delta 29
+jcmX>ykN3zt-VGH}OacteRZ{I$Qj9>%w7p7-`IHF&pCbv+
+
+delta 29
+jcmX>ykN3zt-VGH}OpIL3RZ{I$Qj9>%w7p7-`IHF&p1KLj
 

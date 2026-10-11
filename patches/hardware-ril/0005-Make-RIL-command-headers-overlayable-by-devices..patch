@@ -1,0 +1,30 @@
+From 0e2723c434aac119fcba0b726adf34f491572370 Mon Sep 17 00:00:00 2001
+From: Danny Baumann <dannybaumann@web.de>
+Date: Fri, 22 Jun 2018 12:34:25 +0200
+Subject: [PATCH] Make RIL command headers overlayable by devices.
+
+Change-Id: I73e11e10dd18d0ed73fa063091bc2bde35014b5f
+(cherry picked from commit f455917c22a10dfc4c79b1881bfc5b96560e5204)
+(cherry picked from commit efa34b976dbb4a988c4753e1af278a514d4a6e2e)
+---
+ libril/ril.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libril/ril.cpp b/libril/ril.cpp
+index 01f9769..7f4d2b4 100644
+--- a/libril/ril.cpp
++++ b/libril/ril.cpp
+@@ -190,11 +190,11 @@ static UserCallbackInfo * internalRequestTimedCallback
+ 
+ /** Index == requestNumber */
+ static CommandInfo s_commands[] = {
+-#include "ril_commands.h"
++#include <ril_commands.h>
+ };
+ 
+ static UnsolResponseInfo s_unsolResponses[] = {
+-#include "ril_unsol_commands.h"
++#include <ril_unsol_commands.h>
+ };
+ 
+ char * RIL_getServiceName() {

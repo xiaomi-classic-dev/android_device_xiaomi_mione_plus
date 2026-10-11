@@ -1,4 +1,4 @@
-From 1e0c49225c95ddb5a69e6165a5ce558593d99ce9 Mon Sep 17 00:00:00 2001
+From fa13f020f8e604b1612d0197e5938fe72e462e2b Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sun, 11 Oct 2026 13:01:21 +0800
 Subject: [PATCH] soong: Register optional non-PIE configuration only when
@@ -12,7 +12,7 @@ Change-Id: I75b0606c6f15209ede472db777ae892ed492fd47
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/config/BoardConfigSoong.mk b/config/BoardConfigSoong.mk
-index 027dba79..50f2027f 100644
+index 9ea67272..e9d259e6 100644
 --- a/config/BoardConfigSoong.mk
 +++ b/config/BoardConfigSoong.mk
 @@ -28,7 +28,6 @@ $(foreach v,$(EXPORT_TO_SOONG),$(eval $(call addVar,$(v))))
@@ -23,13 +23,10 @@ index 027dba79..50f2027f 100644
      additional_gralloc_10_usage_bits \
      bootloader_message_offset \
      disable_postrender_cleanup \
-@@ -108,5 +107,6 @@ endif #TARGET_USE_QTI_BT_STACK
+@@ -137,5 +136,6 @@ endif #TARGET_USE_QTI_BT_STACK
  
  # Unset devices keep the normal PIE-only linker contract.
  ifneq ($(strip $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)),)
 +SOONG_CONFIG_lineageGlobalVars += non_pie_executables_header_dir
  SOONG_CONFIG_lineageGlobalVars_non_pie_executables_header_dir := $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)
  endif
--- 
-2.53.0
-

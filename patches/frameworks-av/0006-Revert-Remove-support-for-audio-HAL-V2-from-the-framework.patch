@@ -1,0 +1,69 @@
+From 78e6eb129ff871c39fcd95908fdd9e64fa2d58e6 Mon Sep 17 00:00:00 2001
+From: TARKZiM <tom8476oo@gmail.com>
+Date: Sat, 12 Feb 2022 18:41:32 +0800
+Subject: [PATCH] Revert "Remove support for audio HAL V2 from the framework"
+
+This reverts commit cbf517f837f7bf8a59f3ff8aa1e0e3e19612e251.
+
+Change-Id: I1800712582df740db9f60d29e22cda18c4895a96
+(cherry picked from commit 9aac364865ccd00e2877c754ec24b81653111545)
+(cherry picked from commit 5fb0bab5805a5b909d84c12ba009c41f2e423284)
+---
+ media/libaudiohal/Android.bp         |  1 +
+ media/libaudiohal/FactoryHalHidl.cpp |  1 +
+ media/libaudiohal/impl/Android.bp    | 18 ++++++++++++++++++
+ 3 files changed, 20 insertions(+)
+
+diff --git a/media/libaudiohal/Android.bp b/media/libaudiohal/Android.bp
+index bd24c84dbc..f7a9ecc2b7 100644
+--- a/media/libaudiohal/Android.bp
++++ b/media/libaudiohal/Android.bp
+@@ -23,6 +23,7 @@ cc_library_shared {
+     ],
+ 
+     required: [
++        "libaudiohal@2.0",
+         "libaudiohal@4.0",
+         "libaudiohal@5.0",
+         "libaudiohal@6.0",
+diff --git a/media/libaudiohal/FactoryHalHidl.cpp b/media/libaudiohal/FactoryHalHidl.cpp
+index e420d079b8..7228b221b9 100644
+--- a/media/libaudiohal/FactoryHalHidl.cpp
++++ b/media/libaudiohal/FactoryHalHidl.cpp
+@@ -35,6 +35,7 @@ const char* sAudioHALVersions[] = {
+     "6.0",
+     "5.0",
+     "4.0",
++    "2.0",
+     nullptr
+ };
+ 
+diff --git a/media/libaudiohal/impl/Android.bp b/media/libaudiohal/impl/Android.bp
+index a2c6e8aeba..4e360be7e8 100644
+--- a/media/libaudiohal/impl/Android.bp
++++ b/media/libaudiohal/impl/Android.bp
+@@ -62,6 +62,24 @@ cc_defaults {
+     ],
+ }
+ 
++cc_library_shared {
++    name: "libaudiohal@2.0",
++    defaults: ["libaudiohal_default"],
++    shared_libs: [
++        "android.hardware.audio.common@2.0",
++        "android.hardware.audio.common@2.0-util",
++        "android.hardware.audio.effect@2.0",
++        "android.hardware.audio.effect@2.0-util",
++        "android.hardware.audio@2.0",
++        "android.hardware.audio@2.0-util",
++    ],
++    cflags: [
++        "-DMAJOR_VERSION=2",
++        "-DMINOR_VERSION=0",
++        "-include common/all-versions/VersionMacro.h",
++    ]
++}
++
+ cc_library_shared {
+     name: "libaudiohal@4.0",
+     defaults: ["libaudiohal_default"],

@@ -1,30 +1,27 @@
-From 9d640eb1c7075c670dc07e11effc31d964dec9bc Mon Sep 17 00:00:00 2001
+From 8a3219d4bb6423aaf0e05a2acab3ff876ffc4255 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
-Date: Sat, 3 Oct 2026 11:08:44 +0800
-Subject: [PATCH] Bluetooth HAL: Port the bounded MiOne BCM4329 download quirk
- to HIDL
+Date: Sun, 11 Oct 2026 18:59:35 +0800
+Subject: [PATCH] Bluetooth HAL: Retain the bounded BCM4329 firmware-download
+ quirk
 
-Default to strict H4 parsing. A device property can allow the single ordered 0x34,0x31 sequence observed during BCM4329 minidriver startup, once per UART instance. Leave packet payload parsing unchanged and retain fatal handling for every other unknown type or repeated sequence.
+Port the device opt-in to the Android 12 H4 parser, retaining ISO packet support and strict handling of other packet types. Only the ordered two-byte minidriver sequence is accepted once per UART instance. Adapted from commit 9d640eb1c7075c670dc07e11effc31d964dec9bc.
 
-Adapted from CM14.1 system/bt commit 319a6db1c8b3f976dab71aeedc9fc553fd917b7f. Oreo moved the UART transport to hardware/interfaces.
-
-Change-Id: I885495046e596ce97c7b742766ffa549e351da38
+Change-Id: Icf8aa497cdc5211b9ecea65320121e461328657e
 ---
- bluetooth/1.0/default/h4_protocol.cc      | 9 +++++++++
+ bluetooth/1.0/default/h4_protocol.cc      | 8 ++++++++
  bluetooth/1.0/default/h4_protocol.h       | 8 ++++++--
  bluetooth/1.0/default/vendor_interface.cc | 3 ++-
- 3 files changed, 17 insertions(+), 3 deletions(-)
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/bluetooth/1.0/default/h4_protocol.cc b/bluetooth/1.0/default/h4_protocol.cc
-index 8c24f7645..f4e8abd63 100644
+index 43abbe46b..4962d751c 100644
 --- a/bluetooth/1.0/default/h4_protocol.cc
 +++ b/bluetooth/1.0/default/h4_protocol.cc
-@@ -91,6 +91,15 @@ void H4Protocol::OnDataReady(int fd) {
-     if (hci_packet_type_ != HCI_PACKET_TYPE_ACL_DATA &&
+@@ -92,6 +92,14 @@ void H4Protocol::OnDataReady(int fd) {
          hci_packet_type_ != HCI_PACKET_TYPE_SCO_DATA &&
+         hci_packet_type_ != HCI_PACKET_TYPE_ISO_DATA &&
          hci_packet_type_ != HCI_PACKET_TYPE_EVENT) {
-+      // The MiOne BCM4329 minidriver emits this ordered sequence once during
-+      // firmware download. Keep strict packet parsing for every other byte.
++      // BCM4329 minidriver startup emits this ordered sequence once.
 +      if (bcm4329_patch_quirk_ && bcm4329_patch_bytes_dropped_ < 2 &&
 +          buffer[0] == (bcm4329_patch_bytes_dropped_ == 0 ? 0x34 : 0x31)) {
 +        ++bcm4329_patch_bytes_dropped_;

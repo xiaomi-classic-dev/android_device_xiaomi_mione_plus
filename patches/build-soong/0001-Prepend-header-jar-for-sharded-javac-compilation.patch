@@ -1,0 +1,120 @@
+From 26c72b6e256228d10ad192b33c0ab05c9fa8ecda Mon Sep 17 00:00:00 2001
+From: Colin Cross <ccross@android.com>
+Date: Thu, 18 Nov 2021 22:23:12 -0800
+Subject: [PATCH] Prepend header jar for sharded javac compilation
+
+When compiling without sharding javac will prefer classes built from
+source over classes in the classpath.  Compiling with sharding puts
+the header classes for all the sources onto the classpath, including
+the sources that are not part of the current shard.  Emulate the
+behavior when building without sharding by putting the header jar
+first on the classpath so classes are resolved from the rest of
+the sources before the real classpath.
+
+Also switch to using the header jar without static libs dependencies
+merged in, as those will already be present in the classpath.
+
+Test: m framework-minus-apex
+Test: m services.core
+Test: TestSharding
+Change-Id: Id11b39c15d89ce70da27d746a5c7e6b603c3c0f9
+(cherry picked from commit 3f2f28f47717d2b71f90f90eabac573b43edd754)
+---
+ java/base.go      | 20 +++++++++++---------
+ java/java_test.go |  6 +++---
+ 2 files changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/java/base.go b/java/base.go
+index df70efb44..0294c5090 100644
+--- a/java/base.go
++++ b/java/base.go
+@@ -954,7 +954,7 @@ func (j *Module) compile(ctx android.ModuleContext, aaptSrcJar android.Path) {
+ 	j.compiledSrcJars = srcJars
+ 
+ 	enableSharding := false
+-	var headerJarFileWithoutJarjar android.Path
++	var headerJarFileWithoutDepsOrJarjar android.Path
+ 	if ctx.Device() && !ctx.Config().IsEnvFalse("TURBINE_ENABLED") && !deps.disableTurbine {
+ 		if j.properties.Javac_shard_size != nil && *(j.properties.Javac_shard_size) > 0 {
+ 			enableSharding = true
+@@ -964,7 +964,7 @@ func (j *Module) compile(ctx android.ModuleContext, aaptSrcJar android.Path) {
+ 			// allow for the use of annotation processors that do function correctly
+ 			// with sharding enabled. See: b/77284273.
+ 		}
+-		headerJarFileWithoutJarjar, j.headerJarFile =
++		headerJarFileWithoutDepsOrJarjar, j.headerJarFile =
+ 			j.compileJavaHeader(ctx, uniqueSrcFiles, srcJars, deps, flags, jarName, kotlinJars)
+ 		if ctx.Failed() {
+ 			return
+@@ -984,7 +984,9 @@ func (j *Module) compile(ctx android.ModuleContext, aaptSrcJar android.Path) {
+ 		}
+ 
+ 		if enableSharding {
+-			flags.classpath = append(flags.classpath, headerJarFileWithoutJarjar)
++			if headerJarFileWithoutDepsOrJarjar != nil {
++				flags.classpath = append(classpath{headerJarFileWithoutDepsOrJarjar}, flags.classpath...)
++			}
+ 			shardSize := int(*(j.properties.Javac_shard_size))
+ 			var shardSrcs []android.Paths
+ 			if len(uniqueSrcFiles) > 0 {
+@@ -1352,7 +1354,7 @@ func CheckKotlincFlags(ctx android.ModuleContext, flags []string) {
+ 
+ func (j *Module) compileJavaHeader(ctx android.ModuleContext, srcFiles, srcJars android.Paths,
+ 	deps deps, flags javaBuilderFlags, jarName string,
+-	extraJars android.Paths) (headerJar, jarjarHeaderJar android.Path) {
++	extraJars android.Paths) (headerJar, jarjarAndDepsHeaderJar android.Path) {
+ 
+ 	var jars android.Paths
+ 	if len(srcFiles) > 0 || len(srcJars) > 0 {
+@@ -1363,6 +1365,7 @@ func (j *Module) compileJavaHeader(ctx android.ModuleContext, srcFiles, srcJars
+ 			return nil, nil
+ 		}
+ 		jars = append(jars, turbineJar)
++		headerJar = turbineJar
+ 	}
+ 
+ 	jars = append(jars, extraJars...)
+@@ -1376,20 +1379,19 @@ func (j *Module) compileJavaHeader(ctx android.ModuleContext, srcFiles, srcJars
+ 	combinedJar := android.PathForModuleOut(ctx, "turbine-combined", jarName)
+ 	TransformJarsToJar(ctx, combinedJar, "for turbine", jars, android.OptionalPath{},
+ 		false, nil, []string{"META-INF/TRANSITIVE"})
+-	headerJar = combinedJar
+-	jarjarHeaderJar = combinedJar
++	jarjarAndDepsHeaderJar = combinedJar
+ 
+ 	if j.expandJarjarRules != nil {
+ 		// Transform classes.jar into classes-jarjar.jar
+ 		jarjarFile := android.PathForModuleOut(ctx, "turbine-jarjar", jarName)
+-		TransformJarJar(ctx, jarjarFile, headerJar, j.expandJarjarRules)
+-		jarjarHeaderJar = jarjarFile
++		TransformJarJar(ctx, jarjarFile, jarjarAndDepsHeaderJar, j.expandJarjarRules)
++		jarjarAndDepsHeaderJar = jarjarFile
+ 		if ctx.Failed() {
+ 			return nil, nil
+ 		}
+ 	}
+ 
+-	return headerJar, jarjarHeaderJar
++	return headerJar, jarjarAndDepsHeaderJar
+ }
+ 
+ func (j *Module) instrument(ctx android.ModuleContext, flags javaBuilderFlags,
+diff --git a/java/java_test.go b/java/java_test.go
+index bd373c177..372095d5c 100644
+--- a/java/java_test.go
++++ b/java/java_test.go
+@@ -988,11 +988,11 @@ func TestSharding(t *testing.T) {
+ 		}
+ 		`)
+ 
+-	barHeaderJar := filepath.Join("out", "soong", ".intermediates", "bar", "android_common", "turbine-combined", "bar.jar")
++	barHeaderJar := filepath.Join("out", "soong", ".intermediates", "bar", "android_common", "turbine", "bar.jar")
+ 	for i := 0; i < 3; i++ {
+ 		barJavac := ctx.ModuleForTests("bar", "android_common").Description("javac" + strconv.Itoa(i))
+-		if !strings.Contains(barJavac.Args["classpath"], barHeaderJar) {
+-			t.Errorf("bar javac classpath %v does not contain %q", barJavac.Args["classpath"], barHeaderJar)
++		if !strings.HasPrefix(barJavac.Args["classpath"], "-classpath "+barHeaderJar+":") {
++			t.Errorf("bar javac classpath %v does start with %q", barJavac.Args["classpath"], barHeaderJar)
+ 		}
+ 	}
+ }

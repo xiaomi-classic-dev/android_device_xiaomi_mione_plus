@@ -1,4 +1,4 @@
-From 19ea49a149672158dc63a4537d738dd6fc1b9c51 Mon Sep 17 00:00:00 2001
+From 7ca1700c9116fd0c65bdb3d927b06d6e72112c48 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:05:39 +0800
 Subject: [PATCH] soong: Export the optional device non-PIE allowlist on
@@ -14,10 +14,10 @@ Change-Id: Idd24bd603f22969f662654d3c5b92a745e7877a2
  2 files changed, 25 insertions(+)
 
 diff --git a/build/soong/Android.bp b/build/soong/Android.bp
-index dc07f490..3a59f993 100644
+index 4465897f..8c40e585 100644
 --- a/build/soong/Android.bp
 +++ b/build/soong/Android.bp
-@@ -502,3 +502,22 @@ stagefright_qcom_legacy {
+@@ -570,3 +570,22 @@ stagefright_qcom_legacy {
          },
      },
  }
@@ -41,7 +41,7 @@ index dc07f490..3a59f993 100644
 +    },
 +}
 diff --git a/config/BoardConfigSoong.mk b/config/BoardConfigSoong.mk
-index 4dfc61b2..027dba79 100644
+index 14729e0a..9ea67272 100644
 --- a/config/BoardConfigSoong.mk
 +++ b/config/BoardConfigSoong.mk
 @@ -28,6 +28,7 @@ $(foreach v,$(EXPORT_TO_SOONG),$(eval $(call addVar,$(v))))
@@ -52,7 +52,7 @@ index 4dfc61b2..027dba79 100644
      additional_gralloc_10_usage_bits \
      bootloader_message_offset \
      disable_postrender_cleanup \
-@@ -104,3 +105,8 @@ endif
+@@ -133,3 +134,8 @@ endif
  ifneq ($(TARGET_USE_QTI_BT_STACK),true)
  PRODUCT_SOONG_NAMESPACES += packages/apps/Bluetooth
  endif #TARGET_USE_QTI_BT_STACK

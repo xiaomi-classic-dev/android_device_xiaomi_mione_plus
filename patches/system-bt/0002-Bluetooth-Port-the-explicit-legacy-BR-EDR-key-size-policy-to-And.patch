@@ -1,4 +1,4 @@
-From 7d265237241966cc09a5772331df572ad3a8f4e0 Mon Sep 17 00:00:00 2001
+From 62fd0dc57b6e5bd1d36435e01fc84f070020daeb Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Sat, 3 Oct 2026 11:07:37 +0800
 Subject: [PATCH] Bluetooth: Port the explicit legacy BR/EDR key-size policy to
@@ -22,10 +22,10 @@ Change-Id: Ieb2f03306dc69f9ffa708ddef2fe6c37f202e431
  4 files changed, 36 insertions(+), 7 deletions(-)
 
 diff --git a/device/src/controller.cc b/device/src/controller.cc
-index ce19f5ca3..d369de9a3 100644
+index 5e87ec0ae..ba83d044f 100644
 --- a/device/src/controller.cc
 +++ b/device/src/controller.cc
-@@ -279,7 +279,14 @@ static future_t* start_up(void) {
+@@ -313,7 +313,14 @@ static future_t* start_up(void) {
    }
  
    if (!HCI_READ_ENCR_KEY_SIZE_SUPPORTED(supported_commands)) {
@@ -42,10 +42,10 @@ index ce19f5ca3..d369de9a3 100644
  
    readable = true;
 diff --git a/stack/btu/btu_hcif.cc b/stack/btu/btu_hcif.cc
-index 82f23365e..afb9412cf 100644
+index 9eab46768..dc482f391 100644
 --- a/stack/btu/btu_hcif.cc
 +++ b/stack/btu/btu_hcif.cc
-@@ -1187,7 +1187,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
+@@ -1082,7 +1082,14 @@ static void btu_hcif_rmt_name_request_comp_evt(uint8_t* p, uint16_t evt_len) {
  constexpr uint8_t MIN_KEY_SIZE = 7;
  
  static void read_encryption_key_size_complete_after_encryption_change(uint8_t status, uint16_t handle,
@@ -61,7 +61,7 @@ index 82f23365e..afb9412cf 100644
    if (status == HCI_ERR_INSUFFCIENT_SECURITY) {
      /* If remote device stop the encryption before we call "Read Encryption Key
       * Size", we might receive Insufficient Security, which means that link is
-@@ -2133,7 +2140,13 @@ static void btu_hcif_enhanced_flush_complete_evt(void) {
+@@ -1684,7 +1691,13 @@ static void btu_hcif_io_cap_request_evt(uint8_t* p) {
   * End of Simple Pairing Events
   **********************************************/
  
@@ -77,7 +77,7 @@ index 82f23365e..afb9412cf 100644
      /* If remote device stop the encryption before we call "Read Encryption Key
       * Size", we might receive Insufficient Security, which means that link is
 diff --git a/stack/hcic/hcicmds.cc b/stack/hcic/hcicmds.cc
-index e4072155d..10c94b5d4 100644
+index 89b97b8ea..cd1fbd123 100644
 --- a/stack/hcic/hcicmds.cc
 +++ b/stack/hcic/hcicmds.cc
 @@ -28,6 +28,7 @@
@@ -88,7 +88,7 @@ index e4072155d..10c94b5d4 100644
  
  #include <stddef.h>
  #include <string.h>
-@@ -1312,13 +1313,21 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
+@@ -1745,13 +1746,21 @@ void btsnd_hcic_read_rssi(uint16_t handle) {
  static void read_encryption_key_size_complete(
      ReadEncKeySizeCb cb, uint16_t expected_handle, uint8_t* return_parameters,
      uint16_t return_parameters_length) {
@@ -111,7 +111,7 @@ index e4072155d..10c94b5d4 100644
      return;
    }
    uint8_t status;
-@@ -1329,10 +1338,10 @@ static void read_encryption_key_size_complete(
+@@ -1762,10 +1771,10 @@ static void read_encryption_key_size_complete(
    STREAM_TO_UINT8(key_size, return_parameters);
  
    if (handle != expected_handle) {
@@ -125,10 +125,10 @@ index e4072155d..10c94b5d4 100644
  
  void btsnd_hcic_read_encryption_key_size(uint16_t handle, ReadEncKeySizeCb cb) {
 diff --git a/stack/include/hcimsgs.h b/stack/include/hcimsgs.h
-index 285ae419b..8f7271511 100644
+index 8502c8c01..33b2e4c51 100644
 --- a/stack/include/hcimsgs.h
 +++ b/stack/include/hcimsgs.h
-@@ -610,7 +610,7 @@ extern void btsnd_hcic_write_cur_iac_lap(
+@@ -473,7 +473,7 @@ extern void btsnd_hcic_write_cur_iac_lap(
  
  extern void btsnd_hcic_get_link_quality(uint16_t handle); /* Get Link Quality */
  extern void btsnd_hcic_read_rssi(uint16_t handle);        /* Read RSSI */
