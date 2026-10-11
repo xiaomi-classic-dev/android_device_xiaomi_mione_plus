@@ -44,6 +44,7 @@ using ::android::hardware::camera::common::V1_0::helper::Size;
 using namespace android;
 
 static Mutex hal3on1_lock;
+static Mutex callback_memory_lock;
 
 static camera_module_t *hal1_module = 0;
 
@@ -68,12 +69,41 @@ typedef struct {
     nsecs_t video_frame_timestamp;
 
     int preview_really_started;
+    int preview_callbacks_enabled;
     preview_stream_ops* preview_window;
 } adapter_camera3_device_t;
 
 #define HAL1_CALL(hal1_device, func, ...) ({ \
     hal1_device->ops->func(hal1_device, ##__VA_ARGS__); \
 })
+
+static void set_preview_callbacks_enabled(adapter_camera3_device_t* adapter,
+                                          bool enabled)
+{
+    if (!adapter || !adapter->hal1_device)
+        return;
+
+    const int previous = __atomic_exchange_n(
+        &adapter->preview_callbacks_enabled, enabled ? 1 : 0,
+        __ATOMIC_ACQ_REL);
+
+    if (enabled) {
+        if (!previous) {
+            HAL1_CALL(adapter->hal1_device, enable_msg_type,
+                      CAMERA_MSG_PREVIEW_FRAME);
+        }
+        return;
+    }
+
+    if (previous) {
+        HAL1_CALL(adapter->hal1_device, disable_msg_type,
+                  CAMERA_MSG_PREVIEW_FRAME);
+    }
+
+    // Drain a callback that entered before the message was disabled. The
+    // legacy HAL may release its preview memory as soon as preview is stopped.
+    Mutex::Autolock lock(callback_memory_lock);
+}
 
 typedef struct {
     bool use_memfd;
@@ -169,14 +199,27 @@ void hal1_data_callback(int32_t msg_type,
                         const camera_memory_t *data, unsigned int index,
                         camera_frame_metadata_t *metadata, void *user)
 {
-    adapter_camera3_device_t* adapter = hal3on1_dev;
-
-    if (!data || !adapter || !adapter->buffer) {
-        ALOGE("Error: Invalid preview callback data or adapter\n");
+    if (!data) {
+        ALOGE("Error: Invalid camera callback data\n");
         return;
     }
+
+    Mutex::Autolock lock(callback_memory_lock);
+    adapter_camera3_device_t* adapter = hal3on1_dev;
+    if (!adapter)
+        return;
+
     switch (msg_type) {
     case CAMERA_MSG_PREVIEW_FRAME:
+        if (!__atomic_load_n(&adapter->preview_callbacks_enabled,
+                             __ATOMIC_ACQUIRE))
+            break;
+
+        if (!adapter->buffer || !data->data || data->size == 0) {
+            ALOGE("Error: Invalid preview callback data or adapter\n");
+            break;
+        }
+
         if (__atomic_load_n(&adapter->buffer_size, __ATOMIC_ACQUIRE) != 0)
             break;
 
@@ -199,6 +242,11 @@ void hal1_data_callback(int32_t msg_type,
         break;
 
     case CAMERA_MSG_COMPRESSED_IMAGE:
+        if (!data->data || data->size == 0) {
+            ALOGE("Error: Invalid JPEG callback data\n");
+            break;
+        }
+
         if (__atomic_load_n(&adapter->jpeg_size, __ATOMIC_ACQUIRE) != 0) {
             ALOGE("Dropping JPEG callback while the previous image is pending");
             break;
@@ -224,7 +272,14 @@ void hal1_data_callback(int32_t msg_type,
 void hal1_data_timestamp_callback(nsecs_t timestamp, int32_t msg_type,
                                   const camera_memory_t* data, unsigned index, void* user)
 {
+    if (!data)
+        return;
+
+    Mutex::Autolock lock(callback_memory_lock);
     adapter_camera3_device_t* adapter = hal3on1_dev;
+    if (!adapter || !data->data || data->size == 0)
+        return;
+
     adapter->video_buffer = (uint8_t*)data->data;
     adapter->video_frame_timestamp = timestamp;
     __atomic_store_n(&adapter->video_buffer_size, data->size, __ATOMIC_RELEASE);
@@ -237,6 +292,8 @@ void hal1_data_timestamp_callback(nsecs_t timestamp, int32_t msg_type,
 
 void release_memory(camera_memory_t* memory)
 {
+    Mutex::Autolock lock(callback_memory_lock);
+
     if (memory) {
         CameraMemory* cameraMem = static_cast<CameraMemory*>(memory->handle);
         if (cameraMem) {
@@ -363,6 +420,7 @@ static int camera3_close(hw_device_t *device)
     Mutex::Autolock lock(hal3on1_lock);
 
     if (adapter_dev->hal1_device) {
+        set_preview_callbacks_enabled(adapter_dev, false);
         __atomic_store_n(&adapter_dev->jpeg_size, 0, __ATOMIC_RELEASE);
         __atomic_store_n(&adapter_dev->video_buffer_size, 0, __ATOMIC_RELEASE);
         __atomic_store_n(&adapter_dev->buffer_size, 0, __ATOMIC_RELEASE);
@@ -379,11 +437,14 @@ static int camera3_close(hw_device_t *device)
         adapter_dev->hal1_device->common.close((hw_device_t *)adapter_dev->hal1_device);
     }
 
-    free(adapter_dev->preview_window);
-    free(adapter_dev->buffer);
-    free(adapter_dev->jpeg);
-    free(adapter_dev);
-    hal3on1_dev = nullptr;
+    {
+        Mutex::Autolock callbackLock(callback_memory_lock);
+        hal3on1_dev = nullptr;
+        free(adapter_dev->preview_window);
+        free(adapter_dev->buffer);
+        free(adapter_dev->jpeg);
+        free(adapter_dev);
+    }
     current_camera_id = -1;
     previous_request_settings.clear();
 
@@ -433,6 +494,7 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
         HAL1_CALL(hal1_device, stop_recording);
         adapter->video_stream = false;
     }
+    set_preview_callbacks_enabled(adapter, false);
     if (HAL1_CALL(hal1_device, preview_enabled))
         HAL1_CALL(hal1_device, stop_preview);
 
@@ -561,7 +623,7 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
     current_params = preview_params;
 
     HAL1_CALL(hal1_device, set_callbacks, hal1_notify_callback, hal1_data_callback, hal1_data_timestamp_callback, get_memory, hal1_device);
-    HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_PREVIEW_FRAME);
+    set_preview_callbacks_enabled(adapter, true);
     HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_FOCUS);
     HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_FOCUS_MOVE);
     HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_SHUTTER);
@@ -576,6 +638,7 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
 
     ret = HAL1_CALL(hal1_device, start_preview);
     if (ret != NO_ERROR) {
+        set_preview_callbacks_enabled(adapter, false);
         ALOGE("Failed to start HAL1 preview: %d", ret);
         return ret;
     }
@@ -1416,18 +1479,27 @@ skip_mwb:
         capture_intent = cm.find(ANDROID_CONTROL_CAPTURE_INTENT).data.u8[0];
 
         if (capture_intent == ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE) {
+            set_preview_callbacks_enabled(adapter, false);
             HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_COMPRESSED_IMAGE);
             int ret = HAL1_CALL(hal1_device, take_picture);
-            if (ret != NO_ERROR)
+            if (ret != NO_ERROR) {
+                set_preview_callbacks_enabled(adapter, true);
                 return ret;
+            }
 
-            if (!wait_for_nonzero(&adapter->jpeg_size, "JPEG callback"))
+            if (!wait_for_nonzero(&adapter->jpeg_size, "JPEG callback")) {
+                set_preview_callbacks_enabled(adapter, true);
                 return -ETIMEDOUT;
+            }
 
             HAL1_CALL(hal1_device, stop_preview);
+            __atomic_store_n(&adapter->buffer_size, 0, __ATOMIC_RELEASE);
+            set_preview_callbacks_enabled(adapter, true);
             ret = HAL1_CALL(hal1_device, start_preview);
-            if (ret != NO_ERROR)
+            if (ret != NO_ERROR) {
+                set_preview_callbacks_enabled(adapter, false);
                 return ret;
+            }
             __atomic_store_n(&adapter->preview_really_started, 0,
                              __ATOMIC_RELEASE);
         }
