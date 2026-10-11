@@ -29,6 +29,9 @@
 #include <linux/errno.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <libyuv/convert.h>
+#include <libyuv/convert_from.h>
+#include <libyuv/scale.h>
 
 #define MAX_SIZES_CNT 40
 #define NSEC_PER_33MSEC 33000000LL
@@ -853,58 +856,67 @@ static int32_t clamp(int32_t value, int32_t min, int32_t max)
     return value;
 }
 
-void get_crop_point(int src_width, int src_height, int crop_width, int crop_height, int* crop_x, int* crop_y)
+// Fit the source field of view to the output aspect ratio, then scale it.
+// A smaller preview must not become a pixel-sized center crop of the video.
+static int yuv420sp_resize(const uint8_t* src, size_t src_size,
+                          int src_width, int src_height,
+                          uint8_t* dst, size_t dst_size,
+                          int dst_width, int dst_height)
 {
-    if (crop_width > src_width ||
-        crop_height > src_height) {
-        *crop_x = 0;
-        *crop_y = 0;
-        return;
+    if (!src || !dst || src_width <= 0 || src_height <= 0 ||
+        dst_width <= 0 || dst_height <= 0 ||
+        ((src_width | src_height | dst_width | dst_height) & 1))
+        return -EINVAL;
+
+    const size_t src_pixels = (size_t)src_width * src_height;
+    const size_t dst_pixels = (size_t)dst_width * dst_height;
+    if (src_pixels > SIZE_MAX / 3 || dst_pixels > SIZE_MAX / 3 ||
+        src_size < src_pixels * 3 / 2 || dst_size < dst_pixels * 3 / 2)
+        return -EINVAL;
+
+    int crop_width = src_width;
+    int crop_height = src_height;
+    if ((int64_t)src_width * dst_height > (int64_t)src_height * dst_width)
+        crop_width = ((int64_t)src_height * dst_width / dst_height) & ~1;
+    else
+        crop_height = ((int64_t)src_width * dst_height / dst_width) & ~1;
+    if (crop_width <= 0 || crop_height <= 0)
+        return -EINVAL;
+    const int crop_x = ((src_width - crop_width) / 2) & ~1;
+    const int crop_y = ((src_height - crop_height) / 2) & ~1;
+    const size_t crop_pixels = (size_t)crop_width * crop_height;
+    uint8_t* planar_src = (uint8_t*)malloc(crop_pixels * 3 / 2);
+    uint8_t* planar_dst = (uint8_t*)malloc(dst_pixels * 3 / 2);
+    if (!planar_src || !planar_dst) {
+        free(planar_src);
+        free(planar_dst);
+        return -ENOMEM;
     }
 
-    *crop_x = (src_width - crop_width) / 2;
-    *crop_y = (src_height - crop_height) / 2;
-}
-
-struct yuv420sp_buffer {
-    uint8_t* data;
-    int width;
-    int height;
-    int size;
-};
-
-yuv420sp_buffer* yuv420sp_crop(const uint8_t* src_yuv420sp, int src_width, int src_height,
-    int crop_x, int crop_y, int crop_width, int crop_height)
-{
-    int src_y_size = src_width * src_height;
-    const uint8_t* src_y = src_yuv420sp;
-    const uint8_t* src_uv = src_yuv420sp + src_y_size;
-
-    yuv420sp_buffer* dst_buffer = (yuv420sp_buffer*)malloc(sizeof(yuv420sp_buffer));
-    dst_buffer->width = crop_width;
-    dst_buffer->height = crop_height;
-
-    int dst_y_size = crop_width * crop_height;
-    int dst_uv_size = (crop_width / 2) * (crop_height / 2) * 2;
-    dst_buffer->data = (uint8_t*)malloc(dst_y_size + dst_uv_size);
-    dst_buffer->size = dst_y_size + dst_uv_size;
-
-    uint8_t* dst_y = dst_buffer->data;
-    uint8_t* dst_uv = dst_buffer->data + dst_y_size;
-
-    for (int i = 0; i < crop_height; ++i) {
-        const uint8_t* src_row = src_y + (crop_y + i) * src_width + crop_x;
-        uint8_t* dst_row = dst_y + i * crop_width;
-        memcpy(dst_row, src_row, crop_width);
-    }
-
-    for (int i = 0; i < crop_height / 2; ++i) {
-        const uint8_t* src_row = src_uv + (crop_y / 2 + i) * src_width + crop_x;
-        uint8_t* dst_row = dst_uv + i * crop_width;
-        memcpy(dst_row, src_row, crop_width);
-    }
-
-    return dst_buffer;
+    int ret = libyuv::NV21ToI420(
+        src + (size_t)crop_y * src_width + crop_x, src_width,
+        src + src_pixels + (size_t)(crop_y / 2) * src_width + crop_x,
+        src_width, planar_src, crop_width,
+        planar_src + crop_pixels, crop_width / 2,
+        planar_src + crop_pixels * 5 / 4, crop_width / 2,
+        crop_width, crop_height);
+    if (ret == 0)
+        ret = libyuv::I420Scale(
+            planar_src, crop_width, planar_src + crop_pixels, crop_width / 2,
+            planar_src + crop_pixels * 5 / 4, crop_width / 2,
+            crop_width, crop_height,
+            planar_dst, dst_width, planar_dst + dst_pixels, dst_width / 2,
+            planar_dst + dst_pixels * 5 / 4, dst_width / 2,
+            dst_width, dst_height, libyuv::kFilterBilinear);
+    if (ret == 0)
+        ret = libyuv::I420ToNV21(
+            planar_dst, dst_width, planar_dst + dst_pixels, dst_width / 2,
+            planar_dst + dst_pixels * 5 / 4, dst_width / 2,
+            dst, dst_width, dst + dst_pixels, dst_width,
+            dst_width, dst_height);
+    free(planar_src);
+    free(planar_dst);
+    return ret == 0 ? NO_ERROR : -EINVAL;
 }
 
 void nv21_to_nv12(unsigned char* nv21, unsigned char* nv12, int width, int height) {
@@ -1672,34 +1684,21 @@ skip_mwb:
 
             HAL1_CALL(hal1_device, disable_msg_type, CAMERA_MSG_COMPRESSED_IMAGE);
         } else {
-            // Crop yuv buffer for streams smaller than preview
-            int crop_x, crop_y;
-            yuv420sp_buffer *crop_buf = NULL;
-
             if (output_buffer.stream->format == HAL_PIXEL_FORMAT_NV12_ENCODEABLE) {
                 sensor_timestamp = adapter->video_frame_timestamp;
                 memcpy(buf, adapter->video_buffer, payload_size);
                 __atomic_store_n(&adapter->video_buffer_size, 0,
                                  __ATOMIC_RELEASE);
-            } else if (output_buffer.stream->width < adapter->stream_width ||
-                       output_buffer.stream->height < adapter->stream_height) {
-                get_crop_point(adapter->stream_width, adapter->stream_height,
-                    output_buffer.stream->width, output_buffer.stream->height, &crop_x, &crop_y);
-
-                crop_buf = yuv420sp_crop(adapter->buffer, adapter->stream_width, adapter->stream_height,
-                    crop_x, crop_y, output_buffer.stream->width, output_buffer.stream->height);
-
-                if (!crop_buf || !crop_buf->data ||
-                    crop_buf->size > (size_t)handle->size) {
+            } else if (output_buffer.stream->width != (uint32_t)adapter->stream_width ||
+                       output_buffer.stream->height != (uint32_t)adapter->stream_height) {
+                e = yuv420sp_resize(adapter->buffer, payload_size,
+                    adapter->stream_width, adapter->stream_height,
+                    buf, handle->size,
+                    output_buffer.stream->width, output_buffer.stream->height);
+                if (e != NO_ERROR) {
                     GraphicBufferMapper::get().unlock(*output_buffer.buffer);
-                    free(crop_buf);
-                    return -EINVAL;
+                    return e;
                 }
-
-                memcpy(buf, crop_buf->data, crop_buf->size);
-
-                free(crop_buf->data);
-                free(crop_buf);
             } else {
                 if (payload_size > handle->size) {
                     GraphicBufferMapper::get().unlock(*output_buffer.buffer);
