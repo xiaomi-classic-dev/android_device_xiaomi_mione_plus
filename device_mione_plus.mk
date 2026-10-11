@@ -225,7 +225,7 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/rootdir/etc/init.qcom.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.qcom.usb.rc \
     device/xiaomi/mione_plus/rootdir/etc/init.target.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.target.rc \
     device/xiaomi/mione_plus/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.qcom \
-    device/xiaomi/mione_plus/rootdir/etc/ueventd.qcom.rc:$(TARGET_COPY_OUT_VENDOR)/ueventd.rc \
+    device/xiaomi/mione_plus/rootdir/etc/ueventd.qcom.rc:$(TARGET_COPY_OUT_VENDOR)/etc/ueventd.rc \
     device/xiaomi/mione_plus/rootdir/etc/mione.sensors.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/mione.sensors.rc \
     device/xiaomi/mione_plus/rootdir/bin/init.qcom.class_core.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.class_core.sh \
     device/xiaomi/mione_plus/rootdir/bin/init.qcom.class_main.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.class_main.sh \
