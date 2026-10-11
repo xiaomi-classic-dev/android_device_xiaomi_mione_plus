@@ -191,21 +191,9 @@
           "source_commit": "d04db46e05146d6096eac0f3f4a17a0bd9f1780c",
           "patch_id": "eeff9835e5c9cd9b36063a19fded3a1c138f59ce",
           "sha256": "e9949733d4ef7c8df651e7c0d1561b1aacbf29137f044978ac596bf2a20c140b"
-        },
-        {
-          "file": "frameworks-native/0005-binder-Export-either-Binder-offset-ABI-on-32-bit-ARM.patch",
-          "source_commit": "213c86d52ec58b8c6a78f71dd51f789f06aa68c2",
-          "patch_id": "aed4a7b0e82e224ec365ed7b64bda5fe3811fe6d",
-          "sha256": "611fad3feadf8a35bb996f8a81428f7610bc03379e7dc1b4457d320ba354a76a"
-        },
-        {
-          "file": "frameworks-native/0006-binder-Widen-legacy-protocol-integers-before-debug-pointer-casts.patch",
-          "source_commit": "50fae39711fb16ee54f9ac7f359f2655f07027e6",
-          "patch_id": "f84a83228d19e1c57009aa5590ea4cf4276d943f",
-          "sha256": "83d2113ee6437a5f73322f2b8306ad3d42dd778eaf08f3fb8e02bbfbef48ec5f"
         }
       ],
-      "source_head": "50fae39711fb16ee54f9ac7f359f2655f07027e6"
+      "source_head": "d04db46e05146d6096eac0f3f4a17a0bd9f1780c"
     },
     {
       "path": "hardware/ril",
