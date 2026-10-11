@@ -104,7 +104,7 @@ service mione-bdaddr /vendor/bin/mione_bdaddr
     oneshot
 
 
-# healthd.mione publishes sys.mione.battery_low. power.msm8660 combines this
+# The MiOne Health HAL publishes vendor.mione.battery_low. The Power HAL combines this
 # with screen state. Keep thermald running and leave CPU hotplug/GPU to their
 # existing owners; the obsolete battlevel triggers could disable temperature
 # protection and overwrite other CPU caps.

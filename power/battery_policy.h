@@ -4,7 +4,7 @@
 #ifndef MIONE_BATTERY_POLICY_H
 #define MIONE_BATTERY_POLICY_H
 
-#define MIONE_BATTERY_LOW_PROPERTY "sys.mione.battery_low"
+#define MIONE_BATTERY_LOW_PROPERTY "vendor.mione.battery_low"
 
 /* Hysteresis also applies while charging: connecting USB does not imply that
  * a depleted battery has recovered. Invalid readings preserve the last state.
