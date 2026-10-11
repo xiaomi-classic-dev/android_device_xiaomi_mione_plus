@@ -238,8 +238,8 @@ RECOVERY_FSTAB_VERSION := 2
 USE_DEVICE_SPECIFIC_CAMERA := true
 TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE := true
 
-# Oreo keeps the legacy 32-bit Binder ABI used by MiOne's userspace.
-TARGET_USES_64_BIT_BINDER := false
+# Match Aries: use protocol v8 while retaining 32-bit ARM userspace.
+TARGET_USES_64_BIT_BINDER := true
 BOARD_KERNEL_IMAGE_NAME := zImage
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
 # Enforce the declared HIDL transports without enabling full Treble.
