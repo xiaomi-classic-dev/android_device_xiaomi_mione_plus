@@ -17,13 +17,19 @@
     {
       "path": "vendor/lineage",
       "base_commit": "9acedc7d0e3866d90911a0112074fc312ca11ed5",
-      "source_head": "19ea49a149672158dc63a4537d738dd6fc1b9c51",
+      "source_head": "1e0c49225c95ddb5a69e6165a5ce558593d99ce9",
       "patches": [
         {
           "file": "vendor-lineage/0001-soong-Export-the-optional-device-non-PIE-allowlist-o.patch",
           "source_commit": "19ea49a149672158dc63a4537d738dd6fc1b9c51",
           "patch_id": "31bfab945af1961a2d4ddea7369ddee29b9b14ab",
           "sha256": "eac263700111c026148a035a9f81d4619c9b5d1b4691c96841f9807e9ab5a5b2"
+        },
+        {
+          "file": "vendor-lineage/0002-soong-Register-optional-non-PIE-configuration-only-wh.patch",
+          "source_commit": "1e0c49225c95ddb5a69e6165a5ce558593d99ce9",
+          "patch_id": "287eb37f7c8da35d4a445aad39c8f55c25eb5362",
+          "sha256": "630b7b93cf6304b5e8bd632c4743ebaa81291ed39f0e6a0bcd2d0d3ac956a055"
         }
       ]
     },
