@@ -36,7 +36,6 @@
 #endif
 #include <linux/ioctl.h>
 #include "QCameraParameters.h"
-#include <media/mediarecorder.h>
 #include <gralloc_priv.h>
 
 #include "QCameraHWI_Mem.h"

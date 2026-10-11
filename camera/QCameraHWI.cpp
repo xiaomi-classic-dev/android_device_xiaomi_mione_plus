@@ -32,6 +32,12 @@
 /* following code implement the contol logic of this class*/
 
 namespace android {
+// CAF histogram commands remain private to the legacy backend.
+static constexpr int32_t CAMERA_CMD_HISTOGRAM_ON = 20;
+static constexpr int32_t CAMERA_CMD_HISTOGRAM_OFF = 21;
+static constexpr int32_t CAMERA_CMD_HISTOGRAM_SEND_DATA = 22;
+static constexpr int32_t CAMERA_MSG_STATS_DATA = 0x1000;
+
 static void HAL_event_cb(mm_camera_event_t *evt, void *user_data)
 {
   QCameraHardwareInterface *obj = (QCameraHardwareInterface *)user_data;

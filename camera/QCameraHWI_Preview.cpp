@@ -456,36 +456,11 @@ void QCameraStream_preview::notifyROIEvent(fd_roi_t roi)
             mHalCamCtrl->mFace[idx].mouth[1] =
               roi.d.data.face.mouth_center[1]*2000/mHalCamCtrl->mDimension.display_height - 1000;
 
-            mHalCamCtrl->mFace[idx].smile_degree = roi.d.data.face.smile_degree;
-            mHalCamCtrl->mFace[idx].smile_score = roi.d.data.face.smile_confidence;
-            mHalCamCtrl->mFace[idx].blink_detected = roi.d.data.face.blink_detected;
-            mHalCamCtrl->mFace[idx].face_recognised = roi.d.data.face.is_face_recognised;
-            mHalCamCtrl->mFace[idx].gaze_angle = roi.d.data.face.gaze_angle;
-
-            /* newly added */
-            // upscale by 2 to recover from demaen downscaling
-            mHalCamCtrl->mFace[idx].updown_dir = roi.d.data.face.updown_dir*2;
-            mHalCamCtrl->mFace[idx].leftright_dir = roi.d.data.face.leftright_dir*2;
-            mHalCamCtrl->mFace[idx].roll_dir = roi.d.data.face.roll_dir*2;
-
-            mHalCamCtrl->mFace[idx].leye_blink = roi.d.data.face.left_blink;
-            mHalCamCtrl->mFace[idx].reye_blink = roi.d.data.face.right_blink;
-            mHalCamCtrl->mFace[idx].left_right_gaze = roi.d.data.face.left_right_gaze;
-            mHalCamCtrl->mFace[idx].top_bottom_gaze = roi.d.data.face.top_bottom_gaze;
-            ALOGE("%s: Face(%d, %d, %d, %d), leftEye(%d, %d), rightEye(%d, %d), mouth(%d, %d), smile(%d, %d), face_recg(%d)", __func__,
-               mHalCamCtrl->mFace[idx].rect[0],  mHalCamCtrl->mFace[idx].rect[1],
-               mHalCamCtrl->mFace[idx].rect[2],  mHalCamCtrl->mFace[idx].rect[3],
-               mHalCamCtrl->mFace[idx].left_eye[0], mHalCamCtrl->mFace[idx].left_eye[1],
-               mHalCamCtrl->mFace[idx].right_eye[0], mHalCamCtrl->mFace[idx].right_eye[1],
-               mHalCamCtrl->mFace[idx].mouth[0], mHalCamCtrl->mFace[idx].mouth[1],
-               mHalCamCtrl->mFace[idx].smile_degree, mHalCamCtrl->mFace[idx].smile_score,
-               mHalCamCtrl->mFace[idx].face_recognised);
-            ALOGE("%s: gaze(%d, %d, %d), updown(%d), leftright(%d), roll(%d), blink(%d, %d, %d)", __func__,
-               mHalCamCtrl->mFace[idx].gaze_angle,  mHalCamCtrl->mFace[idx].left_right_gaze,
-               mHalCamCtrl->mFace[idx].top_bottom_gaze,  mHalCamCtrl->mFace[idx].updown_dir,
-               mHalCamCtrl->mFace[idx].leftright_dir, mHalCamCtrl->mFace[idx].roll_dir,
-               mHalCamCtrl->mFace[idx].blink_detected,
-               mHalCamCtrl->mFace[idx].leye_blink, mHalCamCtrl->mFace[idx].reye_blink);
+            // Publish the standard camera_face_t layout expected by HAL3on1.
+            ALOGV("%s: face id=%d score=%d rect=(%d,%d,%d,%d)", __func__,
+                  mHalCamCtrl->mFace[idx].id, mHalCamCtrl->mFace[idx].score,
+                  mHalCamCtrl->mFace[idx].rect[0], mHalCamCtrl->mFace[idx].rect[1],
+                  mHalCamCtrl->mFace[idx].rect[2], mHalCamCtrl->mFace[idx].rect[3]);
 
              mNumFDRcvd++;
              mDisplayLock.unlock();
