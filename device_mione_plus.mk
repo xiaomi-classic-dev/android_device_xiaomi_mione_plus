@@ -78,6 +78,7 @@ PRODUCT_PACKAGES += \
 
 # Graphics
 PRODUCT_PACKAGES += \
+    camera.legacy.msm8660 \
     camera.msm8660 \
     copybit.msm8660 \
     gralloc.msm8660 \
@@ -320,7 +321,6 @@ PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-service \
     android.hardware.audio.effect@2.0-impl \
     android.hardware.bluetooth@1.0-impl \
-    camera.device@1.0-impl \
     android.hardware.camera.provider@2.4-impl \
     android.hardware.camera.provider@2.4-service \
     android.hardware.gnss@1.0-impl \
@@ -356,3 +356,12 @@ PRODUCT_PACKAGES += mione-lvm-ramdisk mione-lvm-init mione-lvm-recovery-init mio
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/lvm/prebuilt/lvm:$(TARGET_COPY_OUT_VENDOR)/bin/mione-lvm2 \
     device/xiaomi/mione_plus/lvm/lvm.conf:$(TARGET_COPY_OUT_VENDOR)/etc/lvm/lvm.conf
+
+# Camera3 adapter over the source-built MSM8660 backend.
+PRODUCT_PACKAGES += Camera2
+PRODUCT_VENDOR_PROPERTIES += \
+    camera2.portability.force_api=1 \
+    persist.camera.hal3on1.use_hwcomposer=0 \
+    persist.camera.hal3on1.use_memfd=0 \
+    persist.camera.hal3on1.use_preview_window_stub=0 \
+    persist.camera.hal3on1.use_sysfs_torch=0

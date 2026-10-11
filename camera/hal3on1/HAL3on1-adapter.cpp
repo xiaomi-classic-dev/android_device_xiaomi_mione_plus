@@ -1,0 +1,2821 @@
+/*
+ * Copyright (C) 2024-2025 acroreiser
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <android/native_window.h>
+#include <hardware/hardware.h>
+#include <hardware/camera3.h>
+#include <hardware/camera.h>
+#include <CameraParameters.h>
+#include <CameraMetadata.h>
+#include <cutils/ashmem.h>
+#include <cutils/properties.h>
+#include <ui/Fence.h>
+#include <ui/GraphicBufferMapper.h>
+#include <gralloc_priv.h>
+#include <utils/Mutex.h>
+#include <linux/errno.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#define MAX_SIZES_CNT 40
+#define NSEC_PER_33MSEC 33000000LL
+
+static constexpr int kCallbackWaitStepUs = 1000;
+static constexpr int kCallbackWaitCount = 5000;
+static constexpr int kInfoOpenRetryCount = 10;
+static constexpr int kInfoOpenRetryDelayUs = 100000;
+
+using ::android::hardware::camera::common::V1_0::helper::CameraParameters;
+using ::android::hardware::camera::common::V1_0::helper::CameraMetadata;
+using ::android::hardware::camera::common::V1_0::helper::Size;
+using namespace android;
+
+static Mutex hal3on1_lock;
+
+static camera_module_t *hal1_module = 0;
+
+typedef struct {
+    camera3_device_t base;
+    camera_device_t *hal1_device;
+    const camera3_callback_ops_t *callback_ops;
+    uint8_t focus_state;
+
+    int buffer_size;
+    size_t buffer_capacity;
+    int video_buffer_size;
+    int jpeg_size;
+    uint8_t* buffer;
+    uint8_t* video_buffer;
+    uint8_t* jpeg;
+    size_t jpeg_capacity;
+
+    int stream_width;
+    int stream_height;
+    bool video_stream;
+    nsecs_t video_frame_timestamp;
+
+    int preview_really_started;
+    preview_stream_ops* preview_window;
+} adapter_camera3_device_t;
+
+#define HAL1_CALL(hal1_device, func, ...) ({ \
+    hal1_device->ops->func(hal1_device, ##__VA_ARGS__); \
+})
+
+typedef struct {
+    bool use_memfd;
+    bool use_sysfs_torch;
+    bool use_preview_window_stub;
+    bool use_hwcomposer;
+} adapter_config_t;
+
+struct CameraMemory {
+    void* data;
+    camera_memory_t mem;
+    int fd;
+};
+
+typedef struct {
+    camera_module_callbacks_t hal1_callbacks;
+    const camera_module_callbacks_t *hal3_callbacks;
+} adapter_camera_module_callbacks_t;
+
+static adapter_camera_module_callbacks_t adapter_callbacks;
+
+adapter_camera3_device_t *hal3on1_dev;
+
+adapter_config_t properties = {
+    .use_memfd = false,
+    .use_sysfs_torch = false,
+    .use_preview_window_stub = false,
+    .use_hwcomposer = false,
+};
+
+static CameraMetadata static_metadata[2];
+static CameraMetadata previous_request_settings;
+static CameraParameters default_parameters[2];
+static bool static_parameters_initialized[2] = { false, false };
+static int current_camera_id = -1;
+static int hal1_zoom_ratios[2][256];
+static int hal1_zoom_steps[2];
+
+static int device_api_version = CAMERA_DEVICE_API_VERSION_3_3;
+
+static camera_device_t *torch_hal1_device;
+static bool torch_in_use = false;
+static CameraParameters torch_params;
+
+static bool wait_for_nonzero(const int* value, const char* name)
+{
+    for (int i = 0; i < kCallbackWaitCount; ++i) {
+        if (__atomic_load_n(value, __ATOMIC_ACQUIRE) != 0)
+            return true;
+        usleep(kCallbackWaitStepUs);
+    }
+
+    ALOGE("Timed out waiting for %s", name);
+    return false;
+}
+
+static bool wait_for_zero(const int* value, const char* name)
+{
+    for (int i = 0; i < kCallbackWaitCount; ++i) {
+        if (__atomic_load_n(value, __ATOMIC_ACQUIRE) == 0)
+            return true;
+        usleep(kCallbackWaitStepUs);
+    }
+
+    ALOGE("Timed out waiting for %s consumption", name);
+    return false;
+}
+
+static int get_legacy_module()
+{
+    int ret = 0;
+
+    if (hal1_module)
+        return NO_ERROR;
+
+    // => /vendor/lib/hw/camera.legacy.msm8960.so
+    ret = hw_get_module_by_class("camera", "legacy",
+                                 (const hw_module_t**)&hal1_module);
+    if (ret)
+        ALOGE("failed to open legacy HAL1 camera module");
+
+    return ret;
+}
+
+camera_device_t* get_hal1_device(const struct camera3_device *device)
+{
+    adapter_camera3_device_t *adapter_dev = (adapter_camera3_device_t *)device;
+
+    return adapter_dev->hal1_device;
+}
+
+void hal1_data_callback(int32_t msg_type,
+                        const camera_memory_t *data, unsigned int index,
+                        camera_frame_metadata_t *metadata, void *user)
+{
+    adapter_camera3_device_t* adapter = hal3on1_dev;
+
+    if (!data || !adapter || !adapter->buffer) {
+        ALOGE("Error: Invalid preview callback data or adapter\n");
+        return;
+    }
+    switch (msg_type) {
+    case CAMERA_MSG_PREVIEW_FRAME:
+        if (__atomic_load_n(&adapter->buffer_size, __ATOMIC_ACQUIRE) != 0)
+            break;
+
+        if (data->size > adapter->buffer_capacity) {
+            uint8_t* buffer = (uint8_t*)realloc(adapter->buffer, data->size);
+            if (!buffer) {
+                ALOGE("Failed to grow preview buffer from %zu to %zu bytes",
+                      adapter->buffer_capacity, data->size);
+                break;
+            }
+            adapter->buffer = buffer;
+            adapter->buffer_capacity = data->size;
+        }
+
+        memcpy(adapter->buffer, data->data, data->size);
+        __atomic_store_n(&adapter->buffer_size, data->size, __ATOMIC_RELEASE);
+
+        __atomic_store_n(&adapter->preview_really_started, 1, __ATOMIC_RELEASE);
+
+        break;
+
+    case CAMERA_MSG_COMPRESSED_IMAGE:
+        if (__atomic_load_n(&adapter->jpeg_size, __ATOMIC_ACQUIRE) != 0) {
+            ALOGE("Dropping JPEG callback while the previous image is pending");
+            break;
+        }
+
+        if (data->size > adapter->jpeg_capacity) {
+            uint8_t* jpeg = (uint8_t*)realloc(adapter->jpeg, data->size);
+            if (!jpeg) {
+                ALOGE("Failed to allocate %zu bytes for JPEG callback",
+                      data->size);
+                break;
+            }
+            adapter->jpeg = jpeg;
+            adapter->jpeg_capacity = data->size;
+        }
+
+        memcpy(adapter->jpeg, data->data, data->size);
+        __atomic_store_n(&adapter->jpeg_size, data->size, __ATOMIC_RELEASE);
+        break;
+    }
+}
+
+void hal1_data_timestamp_callback(nsecs_t timestamp, int32_t msg_type,
+                                  const camera_memory_t* data, unsigned index, void* user)
+{
+    adapter_camera3_device_t* adapter = hal3on1_dev;
+    adapter->video_buffer = (uint8_t*)data->data;
+    adapter->video_frame_timestamp = timestamp;
+    __atomic_store_n(&adapter->video_buffer_size, data->size, __ATOMIC_RELEASE);
+
+    if (!wait_for_zero(&adapter->video_buffer_size, "video buffer")) {
+        adapter->video_buffer = nullptr;
+        __atomic_store_n(&adapter->video_buffer_size, 0, __ATOMIC_RELEASE);
+    }
+}
+
+void release_memory(camera_memory_t* memory)
+{
+    if (memory) {
+        CameraMemory* cameraMem = static_cast<CameraMemory*>(memory->handle);
+        if (cameraMem) {
+            if (cameraMem->data && cameraMem->data != MAP_FAILED) {
+                munmap(cameraMem->data, cameraMem->mem.size);
+            }
+            if (cameraMem->fd >= 0)
+                close(cameraMem->fd);
+            free(cameraMem);
+        }
+    }
+}
+
+camera_memory_t* get_memory(int fd, size_t buf_size, uint_t num_bufs, void* user)
+{
+    if (num_bufs == 0 || buf_size > SIZE_MAX / num_bufs) {
+        ALOGE("Invalid camera memory request: %zu x %u", buf_size, num_bufs);
+        return nullptr;
+    }
+
+    const size_t total_size = buf_size * num_bufs;
+    CameraMemory* cameraMem =
+        static_cast<CameraMemory*>(malloc(sizeof(CameraMemory)));
+
+    if (!cameraMem) {
+        ALOGE("Error: Failed to allocate CameraMemory structure.");
+        return nullptr;
+    }
+
+    cameraMem->fd = -1;
+    cameraMem->data = nullptr;
+
+    if (fd < 0) {
+        if (properties.use_memfd)
+            fd = memfd_create("CameraHeap", 0);
+        else
+            fd = ashmem_create_region("CameraHeap", total_size);
+
+        if (fd < 0) {
+            ALOGE("Error: Failed to create memfd.");
+            free(cameraMem);
+            return nullptr;
+        }
+        if (properties.use_memfd)
+            ftruncate(fd, total_size);
+        cameraMem->fd = fd;
+    } else {
+        cameraMem->fd = dup(fd);
+        if (cameraMem->fd < 0) {
+            ALOGE("Error: Failed to duplicate camera memory fd.");
+            free(cameraMem);
+            return nullptr;
+        }
+    }
+
+    cameraMem->data = mmap(nullptr, total_size, PROT_READ | PROT_WRITE,
+                           MAP_SHARED, cameraMem->fd, 0);
+    if (cameraMem->data == MAP_FAILED) {
+        ALOGE("Error: Failed to map camera memory.");
+        close(cameraMem->fd);
+        free(cameraMem);
+        return nullptr;
+    }
+
+    cameraMem->mem.data = cameraMem->data;
+    cameraMem->mem.size = total_size;
+    cameraMem->mem.handle = cameraMem;
+    cameraMem->mem.release = release_memory;
+
+    return &cameraMem->mem;
+}
+
+void hal1_notify_callback(int32_t msg_type, int32_t ext1, int32_t ext2, void* user)
+{
+    switch (msg_type) {
+    case CAMERA_MSG_ERROR:
+        switch (ext1) {
+        case CAMERA_ERROR_UNKNOWN:
+            ALOGE("Camera Error: Unknown error occurred.\n");
+            break;
+        case CAMERA_ERROR_SERVER_DIED:
+            ALOGE("Camera Error: Media server died.\n");
+            break;
+        default:
+            ALOGE("Camera Error: Error code %d\n", ext1);
+            break;
+        }
+        break;
+
+    case CAMERA_MSG_FOCUS:
+        if (ext1 == true)
+            hal3on1_dev->focus_state = ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
+        else
+            hal3on1_dev->focus_state = ANDROID_CONTROL_AF_STATE_NOT_FOCUSED_LOCKED;
+        break;
+
+    case CAMERA_MSG_SHUTTER:
+        ALOGE("!!!!!!!!!!!!! Camera Shutter: Shutter fired.\n");
+        break;
+
+    case CAMERA_MSG_FOCUS_MOVE:
+        if (ext1 == true)
+            hal3on1_dev->focus_state = ANDROID_CONTROL_AF_STATE_ACTIVE_SCAN;
+        else
+            hal3on1_dev->focus_state = ANDROID_CONTROL_AF_STATE_PASSIVE_SCAN;
+        break;
+
+    case CAMERA_MSG_ZOOM:
+        ALOGE("Camera Zoom: Zoom level changed to %d.\n", ext1);
+        break;
+    default:
+        ALOGE("Camera Notify: Unknown message type %d with ext1: %d, ext2: %d\n", msg_type, ext1, ext2);
+        break;
+    }
+}
+
+/*
+ * Camera3
+ */
+
+static int camera3_close(hw_device_t *device)
+{
+    adapter_camera3_device_t *adapter_dev = (adapter_camera3_device_t *)device;
+    Mutex::Autolock lock(hal3on1_lock);
+
+    if (adapter_dev->hal1_device) {
+        __atomic_store_n(&adapter_dev->jpeg_size, 0, __ATOMIC_RELEASE);
+        __atomic_store_n(&adapter_dev->video_buffer_size, 0, __ATOMIC_RELEASE);
+        __atomic_store_n(&adapter_dev->buffer_size, 0, __ATOMIC_RELEASE);
+
+        if (adapter_dev->video_stream) {
+            HAL1_CALL(adapter_dev->hal1_device, disable_msg_type,
+                      CAMERA_MSG_VIDEO_FRAME);
+            HAL1_CALL(adapter_dev->hal1_device, stop_recording);
+        }
+        HAL1_CALL(adapter_dev->hal1_device, disable_msg_type,
+                  CAMERA_MSG_COMPRESSED_IMAGE);
+        HAL1_CALL(adapter_dev->hal1_device, cancel_picture);
+        HAL1_CALL(adapter_dev->hal1_device, stop_preview);
+        adapter_dev->hal1_device->common.close((hw_device_t *)adapter_dev->hal1_device);
+    }
+
+    free(adapter_dev->preview_window);
+    free(adapter_dev->buffer);
+    free(adapter_dev->jpeg);
+    free(adapter_dev);
+    hal3on1_dev = nullptr;
+    current_camera_id = -1;
+    previous_request_settings.clear();
+
+    return NO_ERROR;
+}
+
+/*
+ * Camera3 device ops
+ */
+
+static int camera3_initialize(const struct camera3_device *dev,
+                              const camera3_callback_ops_t *callback_ops)
+{
+    adapter_camera3_device_t *adapter_dev = (adapter_camera3_device_t *)dev;
+    adapter_dev->callback_ops = callback_ops;
+
+    return NO_ERROR;
+}
+
+/*
+ * Some HAL1 implementations require preview window to display (and call back)
+ * preview frames even in no-display mode.
+ */
+struct preview_stream_ops* preview_window_stub_create() {
+    struct preview_stream_ops* window =
+        (preview_stream_ops*)calloc(1, sizeof(preview_stream_ops));
+    hal3on1_dev->preview_window = window;
+
+    return window;
+}
+
+static CameraParameters current_params;
+
+static int camera3_configure_streams(const struct camera3_device *dev, camera3_stream_configuration_t* stream_config)
+{
+    Mutex::Autolock lock(hal3on1_lock);
+    adapter_camera3_device_t *adapter = (adapter_camera3_device_t *)dev;
+    camera_device_t* hal1_device = adapter->hal1_device;
+
+    if (!hal1_device || !stream_config || stream_config->num_streams == 0 ||
+        !stream_config->streams) {
+        return -ENODEV;
+    }
+
+    if (adapter->video_stream) {
+        HAL1_CALL(hal1_device, disable_msg_type, CAMERA_MSG_VIDEO_FRAME);
+        HAL1_CALL(hal1_device, stop_recording);
+        adapter->video_stream = false;
+    }
+    if (HAL1_CALL(hal1_device, preview_enabled))
+        HAL1_CALL(hal1_device, stop_preview);
+
+    __atomic_store_n(&adapter->buffer_size, 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&adapter->video_buffer_size, 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&adapter->jpeg_size, 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&adapter->preview_really_started, 0, __ATOMIC_RELEASE);
+    adapter->stream_width = 0;
+    adapter->stream_height = 0;
+    adapter->buffer_capacity = 0;
+    free(adapter->buffer);
+    adapter->buffer = nullptr;
+    free(adapter->jpeg);
+    adapter->jpeg = nullptr;
+    adapter->jpeg_capacity = 0;
+
+    char *settings = HAL1_CALL(hal1_device, get_parameters);
+    if (!settings)
+        return -EINVAL;
+
+    CameraParameters preview_params;
+    preview_params.unflatten(String8(settings));
+    HAL1_CALL(hal1_device, put_parameters, settings);
+
+    ALOGI("----------------------------");
+    ALOGI("| Configuring streams:");
+
+    for (uint32_t i = 0; i < stream_config->num_streams; i++) {
+        camera3_stream_t* stream = stream_config->streams[i];
+        ALOGI("| p=%p  fmt=0x%.2x  type=%u  usage=0x%.8x  size=%4ux%-4u  buf_no=%u",
+              stream,
+              stream->format,
+              stream->stream_type,
+              stream->usage,
+              stream->width,
+              stream->height,
+              stream->max_buffers);
+
+        stream->max_buffers = 1;
+
+        if (stream->stream_type == CAMERA3_STREAM_OUTPUT) {
+
+            const bool video_stream =
+                (stream->usage & GRALLOC_USAGE_HW_VIDEO_ENCODER) != 0;
+            if (stream->format != HAL_PIXEL_FORMAT_BLOB) {
+                const uint64_t area = (uint64_t)stream->width * stream->height;
+                const uint64_t current_area =
+                    (uint64_t)adapter->stream_width * adapter->stream_height;
+                if (area > current_area) {
+                    adapter->stream_width = stream->width;
+                    adapter->stream_height = stream->height;
+                }
+            }
+
+            switch (stream->format) {
+
+            case HAL_PIXEL_FORMAT_BLOB:
+                preview_params.set("picture-format", "jpeg");
+                preview_params.setPictureSize(stream->width, stream->height);
+                break;
+
+            case HAL_PIXEL_FORMAT_YCbCr_420_888:
+                // The framework does not permit format overrides for flexible YUV.
+                // The legacy gralloc allocation is still writable as NV21 on msm8960.
+                stream->usage = GRALLOC_USAGE_SW_WRITE_OFTEN;
+                break;
+
+            case HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED:
+                // Override format for legacy gralloc
+                stream->format = HAL_PIXEL_FORMAT_YCrCb_420_SP;
+
+                if (video_stream) {
+                    stream->format = HAL_PIXEL_FORMAT_NV12_ENCODEABLE;
+                    __atomic_store_n(&adapter->video_buffer_size, 0,
+                                     __ATOMIC_RELEASE);
+                    preview_params.setVideoSize(stream->width, stream->height);
+                    break;
+                }
+
+                if (properties.use_hwcomposer)
+                    stream->usage = GRALLOC_USAGE_HW_COMPOSER;
+                else
+                    stream->usage = GRALLOC_USAGE_SW_WRITE_OFTEN;
+
+                break;
+            }
+                    ALOGI("=> p=%p  fmt=0x%.2x  type=%u  usage=0x%.8x  size=%4ux%-4u  buf_no=%u",
+              stream,
+              stream->format,
+              stream->stream_type,
+              stream->usage,
+              stream->width,
+              stream->height,
+              stream->max_buffers);
+        }
+
+    }
+
+    if (adapter->stream_width == 0 || adapter->stream_height == 0)
+        preview_params.getPreviewSize(&adapter->stream_width,
+                                      &adapter->stream_height);
+
+    if (adapter->stream_width <= 0 || adapter->stream_height <= 0)
+        return -EINVAL;
+
+    preview_params.setPreviewSize(adapter->stream_width, adapter->stream_height);
+    adapter->buffer_capacity =
+        (size_t)adapter->stream_width * adapter->stream_height * 3 / 2;
+    adapter->buffer = (uint8_t*)malloc(adapter->buffer_capacity);
+    if (!adapter->buffer)
+        return -ENOMEM;
+
+    ALOGI("----------------------------");
+
+    HAL1_CALL(hal1_device, store_meta_data_in_buffers, 0);
+
+    preview_params.set("no-display-mode", "1");
+
+    preview_params.set("preview-frame-rate", "30");
+
+    int ret = HAL1_CALL(hal1_device, set_parameters, preview_params.flatten());
+    if (ret != NO_ERROR) {
+        ALOGE("Failed to configure HAL1 camera: %d", ret);
+        return ret;
+    }
+    current_params = preview_params;
+
+    HAL1_CALL(hal1_device, set_callbacks, hal1_notify_callback, hal1_data_callback, hal1_data_timestamp_callback, get_memory, hal1_device);
+    HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_PREVIEW_FRAME);
+    HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_FOCUS);
+    HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_FOCUS_MOVE);
+    HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_SHUTTER);
+
+    /*
+     * Some HAL1 implementations require ANativeWindow to display (and call back)
+     * preview frames.
+     * We have a stub for such implementations.
+     */
+    if (properties.use_preview_window_stub && !adapter->preview_window)
+        HAL1_CALL(hal1_device, set_preview_window, preview_window_stub_create());
+
+    ret = HAL1_CALL(hal1_device, start_preview);
+    if (ret != NO_ERROR) {
+        ALOGE("Failed to start HAL1 preview: %d", ret);
+        return ret;
+    }
+
+    __atomic_store_n(&adapter->preview_really_started, 0, __ATOMIC_RELEASE);
+
+    return NO_ERROR;
+}
+
+static const camera_metadata_t* camera3_construct_default_request_settings(const struct camera3_device *device, int template_type)
+{
+    CameraMetadata settings;
+
+    static const uint8_t request_type = ANDROID_REQUEST_TYPE_CAPTURE;
+    settings.update(ANDROID_REQUEST_TYPE, &request_type, 1);
+    int32_t default_request_id = 0;
+    settings.update(ANDROID_REQUEST_ID, &default_request_id, 1);
+    static uint8_t jpeg_quality = 95;
+
+    uint8_t control_intent = 0;
+    uint8_t focus_mode = ANDROID_CONTROL_AF_MODE_AUTO;
+    uint8_t vs_mode = ANDROID_CONTROL_VIDEO_STABILIZATION_MODE_OFF;
+    uint8_t opt_stab_mode = ANDROID_LENS_OPTICAL_STABILIZATION_MODE_OFF;
+
+    switch (template_type) {
+    case CAMERA3_TEMPLATE_PREVIEW:
+        control_intent = ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW;
+        focus_mode = ANDROID_CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+        break;
+
+    case CAMERA3_TEMPLATE_MANUAL:
+        jpeg_quality = 100;
+        control_intent = ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE;
+        focus_mode = ANDROID_CONTROL_AF_MODE_AUTO;
+        break;
+
+    case CAMERA3_TEMPLATE_STILL_CAPTURE:
+        control_intent = ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE;
+        focus_mode = ANDROID_CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+        break;
+
+    case CAMERA3_TEMPLATE_VIDEO_RECORD:
+        control_intent = ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_RECORD;
+        focus_mode = ANDROID_CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+        break;
+
+    default:
+        return NULL;
+    }
+
+    settings.update(ANDROID_CONTROL_CAPTURE_INTENT, &control_intent, 1);
+    settings.update(ANDROID_CONTROL_VIDEO_STABILIZATION_MODE, &vs_mode, 1);
+    settings.update(ANDROID_CONTROL_AF_MODE, &focus_mode, 1);
+    settings.update(ANDROID_LENS_OPTICAL_STABILIZATION_MODE, &opt_stab_mode, 1);
+
+    static const int32_t exposure_compensation = 0;
+    settings.update(ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION,
+            &exposure_compensation, 1);
+
+    static const uint8_t ae_lock = ANDROID_CONTROL_AE_LOCK_OFF;
+    settings.update(ANDROID_CONTROL_AE_LOCK, &ae_lock, 1);
+
+    static const uint8_t awb_lock = ANDROID_CONTROL_AWB_LOCK_OFF;
+    settings.update(ANDROID_CONTROL_AWB_LOCK, &awb_lock, 1);
+
+    static const uint8_t awb_mode = ANDROID_CONTROL_AWB_MODE_AUTO;
+    settings.update(ANDROID_CONTROL_AWB_MODE, &awb_mode, 1);
+
+    static const uint8_t control_mode = ANDROID_CONTROL_MODE_AUTO;
+    settings.update(ANDROID_CONTROL_MODE, &control_mode, 1);
+
+    static const uint8_t effect_mode = ANDROID_CONTROL_EFFECT_MODE_OFF;
+    settings.update(ANDROID_CONTROL_EFFECT_MODE, &effect_mode, 1);
+
+    static const uint8_t scene_mode = 0;
+    settings.update(ANDROID_CONTROL_SCENE_MODE, &scene_mode, 1);
+
+    static const uint8_t ae_mode = ANDROID_CONTROL_AE_MODE_ON_AUTO_FLASH;
+    settings.update(ANDROID_CONTROL_AE_MODE, &ae_mode, 1);
+
+    static const uint8_t ab_mode = ANDROID_CONTROL_AE_ANTIBANDING_MODE_AUTO;
+    settings.update(ANDROID_CONTROL_AE_ANTIBANDING_MODE, &ab_mode, 1);
+
+    /*flash*/
+    static const uint8_t flash_mode = ANDROID_FLASH_MODE_OFF;
+    settings.update(ANDROID_FLASH_MODE, &flash_mode, 1);
+
+    /* Exposure time(Update the Min Exposure Time)*/
+    int64_t default_exposure_time = 0;
+    settings.update(ANDROID_SENSOR_EXPOSURE_TIME, &default_exposure_time, 1);
+
+    /* frame duration */
+    static const int64_t default_frame_duration = NSEC_PER_33MSEC;
+    settings.update(ANDROID_SENSOR_FRAME_DURATION, &default_frame_duration, 1);
+
+    /* sensitivity */
+    static const int32_t default_sensitivity = 0;
+    settings.update(ANDROID_SENSOR_SENSITIVITY, &default_sensitivity, 1);
+
+    int32_t sensor_width = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE).data.i32[2];
+    int32_t sensor_height = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE).data.i32[3];
+
+    static const int32_t request_id = 0;
+    settings.update(ANDROID_REQUEST_ID, &request_id, 1);
+
+    static const float lens_focus_distance = 0.0f;
+    settings.update(ANDROID_LENS_FOCUS_DISTANCE, &lens_focus_distance, 1);
+
+    static const uint8_t jpeg_gps_processing_method[32] = "None";
+    settings.update(ANDROID_JPEG_GPS_PROCESSING_METHOD, jpeg_gps_processing_method, NELEM(jpeg_gps_processing_method));
+
+    static const int64_t jpeg_gps_timestamp = 0;
+    settings.update(ANDROID_JPEG_GPS_TIMESTAMP, &jpeg_gps_timestamp, 1);
+
+    static const int32_t jpeg_orientation = 0;
+    settings.update(ANDROID_JPEG_ORIENTATION, &jpeg_orientation, 1);
+
+    static const int32_t jpeg_thumbnail_size[] = {
+        0, 0
+    };
+    settings.update(ANDROID_JPEG_THUMBNAIL_SIZE, jpeg_thumbnail_size, NELEM(jpeg_thumbnail_size));
+
+    static const uint8_t jpeg_thumbnail_quality = 85;
+    settings.update(ANDROID_JPEG_THUMBNAIL_QUALITY, &jpeg_thumbnail_quality, 1);
+
+    settings.update(ANDROID_JPEG_QUALITY, &jpeg_quality, 1);
+
+    static const double jpeg_gps_coordinates[] = {
+        0, 0
+    };
+    settings.update(ANDROID_JPEG_GPS_COORDINATES, jpeg_gps_coordinates, NELEM(jpeg_gps_coordinates));
+
+    int32_t scaler_crop_region[4];
+    scaler_crop_region[0] = 0;
+    scaler_crop_region[1] = 0;
+    scaler_crop_region[2] = sensor_width;
+    scaler_crop_region[3] = sensor_height;
+    settings.update(ANDROID_SCALER_CROP_REGION, scaler_crop_region, 4);
+
+    return settings.release();
+}
+
+/* Helpers for CameraParameters and stream processing */
+
+static int32_t clamp(int32_t value, int32_t min, int32_t max)
+{
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+void get_crop_point(int src_width, int src_height, int crop_width, int crop_height, int* crop_x, int* crop_y)
+{
+    if (crop_width > src_width ||
+        crop_height > src_height) {
+        *crop_x = 0;
+        *crop_y = 0;
+        return;
+    }
+
+    *crop_x = (src_width - crop_width) / 2;
+    *crop_y = (src_height - crop_height) / 2;
+}
+
+struct yuv420sp_buffer {
+    uint8_t* data;
+    int width;
+    int height;
+    int size;
+};
+
+yuv420sp_buffer* yuv420sp_crop(const uint8_t* src_yuv420sp, int src_width, int src_height,
+    int crop_x, int crop_y, int crop_width, int crop_height)
+{
+    int src_y_size = src_width * src_height;
+    const uint8_t* src_y = src_yuv420sp;
+    const uint8_t* src_uv = src_yuv420sp + src_y_size;
+
+    yuv420sp_buffer* dst_buffer = (yuv420sp_buffer*)malloc(sizeof(yuv420sp_buffer));
+    dst_buffer->width = crop_width;
+    dst_buffer->height = crop_height;
+
+    int dst_y_size = crop_width * crop_height;
+    int dst_uv_size = (crop_width / 2) * (crop_height / 2) * 2;
+    dst_buffer->data = (uint8_t*)malloc(dst_y_size + dst_uv_size);
+    dst_buffer->size = dst_y_size + dst_uv_size;
+
+    uint8_t* dst_y = dst_buffer->data;
+    uint8_t* dst_uv = dst_buffer->data + dst_y_size;
+
+    for (int i = 0; i < crop_height; ++i) {
+        const uint8_t* src_row = src_y + (crop_y + i) * src_width + crop_x;
+        uint8_t* dst_row = dst_y + i * crop_width;
+        memcpy(dst_row, src_row, crop_width);
+    }
+
+    for (int i = 0; i < crop_height / 2; ++i) {
+        const uint8_t* src_row = src_uv + (crop_y / 2 + i) * src_width + crop_x;
+        uint8_t* dst_row = dst_uv + i * crop_width;
+        memcpy(dst_row, src_row, crop_width);
+    }
+
+    return dst_buffer;
+}
+
+void nv21_to_nv12(unsigned char* nv21, unsigned char* nv12, int width, int height) {
+    int frameSize = width * height;
+    int i;
+
+    memcpy(nv12, nv21, frameSize);
+
+    for (i = 0; i < frameSize / 2; i += 2) {
+        nv12[frameSize + i] = nv21[frameSize + i + 1]; // U
+        nv12[frameSize + i + 1] = nv21[frameSize + i]; // V
+    }
+}
+
+// Map ANDROID_SCALER_CROP_REGION to HAL1 zoom index
+int hal3_to_hal1_zoom(CameraMetadata cm)
+{
+    int32_t crop_width = cm.find(ANDROID_SCALER_CROP_REGION).data.i32[2];
+    int32_t active_width = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE).data.i32[2];
+
+    float target_ratio = (float) active_width / crop_width;
+    int zoom_value = 0;
+
+    int target = (int)(target_ratio * 100.0f);
+    int min_diff = INT_MAX;
+
+    for (int i = 0; i <= hal1_zoom_steps[current_camera_id]; i++) {
+        int diff = std::abs(target - hal1_zoom_ratios[current_camera_id][i]);
+
+        if (diff < min_diff) {
+            min_diff = diff;
+            zoom_value = i;
+        }
+    }
+
+    return zoom_value;
+}
+
+static CameraParameters previous_params;
+
+static int camera3_process_capture_request(const camera3_device_t* device, camera3_capture_request_t* request)
+{
+    if (!device || !request || request->num_output_buffers == 0 ||
+        !request->output_buffers) {
+        ALOGE("Invalid capture request");
+        return -EINVAL;
+    }
+
+    Mutex::Autolock lock(hal3on1_lock);
+    adapter_camera3_device_t *adapter = (adapter_camera3_device_t *)device;
+    camera_device_t* hal1_device = adapter->hal1_device;
+
+    if (!hal1_device || current_camera_id < 0)
+        return -ENODEV;
+
+    camera_metadata_entry active_array =
+        static_metadata[current_camera_id].find(
+            ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+    if (active_array.count < 4)
+        return -EINVAL;
+
+    int32_t sensor_width = active_array.data.i32[2];
+    int32_t sensor_height = active_array.data.i32[3];
+    CameraMetadata cm;
+    if (request->settings) {
+        cm = request->settings;
+        previous_request_settings = cm;
+    } else {
+        cm = previous_request_settings;
+    }
+    if (cm.isEmpty())
+        return -EINVAL;
+
+    uint8_t capture_intent = ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW;
+    uint8_t ae_mode = ANDROID_CONTROL_AE_MODE_ON;
+    uint8_t af_mode = ANDROID_CONTROL_AF_MODE_OFF;
+    bool use_scene = false;
+    bool manual_wb = false;
+    bool manual_focus = false;
+    status_t e;
+
+    if (cm.exists(ANDROID_CONTROL_MODE)) {
+        switch (cm.find(ANDROID_CONTROL_MODE).data.u8[0]) {
+
+        case ANDROID_CONTROL_MODE_USE_SCENE_MODE:
+            use_scene = true;
+            current_params.set("scene-detect", "off");
+            break;
+
+        case ANDROID_CONTROL_MODE_AUTO:
+            use_scene = false;
+            current_params.set("scene-detect", "on");
+            current_params.set("scene-mode", "auto");
+            break;
+
+        case ANDROID_CONTROL_MODE_OFF:
+            use_scene = false;
+            current_params.set("scene-detect", "off");
+            current_params.set("scene-mode", "auto");
+            break;
+        }
+    }
+
+    if (cm.exists(ANDROID_CONTROL_SCENE_MODE) && use_scene) {
+        uint8_t scene_mode = cm.find(ANDROID_CONTROL_SCENE_MODE).data.u8[0];
+        char scene_mode_str[32];
+
+        switch (scene_mode) {
+        case ANDROID_CONTROL_SCENE_MODE_LANDSCAPE:
+            strcpy(scene_mode_str, "landscape");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_SNOW:
+            strcpy(scene_mode_str, "snow");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_SUNSET:
+            strcpy(scene_mode_str, "sunset");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_STEADYPHOTO:
+            strcpy(scene_mode_str, "steadyphoto");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_PARTY:
+            strcpy(scene_mode_str, "party");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_CANDLELIGHT:
+            strcpy(scene_mode_str, "candelight");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_PORTRAIT:
+            strcpy(scene_mode_str, "portrait");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_NIGHT_PORTRAIT:
+            strcpy(scene_mode_str, "night-portrait");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_THEATRE:
+            strcpy(scene_mode_str, "theatre");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_NIGHT:
+            strcpy(scene_mode_str, "night");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_ACTION:
+            strcpy(scene_mode_str, "action");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_BEACH:
+            strcpy(scene_mode_str, "beach");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_FIREWORKS:
+            strcpy(scene_mode_str, "fireworks");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_SPORTS:
+            strcpy(scene_mode_str, "sports");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_FACE_PRIORITY:
+            strcpy(scene_mode_str, "face-priority");
+            break;
+        case ANDROID_CONTROL_SCENE_MODE_BARCODE:
+            strcpy(scene_mode_str, "barcode");
+            break;
+        }
+
+        current_params.set("scene-mode", scene_mode_str);
+        current_params.set("scene-detect", "off");
+        use_scene = true;
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AE_MODE) && !use_scene) {
+        ae_mode = cm.find(ANDROID_CONTROL_AE_MODE).data.u8[0];
+
+        current_params.set("redeye-reduction", "disable");
+        current_params.set("iso", "auto");
+
+        switch (ae_mode) {
+        case ANDROID_CONTROL_AE_MODE_OFF:
+        case ANDROID_CONTROL_AE_MODE_ON:
+            current_params.set("flash-mode", "off");
+            break;
+
+        case ANDROID_CONTROL_AE_MODE_ON_AUTO_FLASH:
+            current_params.set("flash-mode", "auto");
+            break;
+
+        case ANDROID_CONTROL_AE_MODE_ON_ALWAYS_FLASH:
+            current_params.set("flash-mode", "on");
+            break;
+
+        case ANDROID_CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE:
+            current_params.set("redeye-reduction", "enable");
+            current_params.set("flash-mode", "auto");
+            break;
+        }
+    }
+
+    if (cm.exists(ANDROID_FLASH_MODE) && !use_scene) {
+        uint8_t flash_mode = cm.find(ANDROID_FLASH_MODE).data.u8[0];
+        switch (flash_mode) {
+        case ANDROID_FLASH_MODE_OFF:
+            if (ae_mode == ANDROID_CONTROL_AE_MODE_OFF ||
+                ae_mode == ANDROID_CONTROL_AE_MODE_ON)
+                    current_params.set("flash-mode", "off");
+            break;
+
+        case ANDROID_FLASH_MODE_SINGLE:
+            if (ae_mode == ANDROID_CONTROL_AE_MODE_OFF)
+                current_params.set("flash-mode", "on");
+            break;
+
+        case ANDROID_FLASH_MODE_TORCH:
+            current_params.set("flash-mode", "torch");
+            break;
+        }
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION) && !use_scene) {
+        int32_t exposure_compensation = cm.find(ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION).data.i32[0];
+        char exposure_compensation_str[4];
+
+        sprintf(exposure_compensation_str, "%d", exposure_compensation);
+        current_params.set("exposure-compensation", exposure_compensation_str);
+    }
+
+    char manual_awb_value_str[32];
+
+    if (cm.exists(ANDROID_CONTROL_AWB_MODE) && !use_scene) {
+        uint8_t awb_mode = cm.find(ANDROID_CONTROL_AWB_MODE).data.u8[0];
+        char awb_mode_str[32];
+
+        switch (awb_mode) {
+        case ANDROID_CONTROL_AWB_MODE_AUTO:
+            strcpy(awb_mode_str, "auto");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_INCANDESCENT:
+            strcpy(awb_mode_str, "incandescent");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_FLUORESCENT:
+            strcpy(awb_mode_str, "fluorescent");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_WARM_FLUORESCENT:
+            strcpy(awb_mode_str, "warm-fluorescent");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_DAYLIGHT:
+            strcpy(awb_mode_str, "daylight");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_CLOUDY_DAYLIGHT:
+            strcpy(awb_mode_str, "cloudy-daylight");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_TWILIGHT:
+            strcpy(awb_mode_str, "twilight");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_SHADE:
+            strcpy(awb_mode_str, "shade");
+            break;
+        case ANDROID_CONTROL_AWB_MODE_OFF:
+            if (!cm.exists(ANDROID_COLOR_CORRECTION_GAINS))
+               goto skip_mwb;
+
+            manual_wb = true;
+
+            char* manual_awb_mode_str = "1";
+            strcpy(awb_mode_str, "manual");
+
+            float *gains = cm.find(ANDROID_COLOR_CORRECTION_GAINS).data.f;
+            float r_gain = gains[0];
+            float g_gain = (gains[1] + gains[2]) / 2;
+            float b_gain = gains[3];
+
+            float min_gain = std::min({r_gain, g_gain, b_gain});
+            if (min_gain < 1.0f) {
+                float scale = 1.0f / std::max(min_gain, 0.5f);
+                r_gain *= scale;
+                g_gain *= scale;
+                b_gain *= scale;
+            }
+
+            r_gain = std::clamp(r_gain, 1.0f, 4.0f);
+            g_gain = std::clamp(g_gain, 1.0f, 4.0f);
+            b_gain = std::clamp(b_gain, 1.0f, 4.0f);
+
+            sprintf(manual_awb_value_str, "%.4f,%.4f,%.4f", r_gain, g_gain, b_gain);
+            current_params.set("manual-wb-type", manual_awb_mode_str);
+            current_params.set("manual-wb-value", manual_awb_value_str);
+
+            break;
+        }
+        current_params.set("whitebalance", awb_mode_str);
+    }
+
+skip_mwb:
+
+    if (cm.exists(ANDROID_CONTROL_AF_MODE) && !use_scene) {
+        af_mode = cm.find(ANDROID_CONTROL_AF_MODE).data.u8[0];
+        char af_mode_str[32];
+
+        switch (af_mode) {
+        case ANDROID_CONTROL_AF_MODE_AUTO:
+            strcpy(af_mode_str, "auto");
+            break;
+        case ANDROID_CONTROL_AF_MODE_MACRO:
+            strcpy(af_mode_str, "macro");
+            break;
+        case ANDROID_CONTROL_AF_MODE_CONTINUOUS_VIDEO:
+            strcpy(af_mode_str, "continuous-video");
+            break;
+        case ANDROID_CONTROL_AF_MODE_CONTINUOUS_PICTURE:
+            strcpy(af_mode_str, "continuous-picture");
+            break;
+        case ANDROID_CONTROL_AF_MODE_EDOF:
+            strcpy(af_mode_str, "edof");
+            break;
+        case ANDROID_CONTROL_AF_MODE_OFF:
+            if (current_params.get("manual-focus-modes")) {
+                strcpy(af_mode_str, "manual");
+                manual_focus = true;
+            } else {
+                strcpy(af_mode_str, "fixed");
+            }
+            hal3on1_dev->focus_state = ANDROID_CONTROL_AF_STATE_INACTIVE;
+            break;
+        }
+        current_params.set("focus-mode", af_mode_str);
+    }
+
+    if (cm.exists(ANDROID_CONTROL_EFFECT_MODE)) {
+        uint8_t effect_mode = cm.find(ANDROID_CONTROL_EFFECT_MODE).data.u8[0];
+        char effect_mode_str[32];
+
+        switch (effect_mode) {
+        case ANDROID_CONTROL_EFFECT_MODE_OFF:
+            strcpy(effect_mode_str, "none");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_MONO:
+            strcpy(effect_mode_str, "mono");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_NEGATIVE:
+            strcpy(effect_mode_str, "negative");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_SOLARIZE:
+            strcpy(effect_mode_str, "solarize");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_SEPIA:
+            strcpy(effect_mode_str, "sepia");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_POSTERIZE:
+            strcpy(effect_mode_str, "posterize");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_WHITEBOARD:
+            strcpy(effect_mode_str, "whiteboard");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_BLACKBOARD:
+            strcpy(effect_mode_str, "blackboard");
+            break;
+        case ANDROID_CONTROL_EFFECT_MODE_AQUA:
+            strcpy(effect_mode_str, "aqua");
+            break;
+        }
+        current_params.set("effect", effect_mode_str);
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AE_ANTIBANDING_MODE)) {
+        uint8_t antibanding_mode = cm.find(ANDROID_CONTROL_AE_ANTIBANDING_MODE).data.u8[0];
+        char antibanding_mode_str[8];
+
+        switch (antibanding_mode) {
+        case ANDROID_CONTROL_AE_ANTIBANDING_MODE_OFF:
+            strcpy(antibanding_mode_str, "off");
+            break;
+        case ANDROID_CONTROL_AE_ANTIBANDING_MODE_AUTO:
+            strcpy(antibanding_mode_str, "auto");
+            break;
+        case ANDROID_CONTROL_AE_ANTIBANDING_MODE_50HZ:
+            strcpy(antibanding_mode_str, "50hz");
+            break;
+        case ANDROID_CONTROL_AE_ANTIBANDING_MODE_60HZ:
+            strcpy(antibanding_mode_str, "60hz");
+            break;
+        }
+        current_params.set("antibanding", antibanding_mode_str);
+    }
+
+    if (ae_mode == ANDROID_CONTROL_AE_MODE_OFF &&
+        cm.exists(ANDROID_SENSOR_SENSITIVITY) &&
+        cm.exists(ANDROID_SENSOR_EXPOSURE_TIME)) {
+
+        char exposure_time_str[20];
+
+        int64_t exposure_time = cm.find(ANDROID_SENSOR_EXPOSURE_TIME).data.i64[0];
+        int64_t exposure_time_min = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_EXPOSURE_TIME_RANGE).data.i64[0];
+        int64_t exposure_time_max = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_EXPOSURE_TIME_RANGE).data.i64[1];
+
+        if (exposure_time > exposure_time_max)
+            exposure_time = exposure_time_max;
+        if (exposure_time < exposure_time_min)
+            exposure_time = exposure_time_min;
+
+        double result = (double)exposure_time / 1000000.0;
+        snprintf(exposure_time_str, sizeof(exposure_time_str), "%.6f", result);
+
+
+        int32_t iso = cm.find(ANDROID_SENSOR_SENSITIVITY).data.i32[0];
+        int32_t min_iso = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_SENSITIVITY_RANGE).data.i32[0];
+        int32_t max_iso = static_metadata[current_camera_id].find(ANDROID_SENSOR_INFO_SENSITIVITY_RANGE).data.i32[1];
+
+        char iso_str[8];
+        char exact_iso_str[8];
+
+        if (iso > max_iso)
+            iso = max_iso;
+        if (iso < min_iso)
+            iso = min_iso;
+
+        if (iso > 0)
+            strcpy(iso_str, "ISO100");
+        if (iso > 100)
+            strcpy(iso_str, "ISO200");
+        if (iso > 200)
+            strcpy(iso_str, "ISO400");
+        if (iso > 400)
+            strcpy(iso_str, "ISO800");
+        if (iso > 800)
+            strcpy(iso_str, "ISO1600");
+        if (iso > 1600)
+            strcpy(iso_str, "ISO3200");
+
+        if (iso < 1251) {
+            strcpy(iso_str, "manual");
+            sprintf(exact_iso_str, "%d", iso);
+            current_params.set("continuous-iso", exact_iso_str);
+        }
+
+        current_params.set("iso", iso_str);
+        current_params.set("whitebalance", "auto");
+        HAL1_CALL(hal1_device, set_parameters, current_params.flatten());
+
+        if (cm.exists(ANDROID_SENSOR_EXPOSURE_TIME)) {
+            current_params.set("zsl", "off");
+            HAL1_CALL(hal1_device, set_parameters, current_params.flatten());
+
+            current_params.set("exposure-time", exposure_time_str);
+            HAL1_CALL(hal1_device, set_parameters, current_params.flatten());
+        } else {
+            HAL1_CALL(hal1_device, set_parameters, current_params.flatten());
+            current_params.set("zsl", "on");
+        }
+    } else {
+        current_params.set("iso", "auto");
+        current_params.set("exposure-time", "0");
+        current_params.set("zsl", "on");
+        if (manual_wb) {
+            current_params.set("whitebalance", "manual");
+            current_params.set("manual-wb-type", "1");
+            current_params.set("manual-wb-value", manual_awb_value_str);
+        }
+    }
+
+    if (cm.exists(ANDROID_SCALER_CROP_REGION)) {
+        int32_t* crop_region = cm.find(ANDROID_SCALER_CROP_REGION).data.i32;
+        int zoom_value = hal3_to_hal1_zoom(cm);
+        char zoom_idx[5];
+
+        sprintf(zoom_idx, "%d", zoom_value);
+        current_params.set("zoom", zoom_idx);
+    }
+
+    bool trigger_af = false;
+
+    if (cm.exists(ANDROID_CONTROL_AF_REGIONS)) {
+        int32_t* af_regions = cm.find(ANDROID_CONTROL_AF_REGIONS).data.i32;
+
+        if (!af_regions[0] && !af_regions[1] && !af_regions[2] && !af_regions[3] && !af_regions[4])
+        {
+            current_params.set("focus-areas", "(0, 0, 0, 0, 0)");
+        } else {
+            char focus_areas_str[31];
+            int32_t left, top, right, bottom, weight = 0;
+            left = af_regions[0];
+            top = af_regions[1];
+            right = af_regions[2];
+            bottom = af_regions[3];
+            weight = af_regions[4];
+
+            left = clamp((left * 2000 / sensor_width) - 1000, -999, 999);
+            top = clamp((top * 2000 / sensor_height) - 1000, -999, 999);
+            right = clamp((right * 2000 / sensor_width) - 1000, -999, 999);
+            bottom = clamp((bottom * 2000 / sensor_height) - 1000, -999, 999);
+            weight = clamp(weight, 1, 1000);
+
+            sprintf(focus_areas_str, "(%d, %d, %d, %d, %d)", left, top, right, bottom, weight);
+            current_params.set("focus-areas", focus_areas_str);
+        }
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AF_TRIGGER)) {
+        uint8_t af_trigger = cm.find(ANDROID_CONTROL_AF_TRIGGER).data.u8[0];
+        if (af_trigger == ANDROID_CONTROL_AF_TRIGGER_START &&
+            af_mode != ANDROID_CONTROL_AF_MODE_OFF) {
+            trigger_af = true;
+        } else if (af_trigger == ANDROID_CONTROL_AF_TRIGGER_CANCEL) {
+            HAL1_CALL(hal1_device, cancel_auto_focus);
+            hal3on1_dev->focus_state = ANDROID_CONTROL_AF_STATE_INACTIVE;
+        }
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AE_REGIONS)) {
+        int32_t* ae_regions = cm.find(ANDROID_CONTROL_AE_REGIONS).data.i32;
+
+        if (!ae_regions[0] && !ae_regions[1] && !ae_regions[2] && !ae_regions[3] && !ae_regions[4])
+            current_params.set("metering-areas", "(0, 0, 0, 0, 0)");
+        else {
+            char ae_areas_str[31];
+            int32_t left, top, right, bottom, weight = 0;
+            left = ae_regions[0];
+            top = ae_regions[1];
+            right = ae_regions[2];
+            bottom = ae_regions[3];
+            weight = ae_regions[4];
+
+            left = clamp((left * 2000 / sensor_width) - 1000, -999, 999);
+            top = clamp((top * 2000 / sensor_height) - 1000, -999, 999);
+            right = clamp((right * 2000 / sensor_width) - 1000, -999, 999);
+            bottom = clamp((bottom * 2000 / sensor_height) - 1000, -999, 999);
+            weight = clamp(weight, 1, 1000);
+
+            sprintf(ae_areas_str, "(%d, %d, %d, %d, %d)", left, top, right, bottom, weight);
+            current_params.set("metering-areas", ae_areas_str);
+        }
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AE_LOCK)) {
+        uint8_t ae_lock = cm.find(ANDROID_CONTROL_AE_LOCK).data.u8[0];
+        if (ae_lock == ANDROID_CONTROL_AE_LOCK_ON)
+            current_params.set("auto-exposure-lock", "true");
+        else
+            current_params.set("auto-exposure-lock", "false");
+    }
+
+    if (cm.exists(ANDROID_CONTROL_AWB_LOCK)) {
+        uint8_t awb_lock = cm.find(ANDROID_CONTROL_AWB_LOCK).data.u8[0];
+        if (awb_lock == ANDROID_CONTROL_AWB_LOCK_ON)
+            current_params.set("auto-whitebalance-lock", "true");
+        else
+            current_params.set("auto-whitebalance-lock", "false");
+    }
+
+    if (cm.exists(ANDROID_NOISE_REDUCTION_MODE)) {
+        uint8_t noise_reduction = cm.find(ANDROID_NOISE_REDUCTION_MODE).data.u8[0];
+
+        if (noise_reduction == ANDROID_NOISE_REDUCTION_MODE_FAST)
+            current_params.set("denoise", "denoise-on");
+        else
+            current_params.set("denoise", "denoise-off");
+    }
+
+    if (cm.exists(ANDROID_SHADING_MODE)) {
+        uint8_t lens_shading = cm.find(ANDROID_SHADING_MODE).data.u8[0];
+        if (lens_shading == ANDROID_SHADING_MODE_FAST)
+            current_params.set("lensshade", "enable");
+        else
+            current_params.set("lensshade", "disable");
+    }
+
+    if (cm.exists(ANDROID_JPEG_THUMBNAIL_SIZE)) {
+        int32_t* jpeg_thumbnail_size = cm.find(ANDROID_JPEG_THUMBNAIL_SIZE).data.i32;
+        char jpeg_thumbnail_size_str[2][5];
+        sprintf(jpeg_thumbnail_size_str[0], "%u", jpeg_thumbnail_size[0]);
+        sprintf(jpeg_thumbnail_size_str[1], "%u", jpeg_thumbnail_size[1]);
+        current_params.set("jpeg-thumbnail-width", jpeg_thumbnail_size_str[0]);
+        current_params.set("jpeg-thumbnail-height", jpeg_thumbnail_size_str[1]);
+    }
+
+    if (cm.exists(ANDROID_JPEG_THUMBNAIL_QUALITY)) {
+        int32_t jpeg_thumbnail_quality = cm.find(ANDROID_JPEG_THUMBNAIL_QUALITY).data.u8[0];
+        char jpeg_thumbnail_quality_str[4];
+        sprintf(jpeg_thumbnail_quality_str, "%u", jpeg_thumbnail_quality);
+        current_params.set("jpeg-thumbnail-quality", jpeg_thumbnail_quality_str);
+    }
+
+    if (cm.exists(ANDROID_JPEG_QUALITY)) {
+        int32_t jpeg_quality = cm.find(ANDROID_JPEG_QUALITY).data.u8[0];
+        char jpeg_quality_str[4];
+        sprintf(jpeg_quality_str, "%u", jpeg_quality);
+        current_params.set("jpeg-quality", jpeg_quality_str);
+    }
+
+    if (cm.exists(ANDROID_JPEG_ORIENTATION)) {
+        int32_t orientation = cm.find(ANDROID_JPEG_ORIENTATION).data.i32[0];
+        char orientation_str[4];
+        sprintf(orientation_str, "%u", orientation);
+        current_params.set("rotation", orientation_str);
+    }
+
+    if (cm.exists(ANDROID_LENS_FOCUS_DISTANCE) &&
+        manual_focus == true) {
+        float focus_distance = cm.find(ANDROID_LENS_FOCUS_DISTANCE).data.f[0];
+        char focus_distance_str[5];
+
+        current_params.set("focus-mode", "manual");
+        sprintf(focus_distance_str, "%.1f", focus_distance);
+        current_params.set("manual-focus-pos-type", "3");
+        current_params.set("manual-focus-position", focus_distance);
+
+    }
+
+    if (trigger_af)
+        HAL1_CALL(hal1_device, cancel_auto_focus);
+
+    if(strcmp(current_params.flatten(), previous_params.flatten()) != 0)
+        HAL1_CALL(hal1_device, set_parameters, current_params.flatten());
+
+    previous_params = current_params;
+
+    if (trigger_af)
+        HAL1_CALL(hal1_device, auto_focus);
+
+    uint8_t ae_state = ae_mode == ANDROID_CONTROL_AE_MODE_OFF
+        ? ANDROID_CONTROL_AE_STATE_INACTIVE
+        : ANDROID_CONTROL_AE_STATE_CONVERGED;
+    cm.update(ANDROID_CONTROL_AE_STATE, &ae_state, 1);
+
+    cm.update(ANDROID_CONTROL_AF_STATE, &hal3on1_dev->focus_state, 1);
+
+    uint8_t awb_state = ANDROID_CONTROL_AWB_STATE_CONVERGED;
+    if (cm.exists(ANDROID_CONTROL_AWB_MODE) &&
+        cm.find(ANDROID_CONTROL_AWB_MODE).data.u8[0] ==
+            ANDROID_CONTROL_AWB_MODE_OFF) {
+        awb_state = ANDROID_CONTROL_AWB_STATE_INACTIVE;
+    }
+    cm.update(ANDROID_CONTROL_AWB_STATE, &awb_state, 1);
+
+    camera_metadata_entry flash_available =
+        static_metadata[current_camera_id].find(ANDROID_FLASH_INFO_AVAILABLE);
+    uint8_t flash_state = flash_available.count > 0 &&
+            flash_available.data.u8[0]
+        ? ANDROID_FLASH_STATE_READY
+        : ANDROID_FLASH_STATE_UNAVAILABLE;
+    cm.update(ANDROID_FLASH_STATE, &flash_state, 1);
+
+    if (cm.exists(ANDROID_CONTROL_CAPTURE_INTENT)) {
+        capture_intent = cm.find(ANDROID_CONTROL_CAPTURE_INTENT).data.u8[0];
+
+        if (capture_intent == ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE) {
+            HAL1_CALL(hal1_device, enable_msg_type, CAMERA_MSG_COMPRESSED_IMAGE);
+            int ret = HAL1_CALL(hal1_device, take_picture);
+            if (ret != NO_ERROR)
+                return ret;
+
+            if (!wait_for_nonzero(&adapter->jpeg_size, "JPEG callback"))
+                return -ETIMEDOUT;
+
+            HAL1_CALL(hal1_device, stop_preview);
+            ret = HAL1_CALL(hal1_device, start_preview);
+            if (ret != NO_ERROR)
+                return ret;
+            __atomic_store_n(&adapter->preview_really_started, 0,
+                             __ATOMIC_RELEASE);
+        }
+    }
+
+    /* Ignore input buffer */
+    if (request->input_buffer)
+        request->input_buffer->release_fence = -1;
+
+    auto timestamp = systemTime();
+    int64_t sensor_timestamp = timestamp;
+    int64_t sync_frame_number = request->frame_number;
+
+    Vector<camera3_stream_buffer> buffers;
+    buffers.setCapacity(request->num_output_buffers);
+    for (uint32_t i = 0; i < request->num_output_buffers; ++i) {
+        const camera3_stream_buffer_t& output_buffer = request->output_buffers[i];
+        const Rect rect((int)output_buffer.stream->width, (int)output_buffer.stream->height);
+
+        if (!output_buffer.buffer || !*output_buffer.buffer)
+            return -EINVAL;
+
+        const private_handle_t* handle =
+            (const private_handle_t*)(*output_buffer.buffer);
+        if (private_handle_t::validate(handle) != 0)
+            return -EINVAL;
+
+        int payload_size = 0;
+        if (output_buffer.stream->format == HAL_PIXEL_FORMAT_BLOB) {
+            if (!wait_for_nonzero(&adapter->jpeg_size, "JPEG callback"))
+                return -ETIMEDOUT;
+            payload_size = __atomic_load_n(&adapter->jpeg_size,
+                                           __ATOMIC_ACQUIRE);
+            if (!adapter->jpeg || payload_size <= 0 ||
+                (size_t)payload_size + sizeof(camera3_jpeg_blob_t) >
+                    (size_t)handle->size) {
+                ALOGE("Invalid JPEG buffer size: %d of %d", payload_size,
+                      handle->size);
+                return -EINVAL;
+            }
+        } else if (output_buffer.stream->format ==
+                   HAL_PIXEL_FORMAT_NV12_ENCODEABLE) {
+            if (!adapter->video_stream) {
+                current_params.set("video-frame-format", "nv12-venus");
+                current_params.set("iso", "auto");
+                current_params.set("exposure-time", "0");
+                current_params.set("zsl", "on");
+                HAL1_CALL(hal1_device, set_parameters,
+                          current_params.flatten());
+                HAL1_CALL(hal1_device, enable_msg_type,
+                          CAMERA_MSG_VIDEO_FRAME);
+                int ret = HAL1_CALL(hal1_device, start_recording);
+                if (ret != NO_ERROR)
+                    return ret;
+                adapter->video_stream = true;
+            }
+
+            if (!wait_for_nonzero(&adapter->video_buffer_size,
+                                  "video callback"))
+                return -ETIMEDOUT;
+            payload_size = __atomic_load_n(&adapter->video_buffer_size,
+                                           __ATOMIC_ACQUIRE);
+            if (!adapter->video_buffer || payload_size <= 0 ||
+                payload_size > handle->size)
+                return -EINVAL;
+        } else {
+            if (!wait_for_nonzero(&adapter->buffer_size,
+                                  "preview callback"))
+                return -ETIMEDOUT;
+            payload_size = __atomic_load_n(&adapter->buffer_size,
+                                           __ATOMIC_ACQUIRE);
+        }
+
+        sp<Fence> acquire_fence = new Fence(output_buffer.acquire_fence);
+        e = acquire_fence->wait(1000);
+        if (e != NO_ERROR)
+            return e;
+
+        uint8_t *buf = NULL;
+        int usage = GRALLOC_USAGE_SW_WRITE_OFTEN;
+
+        if ((output_buffer.stream->format == HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED ||
+            output_buffer.stream->format == HAL_PIXEL_FORMAT_YCrCb_420_SP) &&
+            properties.use_hwcomposer)
+            usage = GRALLOC_USAGE_HW_COMPOSER;
+
+        if (output_buffer.stream->format == HAL_PIXEL_FORMAT_NV12_ENCODEABLE)
+            usage = GRALLOC_USAGE_HW_VIDEO_ENCODER;
+
+        e = GraphicBufferMapper::get().lock(*output_buffer.buffer, usage, rect,
+                                            (void **)&buf);
+        if (e != NO_ERROR || !buf)
+            return e != NO_ERROR ? e : -EINVAL;
+
+        if (output_buffer.stream->format == HAL_PIXEL_FORMAT_BLOB) {
+            memcpy(buf, adapter->jpeg, payload_size);
+
+            camera3_jpeg_blob jpegBlob;
+            jpegBlob.jpeg_blob_id  = CAMERA3_JPEG_BLOB_ID;
+            jpegBlob.jpeg_size     = (uint32_t)payload_size;
+
+            memcpy(buf + handle->size - sizeof(camera3_jpeg_blob_t),
+                   &jpegBlob, sizeof(camera3_jpeg_blob_t));
+
+            __atomic_store_n(&adapter->jpeg_size, 0, __ATOMIC_RELEASE);
+
+            HAL1_CALL(hal1_device, disable_msg_type, CAMERA_MSG_COMPRESSED_IMAGE);
+        } else {
+            // Crop yuv buffer for streams smaller than preview
+            int crop_x, crop_y;
+            yuv420sp_buffer *crop_buf = NULL;
+
+            if (output_buffer.stream->format == HAL_PIXEL_FORMAT_NV12_ENCODEABLE) {
+                memcpy(buf, adapter->video_buffer, payload_size);
+                HAL1_CALL(adapter->hal1_device, release_recording_frame, adapter->video_buffer);
+                __atomic_store_n(&adapter->video_buffer_size, 0,
+                                 __ATOMIC_RELEASE);
+            } else if (output_buffer.stream->width < adapter->stream_width ||
+                       output_buffer.stream->height < adapter->stream_height) {
+                get_crop_point(adapter->stream_width, adapter->stream_height,
+                    output_buffer.stream->width, output_buffer.stream->height, &crop_x, &crop_y);
+
+                crop_buf = yuv420sp_crop(adapter->buffer, adapter->stream_width, adapter->stream_height,
+                    crop_x, crop_y, output_buffer.stream->width, output_buffer.stream->height);
+
+                if (!crop_buf || !crop_buf->data ||
+                    crop_buf->size > (size_t)handle->size) {
+                    GraphicBufferMapper::get().unlock(*output_buffer.buffer);
+                    free(crop_buf);
+                    return -EINVAL;
+                }
+
+                memcpy(buf, crop_buf->data, crop_buf->size);
+
+                free(crop_buf->data);
+                free(crop_buf);
+            } else {
+                if (payload_size > handle->size) {
+                    GraphicBufferMapper::get().unlock(*output_buffer.buffer);
+                    return -EINVAL;
+                }
+                memcpy(buf, adapter->buffer, payload_size);
+            }
+        }
+
+        GraphicBufferMapper::get().unlock(*output_buffer.buffer);
+        buffers.push_back(output_buffer);
+        buffers.editTop().acquire_fence = -1;
+        buffers.editTop().release_fence = -1;
+        buffers.editTop().status = CAMERA3_BUFFER_STATUS_OK;
+    }
+
+    __atomic_store_n(&adapter->buffer_size, 0, __ATOMIC_RELEASE);
+
+    camera3_notify_msg_t msg;
+    msg.type = CAMERA3_MSG_SHUTTER;
+    msg.message.shutter.frame_number = sync_frame_number;
+    msg.message.shutter.timestamp = timestamp;
+    adapter->callback_ops->notify(adapter->callback_ops, &msg);
+
+    cm.update(ANDROID_SENSOR_TIMESTAMP, &sensor_timestamp, 1);
+    cm.update(ANDROID_SYNC_FRAME_NUMBER, &sync_frame_number, 1);
+
+    auto result = cm.getAndLock();
+    camera3_capture_result capture_result;
+    capture_result.frame_number = sync_frame_number;
+    capture_result.result = result;
+    capture_result.num_output_buffers = buffers.size();
+    capture_result.output_buffers = buffers.array();
+    capture_result.input_buffer = NULL;
+    capture_result.partial_result = 1;
+
+    adapter->callback_ops->process_capture_result(adapter->callback_ops, &capture_result);
+    cm.unlock(result);
+
+    return NO_ERROR;
+}
+
+static void camera3_dump(const struct camera3_device *dev, int fd) { }
+
+static int camera3_flush(const struct camera3_device *dev)
+{
+    adapter_camera3_device_t *adapter = (adapter_camera3_device_t *)dev;
+    Mutex::Autolock lock(hal3on1_lock);
+
+    if (!adapter || !adapter->hal1_device)
+        return -ENODEV;
+
+    if (adapter->video_stream) {
+        HAL1_CALL(adapter->hal1_device, disable_msg_type,
+                  CAMERA_MSG_VIDEO_FRAME);
+        if (adapter->video_buffer)
+            HAL1_CALL(adapter->hal1_device, release_recording_frame,
+                      adapter->video_buffer);
+        __atomic_store_n(&adapter->video_buffer_size, 0, __ATOMIC_RELEASE);
+        HAL1_CALL(adapter->hal1_device, stop_recording);
+        adapter->video_stream = false;
+    }
+
+    HAL1_CALL(adapter->hal1_device, disable_msg_type,
+              CAMERA_MSG_COMPRESSED_IMAGE);
+    __atomic_store_n(&adapter->jpeg_size, 0, __ATOMIC_RELEASE);
+    HAL1_CALL(adapter->hal1_device, cancel_picture);
+
+    return NO_ERROR;
+}
+
+static camera3_device_ops_t camera3_ops = {
+    .initialize = camera3_initialize,
+    .configure_streams = camera3_configure_streams,
+    .register_stream_buffers = NULL,
+    .construct_default_request_settings = camera3_construct_default_request_settings,
+    .process_capture_request = camera3_process_capture_request,
+    .get_metadata_vendor_tag_ops = NULL,
+    .dump = camera3_dump,
+    .flush = camera3_flush,
+};
+
+static int camera_device_open(const hw_module_t *module, const char *id, hw_device_t **device)
+{
+    int camera_id = atoi(id);
+
+    if (get_legacy_module())
+        return -EINVAL;
+
+    // We need to turn off sysfs torch before open HAL1 device.
+    if (properties.use_sysfs_torch) {
+        int fd_brightness(-1);
+        char buffer[16];
+
+        fd_brightness = open(SYSFS_FLASH_PATH_BRIGHTNESS, O_RDWR);
+        if (fd_brightness < 0)
+            fd_brightness = open(SYSFS_FLASH_PATH_BRIGHTNESS_FALLBACK, O_RDWR);
+
+        if (fd_brightness < 0) {
+            ALOGW("%s: failed to open '%s' and '%s'\n", __FUNCTION__, SYSFS_FLASH_PATH_BRIGHTNESS, SYSFS_FLASH_PATH_BRIGHTNESS_FALLBACK);
+            properties.use_sysfs_torch = false;
+        }
+        else {
+            int bytes = snprintf(buffer, sizeof(buffer), "0");
+            int ret = write(fd_brightness, buffer, (size_t)bytes);
+            if (ret <= 0)
+                ALOGW("%s: failed to write to torch sysfs node\n", __FUNCTION__);
+            close(fd_brightness);
+        }
+    }
+
+    if (!properties.use_sysfs_torch && torch_in_use) {
+        torch_params.set("flash-mode", "off");
+
+        HAL1_CALL(torch_hal1_device, set_parameters, torch_params.flatten());
+
+        torch_hal1_device->common.close((hw_device_t*)torch_hal1_device);
+        torch_in_use = false;
+    }
+
+    camera_device_t *hal1_device;
+
+    int ret = -EINVAL;
+    bool open_legacy = false;
+
+    if (hal1_module->common.module_api_version == CAMERA_MODULE_API_VERSION_1_0)
+        ret = hal1_module->common.methods->open(&hal1_module->common, id, (hw_device_t **)&hal1_device);
+    else if(hal1_module->common.module_api_version >= CAMERA_MODULE_API_VERSION_2_3) {
+        ret = hal1_module->open_legacy(&hal1_module->common, id, CAMERA_MODULE_API_VERSION_1_0, (hw_device_t **)&hal1_device);
+        open_legacy = true;
+    }
+    if (ret != 0) {
+        ALOGE("Failed to open HAL1 device");
+        return ret;
+    }
+
+    ALOGI("HAL3on1: Using %s (%s) with ->%s method as HAL1 backend", hal1_module->common.name, hal1_module->common.author, open_legacy ? "open_legacy" : "common.methods->open");
+
+    adapter_camera3_device_t *adapter = (adapter_camera3_device_t *)malloc(sizeof(adapter_camera3_device_t));
+    if (!adapter) {
+        ALOGE("Failed to allocate memory for adapter_camera3_device_t");
+        hal1_device->common.close((hw_device_t *)hal1_device);
+        return -ENOMEM;
+    }
+
+    memset(adapter, 0, sizeof(*adapter));
+    adapter->base.common.tag = HARDWARE_DEVICE_TAG;
+    adapter->base.common.version = device_api_version;
+    adapter->base.common.module = (hw_module_t *)module;
+    adapter->base.common.close = camera3_close;
+    adapter->base.ops = &camera3_ops;
+    adapter->hal1_device = hal1_device;
+    current_camera_id = camera_id;
+    previous_request_settings.clear();
+    *device = &adapter->base.common;
+
+    hal3on1_dev = adapter;
+    return NO_ERROR;
+}
+
+/*
+ * HAL3on1 Adapter module
+ */
+static int get_number_of_cameras(void)
+{
+    if (get_legacy_module())
+        return -EINVAL;
+
+    return hal1_module->get_number_of_cameras();
+}
+
+static void camera_convert_parameters(int camera_id, const char *settings, CameraMetadata *metadata)
+{
+    CameraParameters params;
+    params.unflatten(String8(settings));
+    char *token = NULL;
+
+    uint8_t supportedHardwareLevel = ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+
+    Vector<uint8_t> available_capabilities;
+    available_capabilities.add(ANDROID_REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE);
+
+    static const camera_metadata_rational control_ae_compensation_step = {1, 3};
+    metadata->update(ANDROID_CONTROL_AE_COMPENSATION_STEP, &control_ae_compensation_step, 1);
+
+    int32_t control_ae_compensation_range[2] = { 0, 0 };
+    const char* min_aec_str = params.get("min-exposure-compensation");
+    if (min_aec_str)
+        control_ae_compensation_range[0] = atoi(min_aec_str);
+    else
+        control_ae_compensation_range[0] = 0;
+
+    const char* max_aec_str = params.get("max-exposure-compensation");
+    if (max_aec_str)
+        control_ae_compensation_range[1] = atoi(max_aec_str);
+    else
+        control_ae_compensation_range[1] = 0;
+
+    metadata->update(ANDROID_CONTROL_AE_COMPENSATION_RANGE, control_ae_compensation_range,
+                     NELEM(control_ae_compensation_range));
+
+    int32_t scalar_formats[] = {
+        ANDROID_SCALER_AVAILABLE_FORMATS_YCrCb_420_SP,
+        ANDROID_SCALER_AVAILABLE_FORMATS_BLOB,
+        ANDROID_SCALER_AVAILABLE_FORMATS_IMPLEMENTATION_DEFINED,
+        ANDROID_SCALER_AVAILABLE_FORMATS_YCbCr_420_888,
+    };
+    size_t scalar_formats_count = sizeof(scalar_formats) / sizeof(int32_t);
+    metadata->update(ANDROID_SCALER_AVAILABLE_FORMATS,
+                     scalar_formats,
+                     scalar_formats_count);
+
+    const char* antibanding_mode_values = params.get("antibanding-values");
+    char ab_modes[128] = {};
+    strlcpy(ab_modes, antibanding_mode_values ? antibanding_mode_values : "auto",
+            sizeof(ab_modes));
+    token = strtok(ab_modes, ",");
+
+    int antibanding_counter = 0;
+    uint8_t available_antibanding_modes[4] = {};
+
+    while (token != NULL && antibanding_counter < 4) {
+        if (!strcmp(token, "off"))
+            available_antibanding_modes[antibanding_counter] = ANDROID_CONTROL_AE_ANTIBANDING_MODE_OFF;
+        if (!strcmp(token, "auto"))
+            available_antibanding_modes[antibanding_counter] = ANDROID_CONTROL_AE_ANTIBANDING_MODE_AUTO;
+        if (!strcmp(token, "50hz"))
+            available_antibanding_modes[antibanding_counter] = ANDROID_CONTROL_AE_ANTIBANDING_MODE_50HZ;
+        if (!strcmp(token, "60hz"))
+            available_antibanding_modes[antibanding_counter] = ANDROID_CONTROL_AE_ANTIBANDING_MODE_60HZ;
+
+        if (available_antibanding_modes[antibanding_counter] ||
+                (!strcmp(token, "none") || !strcmp(token, "off")))
+            antibanding_counter++;
+
+        token = strtok(NULL, ",");
+    }
+
+    metadata->update(ANDROID_CONTROL_AE_AVAILABLE_ANTIBANDING_MODES,
+                     available_antibanding_modes, antibanding_counter);
+
+    static const float min_focus_distance = 0.0;
+    metadata->update(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE, &min_focus_distance, 1);
+
+    const char* focus_mode_values = params.get("focus-mode-values");
+    char fm_modes[128] = {};
+    strlcpy(fm_modes, focus_mode_values ? focus_mode_values : "fixed",
+            sizeof(fm_modes));
+    token = strtok(fm_modes, ",");
+
+    int fm_counter = 0;
+    uint8_t avail_af_modes[6] = {};
+
+    while (token != NULL && fm_counter < 6) {
+        avail_af_modes[fm_counter] = 255;
+
+        if (!strcmp(token, "auto"))
+            avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_AUTO;
+        if (!strcmp(token, "macro"))
+            avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_MACRO;
+        if (!strcmp(token, "continuous-video"))
+            avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+        if (!strcmp(token, "continuous-picture"))
+            avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+        if (!strcmp(token, "edof"))
+            avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_EDOF;
+        if (!strcmp(token, "manual")) {
+            avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_OFF;
+
+            static const float min_focus_distance = 10.0;
+            metadata->update(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE, &min_focus_distance, 1);
+
+            const char* manual_focus_modes = params.get("manual-focus-modes");
+            uint8_t focus_distance_calibration =
+                ANDROID_LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED;
+
+            if (manual_focus_modes)
+                focus_distance_calibration = ANDROID_LENS_INFO_FOCUS_DISTANCE_CALIBRATION_CALIBRATED;
+
+            metadata->update(ANDROID_LENS_INFO_FOCUS_DISTANCE_CALIBRATION, &focus_distance_calibration,
+                             1);
+
+            float focus_range[2] = { 10.0f, 0.1f };
+            metadata->update(ANDROID_LENS_FOCUS_RANGE, focus_range,
+                             2);
+        }
+
+        if (avail_af_modes[fm_counter] == 255) {
+            if (fm_counter == 0)
+                avail_af_modes[fm_counter] = ANDROID_CONTROL_AF_MODE_OFF;
+        } else
+            fm_counter++;
+
+        token = strtok(NULL, ",");
+    }
+
+    if (fm_counter == 0)
+        avail_af_modes[fm_counter++] = ANDROID_CONTROL_AF_MODE_OFF;
+
+    metadata->update(ANDROID_CONTROL_AF_AVAILABLE_MODES, avail_af_modes, fm_counter);
+
+    const char* wb_values = params.get("whitebalance-values");
+    char wb_modes[128] = {};
+    strlcpy(wb_modes, wb_values ? wb_values : "auto", sizeof(wb_modes));
+    token = strtok(wb_modes, ",");
+
+    int wb_counter = 0;
+    uint8_t available_awb_modes[9] = {};
+
+    while (token != NULL && wb_counter < 9) {
+        available_awb_modes[wb_counter] = 255;
+
+        if (!strcmp(token, "auto"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_AUTO;
+        if (!strcmp(token, "incandescent"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_INCANDESCENT;
+        if (!strcmp(token, "fluorescent"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_FLUORESCENT;
+        if (!strcmp(token, "warm-fluorescent"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_WARM_FLUORESCENT;
+        if (!strcmp(token, "daylight"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_DAYLIGHT;
+        if (!strcmp(token, "cloudy-daylight"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_CLOUDY_DAYLIGHT;
+        if (!strcmp(token, "twilight"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_TWILIGHT;
+        if (!strcmp(token, "shade"))
+            available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_SHADE;
+
+        if (available_awb_modes[wb_counter] == 255) {
+            if (wb_counter == 0)
+                available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_AUTO;
+
+            if (wb_values && strstr(wb_values, "manual") && camera_id == 0) {
+                available_awb_modes[wb_counter] = ANDROID_CONTROL_AWB_MODE_OFF;
+
+                static const uint8_t color_filter_arrangement = ANDROID_SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_BGGR;
+                metadata->update(ANDROID_SENSOR_INFO_COLOR_FILTER_ARRANGEMENT,
+                              &color_filter_arrangement, 1);
+                available_capabilities.add(ANDROID_REQUEST_AVAILABLE_CAPABILITIES_MANUAL_POST_PROCESSING);
+
+                wb_counter++;
+            }
+        } else
+            wb_counter++;
+
+        token = strtok(NULL, ",");
+    }
+
+    metadata->update(ANDROID_CONTROL_AWB_AVAILABLE_MODES, available_awb_modes,
+                     wb_counter);
+
+    const char* scene_values = params.get("scene-mode-values");
+    char scene_modes[256] = {};
+    strlcpy(scene_modes, scene_values ? scene_values : "auto",
+            sizeof(scene_modes));
+
+    token = strtok(scene_modes, ",");
+
+    int scene_counter = 0;
+    uint8_t available_scene_modes[16] = {};
+
+    while (token != NULL && scene_counter < 16) {
+        if (!strcmp(token, "landscape"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_LANDSCAPE;
+        if (!strcmp(token, "snow"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_SNOW;
+        if (!strcmp(token, "sunset"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_SUNSET;
+        if (!strcmp(token, "steadyphoto"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_STEADYPHOTO;
+        if (!strcmp(token, "party"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_PARTY;
+        if (!strcmp(token, "candelight"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_CANDLELIGHT;
+        if (!strcmp(token, "night-portrait"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_NIGHT_PORTRAIT;
+        if (!strcmp(token, "portrait"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_PORTRAIT;
+        if (!strcmp(token, "theatre"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_THEATRE;
+        if (!strcmp(token, "night"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_NIGHT;
+        if (!strcmp(token, "action"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_ACTION;
+        if (!strcmp(token, "beach"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_BEACH;
+        if (!strcmp(token, "fireworks"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_FIREWORKS;
+        if (!strcmp(token, "sports"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_SPORTS;
+        if (!strcmp(token, "face-priority"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_FACE_PRIORITY;
+        if (!strcmp(token, "barcode"))
+            available_scene_modes[scene_counter] = ANDROID_CONTROL_SCENE_MODE_BARCODE;
+
+        if (available_scene_modes[scene_counter])
+            scene_counter++;
+
+        token = strtok(NULL, ",");
+    }
+
+    if (scene_counter == 0)
+        available_scene_modes[scene_counter++] =
+            ANDROID_CONTROL_SCENE_MODE_DISABLED;
+
+    metadata->update(ANDROID_CONTROL_AVAILABLE_SCENE_MODES, available_scene_modes,
+                     scene_counter);
+
+    uint8_t control_modes[] = {
+        ANDROID_CONTROL_MODE_OFF,
+        ANDROID_CONTROL_MODE_AUTO,
+        ANDROID_CONTROL_MODE_USE_SCENE_MODE,
+    };
+    metadata->update(ANDROID_CONTROL_AVAILABLE_MODES, control_modes,
+                     3);
+
+    const char* effect_values = params.get("effect-values");
+    char effect_modes[256] = {};
+    strlcpy(effect_modes, effect_values ? effect_values : "none",
+            sizeof(effect_modes));
+
+    token = strtok(effect_modes, ",");
+
+    int effect_counter = 0;
+    uint8_t available_effect_modes[9] = {};
+
+    while (token != NULL && effect_counter < 9) {
+        if (!strcmp(token, "none"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_OFF;
+        if (!strcmp(token, "mono"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_MONO;
+        if (!strcmp(token, "negative"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_NEGATIVE;
+        if (!strcmp(token, "solarize"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_SOLARIZE;
+        if (!strcmp(token, "sepia"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_SEPIA;
+        if (!strcmp(token, "posterize"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_POSTERIZE;
+        if (!strcmp(token, "whiteboard"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_WHITEBOARD;
+        if (!strcmp(token, "blackboard"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_BLACKBOARD;
+        if (!strcmp(token, "aqua"))
+            available_effect_modes[effect_counter] = ANDROID_CONTROL_EFFECT_MODE_AQUA;
+
+        if (available_effect_modes[effect_counter] ||
+                (!strcmp(token, "none") || !strcmp(token, "off")))
+            effect_counter++;
+
+        token = strtok(NULL, ",");
+    }
+
+    metadata->update(ANDROID_CONTROL_AVAILABLE_EFFECTS, available_effect_modes,
+                     effect_counter);
+
+    const char* noise_reduction_supported = params.get("denoise");
+    Vector<uint8_t> avail_noise_reduction_modes;
+    avail_noise_reduction_modes.add(ANDROID_NOISE_REDUCTION_MODE_OFF);
+
+    if (noise_reduction_supported)
+        avail_noise_reduction_modes.add(ANDROID_NOISE_REDUCTION_MODE_FAST);
+
+    metadata->update(ANDROID_NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES,
+                     avail_noise_reduction_modes.array(),
+                     avail_noise_reduction_modes.size());
+
+    Vector<uint8_t> lens_shading_modes;
+    lens_shading_modes.add(ANDROID_SHADING_MODE_OFF);
+
+    const char* lens_shading = params.get("lensshade");
+    if (lens_shading)
+        lens_shading_modes.add(ANDROID_SHADING_MODE_FAST);
+
+    metadata->update(ANDROID_SHADING_AVAILABLE_MODES, lens_shading_modes.array(),
+            lens_shading_modes.size());
+
+    uint8_t available_face_detect_modes[] = {
+        ANDROID_STATISTICS_FACE_DETECT_MODE_OFF,
+    };
+
+    metadata->update(ANDROID_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES,
+                     available_face_detect_modes,
+                     sizeof(available_face_detect_modes)/sizeof(available_face_detect_modes[0]));
+
+    android::Vector<Size> preview_sizes;
+    params.getSupportedPreviewSizes(preview_sizes);
+    android::Vector<Size> picture_sizes;
+    params.getSupportedPictureSizes(picture_sizes);
+    android::Vector<Size> video_sizes;
+    params.getSupportedVideoSizes(video_sizes);
+
+    int sensor_width = 0;
+    int sensor_height = 0;
+
+    Vector<int32_t> available_resolutions;
+    size_t max_jpeg_size_sz = 0;
+
+    for (size_t i = 0; i < picture_sizes.size(); i++) {
+        available_resolutions.add(picture_sizes[i].width);
+        available_resolutions.add(picture_sizes[i].height);
+
+        if (picture_sizes[i].width * picture_sizes[i].height > max_jpeg_size_sz) {
+            sensor_width = picture_sizes[i].width;
+            sensor_height = picture_sizes[i].height;
+            max_jpeg_size_sz = picture_sizes[i].width * picture_sizes[i].height;
+        }
+    }
+    metadata->update(ANDROID_SCALER_AVAILABLE_PROCESSED_SIZES,
+                     available_resolutions.array(),
+                     available_resolutions.size());
+
+    max_jpeg_size_sz = max_jpeg_size_sz * 3/2 + sizeof(camera3_jpeg_blob_t);
+
+    int32_t max_jpeg_size = (int32_t)max_jpeg_size_sz;
+    metadata->update(ANDROID_JPEG_MAX_SIZE,
+                     &max_jpeg_size, 1);
+
+    // Try to get full (raw) sensor size if available
+    const char* sensor_size_str = params.get("raw-size");
+    if (sensor_size_str)
+        sscanf(sensor_size_str, "%dx%d", &sensor_width, &sensor_height);
+
+    if ((sensor_width <= 0 || sensor_height <= 0) && !preview_sizes.isEmpty()) {
+        sensor_width = preview_sizes[0].width;
+        sensor_height = preview_sizes[0].height;
+    }
+
+    int32_t sensor_size[2] = {sensor_width, sensor_height};
+    metadata->update(ANDROID_SENSOR_INFO_PIXEL_ARRAY_SIZE, sensor_size, 2);
+
+    int32_t scaler_crop_region[4];
+    scaler_crop_region[0] = 0;
+    scaler_crop_region[1] = 0;
+    scaler_crop_region[2] = sensor_width;
+    scaler_crop_region[3] = sensor_height;
+    metadata->update(ANDROID_SCALER_CROP_REGION, scaler_crop_region, 4);
+
+    /* fake, but valid aspect ratio */
+    const float sensor_info_physical_size[] = {
+        5.0f,
+        5.0f * (float)sensor_height / (float)sensor_width
+    };
+    metadata->update(ANDROID_SENSOR_INFO_PHYSICAL_SIZE, sensor_info_physical_size, NELEM(sensor_info_physical_size));
+
+    int32_t active_array_size[] = {0, 0, sensor_width, sensor_height};
+    metadata->update(ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE,
+                     active_array_size, sizeof(active_array_size)/sizeof(active_array_size[0]));
+
+    metadata->update(ANDROID_SCALER_AVAILABLE_RAW_SIZES,
+                     available_resolutions.array(),
+                     available_resolutions.size());
+
+    const int32_t available_thumbnail_sizes[] = {0, 0,
+                                                 176, 144,
+                                                 320, 240,
+                                                 432, 288,
+                                                 480, 288,
+                                                 512, 288,
+                                                 512, 384
+                                                };
+
+    metadata->update(ANDROID_JPEG_AVAILABLE_THUMBNAIL_SIZES,
+                     available_thumbnail_sizes,
+                     sizeof(available_thumbnail_sizes)/sizeof(int32_t));
+
+    const char* fps_ranges_str = params.get("preview-fps-range");
+
+    int32_t available_fps_ranges[2] = {15, 30};
+    if (fps_ranges_str) {
+        int min_fps = 0;
+        int max_fps = 0;
+        sscanf(fps_ranges_str, "%d,%d", &min_fps, &max_fps);
+        if (min_fps > 0 && max_fps >= min_fps) {
+            available_fps_ranges[0] = min_fps / 1000;
+            available_fps_ranges[1] = max_fps / 1000;
+        }
+    }
+
+    metadata->update(ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES,
+                     available_fps_ranges, NELEM(available_fps_ranges));
+
+    size_t max_stream_configs_size = (picture_sizes.size() + preview_sizes.size() + video_sizes.size()) * scalar_formats_count * 4;
+    int32_t available_stream_configs[max_stream_configs_size];
+    size_t idx = 0;
+
+    for (size_t j = 0; j < scalar_formats_count; j++) {
+        switch (scalar_formats[j]) {
+        case HAL_PIXEL_FORMAT_BLOB:
+            for (size_t i = 0; i < picture_sizes.size(); i++) {
+                available_stream_configs[idx] = scalar_formats[j];
+                available_stream_configs[idx+1] = picture_sizes[i].width;
+                available_stream_configs[idx+2] = picture_sizes[i].height;
+                available_stream_configs[idx+3] = ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_OUTPUT;
+                idx+=4;
+            }
+            break;
+        case HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED:
+        case HAL_PIXEL_FORMAT_YCrCb_420_SP:
+            case HAL_PIXEL_FORMAT_YCbCr_420_888:
+            for (size_t i = 0; i < preview_sizes.size(); i++) {
+                available_stream_configs[idx] = scalar_formats[j];
+                available_stream_configs[idx+1] = preview_sizes[i].width;
+                available_stream_configs[idx+2] = preview_sizes[i].height;
+                available_stream_configs[idx+3] = ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS_OUTPUT;
+                idx+=4;
+            }
+            break;
+        }
+    }
+
+    metadata->update(ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS,
+                     available_stream_configs, idx);
+
+    /* android.scaler.availableMinFrameDurations */
+    Vector<int64_t> available_min_durations;
+    for (size_t j = 0; j < scalar_formats_count; j++) {
+        const Vector<Size>& sizes = scalar_formats[j] == HAL_PIXEL_FORMAT_BLOB
+            ? picture_sizes : preview_sizes;
+        for (size_t i = 0; i < sizes.size(); i++) {
+            available_min_durations.add(scalar_formats[j]);
+            available_min_durations.add(sizes[i].width);
+            available_min_durations.add(sizes[i].height);
+            available_min_durations.add(NSEC_PER_33MSEC);
+        }
+    }
+
+    metadata->update(ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS,
+                     available_min_durations.array(),
+                     available_min_durations.size());
+
+    /*available stall durations depend on the hw + sw and will be different for different devices */
+    /*have to add for raw after implementation*/
+    int32_t stall_formats[] = {HAL_PIXEL_FORMAT_BLOB};
+    size_t stall_formats_count = sizeof(stall_formats)/sizeof(int32_t);
+
+    size_t count = picture_sizes.size();
+    size_t available_stall_size = count * 4;
+    int64_t available_stall_durations[available_stall_size];
+    idx = 0;
+
+    for (uint32_t j = 0; j < stall_formats_count; j++) {
+        if (stall_formats[j] == HAL_PIXEL_FORMAT_BLOB) {
+            for (uint32_t i = 0; i < count; i++) {
+                available_stall_durations[idx]   = stall_formats[j];
+                available_stall_durations[idx+1] = picture_sizes[i].width;
+                available_stall_durations[idx+2] = picture_sizes[i].height;
+                available_stall_durations[idx+3] = 33333333;
+                idx+=4;
+            }
+        }
+    }
+
+    metadata->update(ANDROID_SCALER_AVAILABLE_STALL_DURATIONS,
+                     available_stall_durations,
+                     idx);
+
+    const char* flash_mode = params.get("flash-mode-values");
+
+    uint8_t flash_available;
+    if (flash_mode)
+        flash_available = ANDROID_FLASH_INFO_AVAILABLE_TRUE;
+    else
+        flash_available = ANDROID_FLASH_INFO_AVAILABLE_FALSE;
+
+    metadata->update(ANDROID_FLASH_INFO_AVAILABLE,
+                     &flash_available, 1);
+
+    uint8_t avail_leds = 0;
+    metadata->update(ANDROID_LED_AVAILABLE_LEDS,
+                     &avail_leds, 0);
+
+    Vector<uint8_t> avail_ae_modes;
+    avail_ae_modes.add(ANDROID_CONTROL_AE_MODE_ON);
+
+    const char* manual_exposure_values = params.get("manual-exposure-modes");
+    char manual_exposure_modes[256] = {};
+
+    if (manual_exposure_values) {
+        bool supported = false;
+        strlcpy(manual_exposure_modes, manual_exposure_values,
+                sizeof(manual_exposure_modes));
+
+        token = strtok(manual_exposure_modes, ",");
+
+        while (token != NULL) {
+            if (!strcmp(token, "exp-time-priority")) {
+                int64_t exposure_time_range[2];
+
+                const char* min_exposure_time_str = params.get("min-exposure-time");
+                if (min_exposure_time_str)
+                    exposure_time_range[0] = (int64_t)(atof(min_exposure_time_str) * 1000000.0);
+                else
+                    exposure_time_range[0] = 0;
+
+                const char* max_exposure_time_str = params.get("max-exposure-time");
+                if (max_exposure_time_str)
+                    exposure_time_range[1] = (int64_t)(atof(max_exposure_time_str) * 1000000.0);
+                else
+                    exposure_time_range[1] = 0;
+
+                metadata->update(ANDROID_SENSOR_INFO_EXPOSURE_TIME_RANGE, exposure_time_range,
+                                 sizeof(exposure_time_range) / sizeof(int64_t));
+
+                if (exposure_time_range[1] > exposure_time_range[0])
+                    supported = true;
+            }
+
+            if (!strcmp(token, "iso-priority")) {
+                int32_t sensitivity_range[2];
+
+                const char* min_iso_str = params.get("min-iso");
+
+                if (min_iso_str)
+                    sensitivity_range[0] = atoi(min_iso_str);
+                else
+                    sensitivity_range[0] = 0;
+
+                const char* max_iso_str = params.get("max-iso");
+                if (max_iso_str)
+                    sensitivity_range[1] = atoi(max_iso_str);
+                else
+                    sensitivity_range[1] = 0;
+
+                metadata->update(ANDROID_SENSOR_INFO_SENSITIVITY_RANGE, sensitivity_range,
+                                 sizeof(sensitivity_range) / sizeof(int32_t));
+
+                if (sensitivity_range[1] > sensitivity_range[0])
+                    supported = true;
+            }
+
+            token = strtok(NULL, ",");
+        }
+
+        if (supported) {
+            avail_ae_modes.add(ANDROID_CONTROL_AE_MODE_OFF);
+            available_capabilities.add(ANDROID_REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR);
+        }
+    }
+
+    if (flash_mode) {
+        avail_ae_modes.add(ANDROID_CONTROL_AE_MODE_ON_AUTO_FLASH);
+        avail_ae_modes.add(ANDROID_CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+        const char* redeye = params.get("redeye-reduction");
+
+        if (redeye)
+            avail_ae_modes.add(ANDROID_CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE);
+    }
+
+    metadata->update(ANDROID_CONTROL_AE_AVAILABLE_MODES,
+                     avail_ae_modes.array(),
+                     avail_ae_modes.size());
+
+    const char* focal_length_str = params.get("focal-length");
+    float focal_length = 3.0;
+    if (focal_length_str)
+        sscanf(focal_length_str, "%f", &focal_length);
+
+    metadata->update(ANDROID_LENS_INFO_AVAILABLE_FOCAL_LENGTHS,
+                     &focal_length,
+                     1);
+
+    const char* exposure_step_str =
+        params.get("exposure-compensation-step");
+    double exposure_step = exposure_step_str ? atof(exposure_step_str) : 1.0 / 3.0;
+    if (exposure_step <= 0.0)
+        exposure_step = 1.0 / 3.0;
+    camera_metadata_rational exposure_compensation_step = {
+        static_cast<int32_t>(exposure_step * 1000000.0 + 0.5),
+        1000000
+    };
+
+    metadata->update(ANDROID_CONTROL_AE_COMPENSATION_STEP,
+                     &exposure_compensation_step, 1);
+
+    const char* ae_lock_str = params.get("auto-exposure-lock-supported");
+    uint8_t ae_lock_av = 0;
+    if (ae_lock_str && !strcmp(ae_lock_str, "true"))
+        ae_lock_av = 1;
+
+    metadata->update(ANDROID_CONTROL_AE_LOCK_AVAILABLE, &ae_lock_av, 1);
+
+    const char* awb_lock_str = params.get("auto-whitebalance-lock-supported");
+    uint8_t awb_lock_av = 0;
+    if (awb_lock_str && !strcmp(awb_lock_str, "true"))
+        awb_lock_av = 1;
+
+    metadata->update(ANDROID_CONTROL_AWB_LOCK_AVAILABLE, &awb_lock_av, 1);
+
+    uint8_t available_vstab_modes[] = {ANDROID_CONTROL_VIDEO_STABILIZATION_MODE_OFF};
+    metadata->update(ANDROID_CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES,
+                     available_vstab_modes, sizeof(available_vstab_modes));
+
+    const char* zoom_support_str = params.get("zoom-supported");
+    float zoom_max = 1.0;
+
+    const char* zoom_ratios_str = params.get("zoom-ratios");
+    if (zoom_support_str && !strcmp(zoom_support_str, "true") &&
+        zoom_ratios_str) {
+        char zoom_ratios[1024] = {};
+        strlcpy(zoom_ratios, zoom_ratios_str, sizeof(zoom_ratios));
+
+        int count = 0;
+
+        char *token = strtok(zoom_ratios, ",");
+        while (token != NULL && count < 256) {
+            hal1_zoom_ratios[camera_id][count++] = atoi(token);
+            token = strtok(NULL, ",");
+        }
+        hal1_zoom_steps[camera_id] = count > 0 ? count - 1 : 0;
+
+        if (count > 1)
+            zoom_max = (float)hal1_zoom_ratios[camera_id][count - 1] * 0.01f;
+    }
+
+    metadata->update(ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM, &zoom_max, 1);
+
+    uint8_t cropping_type = ANDROID_SCALER_CROPPING_TYPE_CENTER_ONLY;
+    metadata->update(ANDROID_SCALER_CROPPING_TYPE, &cropping_type, 1);
+
+    int32_t max_3a_regions[3] = {/*AE*/1,/*AWB*/ 0,/*AF*/ 1};
+    metadata->update(ANDROID_CONTROL_MAX_REGIONS,
+                     max_3a_regions, 3);
+
+    uint8_t timestamp_source = ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE_UNKNOWN;
+    metadata->update(ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE,
+                     &timestamp_source, 1);
+
+    int32_t max_input_streams = 0;
+    metadata->update(ANDROID_REQUEST_MAX_NUM_INPUT_STREAMS,
+                     &max_input_streams,
+                     1);
+
+    int32_t max_output_streams[] = {0, 3, 1};
+    metadata->update(ANDROID_REQUEST_MAX_NUM_OUTPUT_STREAMS,
+                     max_output_streams, NELEM(max_output_streams));
+
+    uint8_t pipeline_depth = 1;
+    metadata->update(ANDROID_REQUEST_PIPELINE_MAX_DEPTH,
+                     &pipeline_depth, 1);
+
+    int32_t partial_result_count = 1;
+    metadata->update(ANDROID_REQUEST_PARTIAL_RESULT_COUNT,
+                     &partial_result_count, 1);
+
+    int64_t max_frame_duration = 1000000000LL;
+    metadata->update(ANDROID_SENSOR_INFO_MAX_FRAME_DURATION,
+                     &max_frame_duration, 1);
+
+    int32_t io_format_map[] = {};
+    metadata->update(ANDROID_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP,
+                     io_format_map, 0);
+
+    int32_t request_keys_basic[] = {
+        ANDROID_CONTROL_AE_ANTIBANDING_MODE,
+        ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION,
+        ANDROID_CONTROL_AE_LOCK,
+        ANDROID_CONTROL_AE_MODE,
+        ANDROID_CONTROL_AE_REGIONS,
+        ANDROID_CONTROL_AE_TARGET_FPS_RANGE,
+        ANDROID_CONTROL_AF_MODE,
+        ANDROID_CONTROL_AF_REGIONS,
+        ANDROID_CONTROL_AF_TRIGGER,
+        ANDROID_CONTROL_AWB_LOCK,
+        ANDROID_CONTROL_AWB_MODE,
+        ANDROID_CONTROL_CAPTURE_INTENT,
+        ANDROID_CONTROL_EFFECT_MODE,
+        ANDROID_CONTROL_MODE,
+        ANDROID_CONTROL_SCENE_MODE,
+        ANDROID_CONTROL_VIDEO_STABILIZATION_MODE,
+        ANDROID_FLASH_MODE,
+        ANDROID_JPEG_ORIENTATION,
+        ANDROID_JPEG_QUALITY,
+        ANDROID_JPEG_THUMBNAIL_QUALITY,
+        ANDROID_JPEG_THUMBNAIL_SIZE,
+        //ANDROID_LENS_APERTURE,
+        //ANDROID_LENS_FILTER_DENSITY,
+        ANDROID_LENS_FOCAL_LENGTH,
+        ANDROID_LENS_FOCUS_DISTANCE,
+        //ANDROID_LENS_OPTICAL_STABILIZATION_MODE,
+        ANDROID_NOISE_REDUCTION_MODE,
+        ANDROID_REQUEST_ID,
+        ANDROID_REQUEST_TYPE,
+        ANDROID_SCALER_CROP_REGION,
+        ANDROID_SENSOR_EXPOSURE_TIME,
+        ANDROID_SENSOR_FRAME_DURATION,
+        ANDROID_SENSOR_SENSITIVITY,
+        ANDROID_SHADING_MODE,
+    };
+
+    size_t request_keys_cnt =
+        sizeof(request_keys_basic)/sizeof(request_keys_basic[0]);
+    Vector<int32_t> available_request_keys;
+    available_request_keys.appendArray(request_keys_basic, request_keys_cnt);
+    metadata->update(ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS,
+                     available_request_keys.array(), available_request_keys.size());
+
+    int32_t result_keys_basic[] = {
+        ANDROID_CONTROL_AE_MODE,
+        ANDROID_CONTROL_AE_REGIONS,
+        ANDROID_CONTROL_AE_STATE,
+        ANDROID_CONTROL_AF_MODE,
+        ANDROID_CONTROL_AF_REGIONS,
+        ANDROID_CONTROL_AF_STATE,
+        ANDROID_CONTROL_AWB_MODE,
+        ANDROID_CONTROL_AWB_STATE,
+        ANDROID_CONTROL_MODE,
+        ANDROID_FLASH_MODE,
+        ANDROID_FLASH_STATE,
+        ANDROID_JPEG_QUALITY,
+        ANDROID_JPEG_THUMBNAIL_QUALITY,
+        ANDROID_JPEG_THUMBNAIL_SIZE,
+        //ANDROID_LENS_APERTURE,
+        //ANDROID_LENS_FILTER_DENSITY,
+        ANDROID_LENS_FOCAL_LENGTH,
+        ANDROID_LENS_FOCUS_DISTANCE,
+        ANDROID_LENS_FOCUS_RANGE,
+        //ANDROID_LENS_STATE,
+        //ANDROID_LENS_OPTICAL_STABILIZATION_MODE,
+        ANDROID_NOISE_REDUCTION_MODE,
+        ANDROID_REQUEST_ID,
+        ANDROID_SCALER_CROP_REGION,
+        ANDROID_SHADING_MODE,
+        ANDROID_SENSOR_EXPOSURE_TIME,
+        ANDROID_SENSOR_FRAME_DURATION,
+        ANDROID_SENSOR_SENSITIVITY,
+        ANDROID_SENSOR_TIMESTAMP,
+    };
+    size_t result_keys_cnt =
+        sizeof(result_keys_basic)/sizeof(result_keys_basic[0]);
+
+    Vector<int32_t> available_result_keys;
+    available_result_keys.appendArray(result_keys_basic, result_keys_cnt);
+    metadata->update(ANDROID_REQUEST_AVAILABLE_RESULT_KEYS,
+                     available_result_keys.array(), available_result_keys.size());
+
+    int32_t available_characteristics_keys[] = {
+        ANDROID_CONTROL_AE_AVAILABLE_ANTIBANDING_MODES,
+        ANDROID_CONTROL_AE_AVAILABLE_MODES,
+        ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES,
+        ANDROID_CONTROL_AE_COMPENSATION_RANGE,
+        ANDROID_CONTROL_AE_COMPENSATION_STEP,
+        ANDROID_CONTROL_AF_AVAILABLE_MODES,
+        ANDROID_CONTROL_AVAILABLE_EFFECTS,
+        ANDROID_CONTROL_AVAILABLE_MODES,
+        ANDROID_SCALER_CROPPING_TYPE,
+        ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE,
+        ANDROID_CONTROL_AVAILABLE_SCENE_MODES,
+        ANDROID_CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES,
+        ANDROID_CONTROL_AWB_AVAILABLE_MODES,
+        ANDROID_CONTROL_MAX_REGIONS,
+        ANDROID_FLASH_INFO_AVAILABLE,
+        ANDROID_JPEG_AVAILABLE_THUMBNAIL_SIZES,
+        ANDROID_JPEG_MAX_SIZE,
+//      ANDROID_LENS_INFO_AVAILABLE_APERTURES,
+        //   ANDROID_LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION,
+        ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE,
+        //    ANDROID_LENS_INFO_SHADING_MAP_SIZE,
+        ANDROID_LENS_INFO_FOCUS_DISTANCE_CALIBRATION,
+        ANDROID_LENS_FACING,
+        ANDROID_REQUEST_MAX_NUM_OUTPUT_STREAMS,
+        ANDROID_REQUEST_MAX_NUM_INPUT_STREAMS,
+        ANDROID_REQUEST_PIPELINE_MAX_DEPTH,
+        ANDROID_REQUEST_AVAILABLE_CAPABILITIES,
+        ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS, ANDROID_REQUEST_AVAILABLE_RESULT_KEYS,
+        ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS,
+        ANDROID_REQUEST_PARTIAL_RESULT_COUNT,
+        ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM,
+        ANDROID_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP,
+        ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS,
+        ANDROID_SCALER_AVAILABLE_STALL_DURATIONS,
+        ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS,
+        ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE,
+        ANDROID_SENSOR_INFO_SENSITIVITY_RANGE,
+        ANDROID_SENSOR_INFO_EXPOSURE_TIME_RANGE,
+        ANDROID_SENSOR_INFO_MAX_FRAME_DURATION,
+        ANDROID_SENSOR_INFO_PHYSICAL_SIZE,
+        ANDROID_SENSOR_INFO_PIXEL_ARRAY_SIZE,
+        ANDROID_SENSOR_ORIENTATION,
+        ANDROID_NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES,
+        ANDROID_SHADING_AVAILABLE_MODES,
+        ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL
+    };
+    metadata->update(ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS,
+                     available_characteristics_keys,
+                     sizeof(available_characteristics_keys)/sizeof(int32_t));
+
+    metadata->update(ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL, &supportedHardwareLevel, 1);
+    metadata->update(ANDROID_REQUEST_AVAILABLE_CAPABILITIES,
+                      available_capabilities.array(),
+                      available_capabilities.size());
+}
+
+static int get_camera_info(int camera_id, struct camera_info *info)
+{
+    Mutex::Autolock lock(hal3on1_lock);
+
+    if (!info || camera_id < 0 || camera_id >= 2)
+        return -EINVAL;
+
+    if (get_legacy_module())
+        return -EINVAL;
+
+    int ret = hal1_module->get_camera_info(camera_id, info);
+    if (ret != 0)
+        return ret;
+
+    const char *camera_id_string = camera_id == 0 ? "0" : "1";
+    camera_device_t *hal1_device = nullptr;
+    for (int attempt = 1; attempt <= kInfoOpenRetryCount; ++attempt) {
+        if (hal1_module->common.module_api_version == CAMERA_MODULE_API_VERSION_1_0) {
+            ret = hal1_module->common.methods->open(
+                    &hal1_module->common, camera_id_string,
+                    (hw_device_t **)&hal1_device);
+        } else if (hal1_module->common.module_api_version >=
+                   CAMERA_MODULE_API_VERSION_2_3) {
+            ret = hal1_module->open_legacy(
+                    &hal1_module->common, camera_id_string,
+                    CAMERA_DEVICE_API_VERSION_1_0,
+                    (hw_device_t **)&hal1_device);
+        } else {
+            ret = -EINVAL;
+        }
+
+        if (ret == 0)
+            break;
+
+        if (attempt < kInfoOpenRetryCount) {
+            ALOGW("HAL1 camera %d metadata open failed (%d), retrying (%d/%d)",
+                  camera_id, ret, attempt, kInfoOpenRetryCount);
+            hal1_device = nullptr;
+            usleep(kInfoOpenRetryDelayUs);
+        }
+    }
+
+    if (ret != 0) {
+        ALOGE("Failed to open HAL1 device %d after %d attempts: %d",
+              camera_id, kInfoOpenRetryCount, ret);
+        return ret;
+    }
+
+    info->device_version = device_api_version;
+
+    CameraMetadata static_info;
+
+    char *params = HAL1_CALL(hal1_device, get_parameters);
+    if (!params) {
+        hal1_device->common.close((hw_device_t*)hal1_device);
+        return -EINVAL;
+    }
+
+    camera_convert_parameters(camera_id, params, &static_info);
+
+    if (!static_parameters_initialized[camera_id]) {
+        default_parameters[camera_id].unflatten(String8(params));
+        static_parameters_initialized[camera_id] = true;
+    }
+
+    HAL1_CALL(hal1_device, put_parameters, params);
+    hal1_device->common.close((hw_device_t*)hal1_device);
+
+    int32_t sensor_orientation = info->orientation;
+    static_info.update(ANDROID_SENSOR_ORIENTATION, &sensor_orientation, 1);
+
+    uint8_t facing = (info->facing == CAMERA_FACING_BACK) ? ANDROID_LENS_FACING_BACK : ANDROID_LENS_FACING_FRONT;
+    static_info.update(ANDROID_LENS_FACING, &facing, 1);
+
+    info->static_camera_characteristics = static_info.release();
+
+    static_metadata[camera_id] = info->static_camera_characteristics;
+
+    return NO_ERROR;
+}
+
+static int set_callbacks(const camera_module_callbacks_t *callbacks)
+{
+    adapter_callbacks.hal3_callbacks = callbacks;
+
+    // Legacy module may want callbacks to be set even in HAL1 mode
+    if (hal1_module->common.module_api_version >= CAMERA_MODULE_API_VERSION_2_1 && hal1_module->set_callbacks)
+        hal1_module->set_callbacks(callbacks);
+
+    return NO_ERROR;
+}
+
+static int hal1_torch_mode(const char* camera_id, bool enabled);
+
+static int sysfs_torch_mode(const char* camera_id, bool enabled)
+{
+    int fd_brightness(-1);
+    char buffer[16];
+    bool fallback_to_hal1 = false;
+    int ret;
+
+    fd_brightness = open(SYSFS_FLASH_PATH_BRIGHTNESS, O_RDWR);
+    if (fd_brightness < 0) {
+        ALOGW("%s: failed to open '%s'\n", __FUNCTION__, SYSFS_FLASH_PATH_BRIGHTNESS);
+        ALOGW("%s: trying to open fallback node '%s'\n", __FUNCTION__, SYSFS_FLASH_PATH_BRIGHTNESS_FALLBACK);
+        fd_brightness = open(SYSFS_FLASH_PATH_BRIGHTNESS_FALLBACK, O_RDWR);
+    }
+
+    if (fd_brightness < 0) {
+        ALOGE("%s: failed to open '%s'\n", __FUNCTION__, SYSFS_FLASH_PATH_BRIGHTNESS_FALLBACK);
+        fallback_to_hal1 = true;
+    }
+
+    if (!fallback_to_hal1) {
+        if (enabled) {
+            int bytes = snprintf(buffer, sizeof(buffer), "1");
+            ret = write(fd_brightness, buffer, (size_t)bytes);
+            if (ret <= 0) {
+                ALOGE("%s: failed to write to sysfs\n", __FUNCTION__);
+                fallback_to_hal1 = true;
+            }
+        } else {
+            int bytes = snprintf(buffer, sizeof(buffer), "0");
+            ret = write(fd_brightness, buffer, (size_t)bytes);
+            if (ret <= 0) {
+                ALOGE("%s: failed to write to sysfs\n", __FUNCTION__);
+                fallback_to_hal1 = true;
+            }
+        }
+    }
+    close(fd_brightness);
+
+    if (fallback_to_hal1) {
+        ALOGW("%s: sysfs torch mode cannot be used\n", __FUNCTION__);
+        ALOGW("%s: falling back to HAL1 torch mode\n", __FUNCTION__);
+        properties.use_sysfs_torch = false;
+        hal1_torch_mode(camera_id, enabled);
+    }
+
+    return NO_ERROR;
+}
+
+static int hal1_torch_mode(const char* camera_id, bool enabled)
+{
+    int ret = -EINVAL;
+
+    if (get_legacy_module())
+        return ret;
+
+    if (!torch_in_use && enabled) {
+
+        if (hal1_module->common.module_api_version == CAMERA_MODULE_API_VERSION_1_0)
+            ret = hal1_module->common.methods->open(&hal1_module->common, camera_id, (hw_device_t **)&torch_hal1_device);
+        else if(hal1_module->common.module_api_version >= CAMERA_MODULE_API_VERSION_2_3)
+            ret = hal1_module->open_legacy(&hal1_module->common, camera_id, CAMERA_MODULE_API_VERSION_1_0, (hw_device_t **)&torch_hal1_device);
+
+        if (ret != 0) {
+            ALOGE("Failed to open HAL1 device");
+            return ret;
+        }
+
+        HAL1_CALL(torch_hal1_device, set_callbacks, hal1_notify_callback, hal1_data_callback, hal1_data_timestamp_callback, get_memory, torch_hal1_device);
+
+        char *settings = HAL1_CALL(torch_hal1_device, get_parameters);
+        if (!settings) {
+            torch_hal1_device->common.close(
+                (hw_device_t*)torch_hal1_device);
+            return -EINVAL;
+        }
+        torch_params.unflatten(String8(settings));
+        HAL1_CALL(torch_hal1_device, put_parameters, settings);
+        torch_params.set("flash-mode", "torch");
+
+        HAL1_CALL(torch_hal1_device, set_parameters, torch_params.flatten());
+        torch_in_use = true;
+    } else if (torch_in_use && !enabled) {
+        torch_params.set("flash-mode", "off");
+
+        HAL1_CALL(torch_hal1_device, set_parameters, torch_params.flatten());
+
+        torch_hal1_device->common.close((hw_device_t*)torch_hal1_device);
+        torch_in_use = false;
+    }
+
+    return NO_ERROR;
+}
+
+static int set_torch_mode(const char* camera_id, bool enabled)
+{
+    Mutex::Autolock lock(hal3on1_lock);
+
+    if (enabled) {
+        if (adapter_callbacks.hal3_callbacks)
+            adapter_callbacks.hal3_callbacks->torch_mode_status_change(adapter_callbacks.hal3_callbacks, camera_id, TORCH_MODE_STATUS_AVAILABLE_ON);
+    } else {
+        if (adapter_callbacks.hal3_callbacks)
+            adapter_callbacks.hal3_callbacks->torch_mode_status_change(adapter_callbacks.hal3_callbacks, camera_id, TORCH_MODE_STATUS_AVAILABLE_OFF);
+    }
+
+    if (properties.use_sysfs_torch)
+        return sysfs_torch_mode(camera_id, enabled);
+
+    return hal1_torch_mode(camera_id, enabled);
+}
+
+static int init()
+{
+    char value[PROPERTY_VALUE_MAX];
+    property_get("persist.camera.hal3on1.use_memfd", value, "0");
+    if (atoi(value) == 1) {
+        ALOGI("HAL3on1: using memfd_create as shared memory");
+        properties.use_memfd = true;
+    }
+
+    property_get("persist.camera.hal3on1.use_sysfs_torch", value, "0");
+    if (atoi(value) == 1) {
+        ALOGI("HAL3on1: using sysfs torch control instead of HAL1");
+        properties.use_sysfs_torch = true;
+    }
+
+    property_get("persist.camera.hal3on1.use_preview_window_stub", value, "0");
+    if (atoi(value) == 1) {
+        ALOGI("HAL3on1: using preview window stub");
+        properties.use_preview_window_stub = true;
+    }
+
+    property_get("persist.camera.hal3on1.use_hwcomposer", value, "0");
+    if (atoi(value) == 1) {
+        ALOGI("HAL3on1: using hwcomposer for preview buffers");
+        properties.use_hwcomposer = true;
+    }
+
+    return NO_ERROR;
+}
+
+static struct hw_module_methods_t camera_module_methods = {
+    .open = camera_device_open,
+};
+
+static camera_module_t camera3_module = {
+    .common = {
+        .tag = HARDWARE_MODULE_TAG,
+        .module_api_version = CAMERA_MODULE_API_VERSION_2_4,
+        .hal_api_version = HARDWARE_HAL_API_VERSION,
+        .id = CAMERA_HARDWARE_MODULE_ID,
+        .name = "Camera HAL3on1 Adapter",
+        .author = "acroreiser",
+        .methods = &camera_module_methods,
+        .dso = NULL,
+        .reserved = {0},
+    },
+    .get_number_of_cameras = get_number_of_cameras,
+    .get_camera_info = get_camera_info,
+    .set_callbacks = set_callbacks,
+    .get_vendor_tag_ops = NULL,
+    .open_legacy = NULL,
+    .set_torch_mode = set_torch_mode,
+    .init = init,
+};
+
+camera_module_t HAL_MODULE_INFO_SYM = camera3_module;

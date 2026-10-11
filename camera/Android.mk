@@ -2,7 +2,7 @@
 LOCAL_PATH := $(call my-dir)
 MIONE_DEVICE_CAMERA_PATH := $(LOCAL_PATH)
 include $(CLEAR_VARS)
-LOCAL_MODULE := camera.msm8660
+LOCAL_MODULE := camera.legacy.msm8660
 LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_TAGS := optional
@@ -36,3 +36,4 @@ LOCAL_SHARED_LIBRARIES := libutils libui libcamera_client liblog libcutils \
 LOCAL_HEADER_LIBRARIES := libmedia_headers
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
+include $(MIONE_DEVICE_CAMERA_PATH)/hal3on1/Android.mk
