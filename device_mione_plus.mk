@@ -294,10 +294,9 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/init.mione.adbroot.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.mione.adbroot.rc \
     device/xiaomi/mione_plus/rootdir/bin/init.mione.adbroot.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.mione.adbroot.sh
 
-# Trust the build host's public key so unattended debugging needs no prompt.
-# adbd reads /adb_keys while retaining normal RSA authentication.
-PRODUCT_COPY_FILES += \
-    device/xiaomi/mione_plus/configs/adb_keys:root/adb_keys
+# Trust the build host public key while retaining RSA authentication.
+PRODUCT_ADB_KEYS := device/xiaomi/mione_plus/configs/adb_keys
+PRODUCT_PROPERTY_OVERRIDES += service.adb.root=1
 
 # Use RGB video uploads while keeping WebView GPU rasterization/compositing.
 PRODUCT_COPY_FILES += \
