@@ -45,6 +45,7 @@ using namespace android;
 
 static Mutex hal3on1_lock;
 static Mutex callback_memory_lock;
+static Mutex video_callback_lock;
 
 static camera_module_t *hal1_module = 0;
 
@@ -57,6 +58,8 @@ typedef struct {
     int buffer_size;
     size_t buffer_capacity;
     int video_buffer_size;
+    size_t video_buffer_capacity;
+    bool video_callbacks_enabled;
     int jpeg_size;
     uint8_t* buffer;
     uint8_t* video_buffer;
@@ -116,7 +119,38 @@ struct CameraMemory {
     void* data;
     camera_memory_t mem;
     int fd;
+    size_t buffer_size;
+    unsigned int buffer_count;
 };
+
+static const uint8_t* callback_frame(const camera_memory_t* memory,
+                                     unsigned int index, size_t* size)
+{
+    if (!memory || !memory->data || !memory->handle)
+        return nullptr;
+    const CameraMemory* allocation =
+        static_cast<const CameraMemory*>(memory->handle);
+    if (index >= allocation->buffer_count || allocation->buffer_size == 0 ||
+        allocation->buffer_size > INT32_MAX ||
+        memory->size / allocation->buffer_size < allocation->buffer_count)
+        return nullptr;
+    *size = allocation->buffer_size;
+    return static_cast<const uint8_t*>(memory->data) + index * *size;
+}
+
+static void set_video_callbacks_enabled(adapter_camera3_device_t* adapter,
+                                        bool enabled)
+{
+    // The backend's message toggle does not wait for callbacks. Serialize it
+    // with frame return, so no client touches a HAL1 frame after VIDEO_FRAME
+    // has been disabled. Preview/JPEG callbacks never acquire this mutex.
+    Mutex::Autolock lock(video_callback_lock);
+    adapter->video_callbacks_enabled = enabled;
+    if (enabled)
+        HAL1_CALL(adapter->hal1_device, enable_msg_type, CAMERA_MSG_VIDEO_FRAME);
+    else
+        HAL1_CALL(adapter->hal1_device, disable_msg_type, CAMERA_MSG_VIDEO_FRAME);
+}
 
 typedef struct {
     camera_module_callbacks_t hal1_callbacks;
@@ -160,18 +194,6 @@ static bool wait_for_nonzero(const int* value, const char* name)
     return false;
 }
 
-static bool wait_for_zero(const int* value, const char* name)
-{
-    for (int i = 0; i < kCallbackWaitCount; ++i) {
-        if (__atomic_load_n(value, __ATOMIC_ACQUIRE) == 0)
-            return true;
-        usleep(kCallbackWaitStepUs);
-    }
-
-    ALOGE("Timed out waiting for %s consumption", name);
-    return false;
-}
-
 static int get_legacy_module()
 {
     int ret = 0;
@@ -209,6 +231,13 @@ void hal1_data_callback(int32_t msg_type,
     if (!adapter)
         return;
 
+    size_t frame_size = 0;
+    const uint8_t* frame = callback_frame(data, index, &frame_size);
+    if (!frame) {
+        ALOGE("Invalid camera callback index %u", index);
+        return;
+    }
+
     switch (msg_type) {
     case CAMERA_MSG_PREVIEW_FRAME:
         if (!__atomic_load_n(&adapter->preview_callbacks_enabled,
@@ -223,19 +252,19 @@ void hal1_data_callback(int32_t msg_type,
         if (__atomic_load_n(&adapter->buffer_size, __ATOMIC_ACQUIRE) != 0)
             break;
 
-        if (data->size > adapter->buffer_capacity) {
-            uint8_t* buffer = (uint8_t*)realloc(adapter->buffer, data->size);
+        if (frame_size > adapter->buffer_capacity) {
+            uint8_t* buffer = (uint8_t*)realloc(adapter->buffer, frame_size);
             if (!buffer) {
                 ALOGE("Failed to grow preview buffer from %zu to %zu bytes",
-                      adapter->buffer_capacity, data->size);
+                      adapter->buffer_capacity, frame_size);
                 break;
             }
             adapter->buffer = buffer;
-            adapter->buffer_capacity = data->size;
+            adapter->buffer_capacity = frame_size;
         }
 
-        memcpy(adapter->buffer, data->data, data->size);
-        __atomic_store_n(&adapter->buffer_size, data->size, __ATOMIC_RELEASE);
+        memcpy(adapter->buffer, frame, frame_size);
+        __atomic_store_n(&adapter->buffer_size, frame_size, __ATOMIC_RELEASE);
 
         __atomic_store_n(&adapter->preview_really_started, 1, __ATOMIC_RELEASE);
 
@@ -252,19 +281,19 @@ void hal1_data_callback(int32_t msg_type,
             break;
         }
 
-        if (data->size > adapter->jpeg_capacity) {
-            uint8_t* jpeg = (uint8_t*)realloc(adapter->jpeg, data->size);
+        if (frame_size > adapter->jpeg_capacity) {
+            uint8_t* jpeg = (uint8_t*)realloc(adapter->jpeg, frame_size);
             if (!jpeg) {
                 ALOGE("Failed to allocate %zu bytes for JPEG callback",
-                      data->size);
+                      frame_size);
                 break;
             }
             adapter->jpeg = jpeg;
-            adapter->jpeg_capacity = data->size;
+            adapter->jpeg_capacity = frame_size;
         }
 
-        memcpy(adapter->jpeg, data->data, data->size);
-        __atomic_store_n(&adapter->jpeg_size, data->size, __ATOMIC_RELEASE);
+        memcpy(adapter->jpeg, frame, frame_size);
+        __atomic_store_n(&adapter->jpeg_size, frame_size, __ATOMIC_RELEASE);
         break;
     }
 }
@@ -272,22 +301,49 @@ void hal1_data_callback(int32_t msg_type,
 void hal1_data_timestamp_callback(nsecs_t timestamp, int32_t msg_type,
                                   const camera_memory_t* data, unsigned index, void* user)
 {
-    if (!data)
+    if (!data || msg_type != CAMERA_MSG_VIDEO_FRAME)
         return;
 
-    Mutex::Autolock lock(callback_memory_lock);
+    Mutex::Autolock videoLock(video_callback_lock);
     adapter_camera3_device_t* adapter = hal3on1_dev;
-    if (!adapter || !data->data || data->size == 0)
+    if (!adapter || !adapter->video_callbacks_enabled)
         return;
 
-    adapter->video_buffer = (uint8_t*)data->data;
-    adapter->video_frame_timestamp = timestamp;
-    __atomic_store_n(&adapter->video_buffer_size, data->size, __ATOMIC_RELEASE);
+    const uint8_t* frame;
+    size_t frame_size = 0;
+    {
+        Mutex::Autolock memoryLock(callback_memory_lock);
+        frame = callback_frame(data, index, &frame_size);
+        if (!frame) {
+            ALOGE("Invalid video callback index %u", index);
+            return;
+        }
 
-    if (!wait_for_zero(&adapter->video_buffer_size, "video buffer")) {
-        adapter->video_buffer = nullptr;
-        __atomic_store_n(&adapter->video_buffer_size, 0, __ATOMIC_RELEASE);
+        // A full slot belongs to the request thread. Drop newer frames rather
+        // than blocking preview callbacks or overwriting a frame being copied.
+        if (__atomic_load_n(&adapter->video_buffer_size, __ATOMIC_ACQUIRE) == 0) {
+            if (frame_size > adapter->video_buffer_capacity) {
+                uint8_t* buffer = (uint8_t*)realloc(adapter->video_buffer,
+                                                   frame_size);
+                if (buffer) {
+                    adapter->video_buffer = buffer;
+                    adapter->video_buffer_capacity = frame_size;
+                }
+            }
+            if (frame_size <= adapter->video_buffer_capacity) {
+                memcpy(adapter->video_buffer, frame, frame_size);
+                adapter->video_frame_timestamp = timestamp;
+                __atomic_store_n(&adapter->video_buffer_size, frame_size,
+                                 __ATOMIC_RELEASE);
+            } else {
+                ALOGE("Failed to allocate %zu bytes for video callback", frame_size);
+            }
+        }
     }
+
+    // The copied frame outlives HAL1 memory. Return every source frame even
+    // when our slot was full, without holding the memory teardown mutex.
+    HAL1_CALL(adapter->hal1_device, release_recording_frame, frame);
 }
 
 void release_memory(camera_memory_t* memory)
@@ -362,6 +418,8 @@ camera_memory_t* get_memory(int fd, size_t buf_size, uint_t num_bufs, void* user
     cameraMem->mem.size = total_size;
     cameraMem->mem.handle = cameraMem;
     cameraMem->mem.release = release_memory;
+    cameraMem->buffer_size = buf_size;
+    cameraMem->buffer_count = num_bufs;
 
     return &cameraMem->mem;
 }
@@ -426,8 +484,7 @@ static int camera3_close(hw_device_t *device)
         __atomic_store_n(&adapter_dev->buffer_size, 0, __ATOMIC_RELEASE);
 
         if (adapter_dev->video_stream) {
-            HAL1_CALL(adapter_dev->hal1_device, disable_msg_type,
-                      CAMERA_MSG_VIDEO_FRAME);
+            set_video_callbacks_enabled(adapter_dev, false);
             HAL1_CALL(adapter_dev->hal1_device, stop_recording);
         }
         HAL1_CALL(adapter_dev->hal1_device, disable_msg_type,
@@ -442,6 +499,7 @@ static int camera3_close(hw_device_t *device)
         hal3on1_dev = nullptr;
         free(adapter_dev->preview_window);
         free(adapter_dev->buffer);
+        free(adapter_dev->video_buffer);
         free(adapter_dev->jpeg);
         free(adapter_dev);
     }
@@ -490,7 +548,7 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
     }
 
     if (adapter->video_stream) {
-        HAL1_CALL(hal1_device, disable_msg_type, CAMERA_MSG_VIDEO_FRAME);
+        set_video_callbacks_enabled(adapter, false);
         HAL1_CALL(hal1_device, stop_recording);
         adapter->video_stream = false;
     }
@@ -507,6 +565,9 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
     adapter->buffer_capacity = 0;
     free(adapter->buffer);
     adapter->buffer = nullptr;
+    free(adapter->video_buffer);
+    adapter->video_buffer = nullptr;
+    adapter->video_buffer_capacity = 0;
     free(adapter->jpeg);
     adapter->jpeg = nullptr;
     adapter->jpeg_capacity = 0;
@@ -609,7 +670,9 @@ static int camera3_configure_streams(const struct camera3_device *dev, camera3_s
 
     ALOGI("----------------------------");
 
-    HAL1_CALL(hal1_device, store_meta_data_in_buffers, 0);
+    int raw_video_status = HAL1_CALL(hal1_device, store_meta_data_in_buffers, 0);
+    if (raw_video_status != NO_ERROR)
+        return raw_video_status;
 
     preview_params.set("no-display-mode", "1");
 
@@ -1549,11 +1612,12 @@ skip_mwb:
                 current_params.set("zsl", "on");
                 HAL1_CALL(hal1_device, set_parameters,
                           current_params.flatten());
-                HAL1_CALL(hal1_device, enable_msg_type,
-                          CAMERA_MSG_VIDEO_FRAME);
+                set_video_callbacks_enabled(adapter, true);
                 int ret = HAL1_CALL(hal1_device, start_recording);
-                if (ret != NO_ERROR)
+                if (ret != NO_ERROR) {
+                    set_video_callbacks_enabled(adapter, false);
                     return ret;
+                }
                 adapter->video_stream = true;
             }
 
@@ -1613,8 +1677,8 @@ skip_mwb:
             yuv420sp_buffer *crop_buf = NULL;
 
             if (output_buffer.stream->format == HAL_PIXEL_FORMAT_NV12_ENCODEABLE) {
+                sensor_timestamp = adapter->video_frame_timestamp;
                 memcpy(buf, adapter->video_buffer, payload_size);
-                HAL1_CALL(adapter->hal1_device, release_recording_frame, adapter->video_buffer);
                 __atomic_store_n(&adapter->video_buffer_size, 0,
                                  __ATOMIC_RELEASE);
             } else if (output_buffer.stream->width < adapter->stream_width ||
@@ -1657,7 +1721,7 @@ skip_mwb:
     camera3_notify_msg_t msg;
     msg.type = CAMERA3_MSG_SHUTTER;
     msg.message.shutter.frame_number = sync_frame_number;
-    msg.message.shutter.timestamp = timestamp;
+    msg.message.shutter.timestamp = sensor_timestamp;
     adapter->callback_ops->notify(adapter->callback_ops, &msg);
 
     cm.update(ANDROID_SENSOR_TIMESTAMP, &sensor_timestamp, 1);
@@ -1689,11 +1753,7 @@ static int camera3_flush(const struct camera3_device *dev)
         return -ENODEV;
 
     if (adapter->video_stream) {
-        HAL1_CALL(adapter->hal1_device, disable_msg_type,
-                  CAMERA_MSG_VIDEO_FRAME);
-        if (adapter->video_buffer)
-            HAL1_CALL(adapter->hal1_device, release_recording_frame,
-                      adapter->video_buffer);
+        set_video_callbacks_enabled(adapter, false);
         __atomic_store_n(&adapter->video_buffer_size, 0, __ATOMIC_RELEASE);
         HAL1_CALL(adapter->hal1_device, stop_recording);
         adapter->video_stream = false;
