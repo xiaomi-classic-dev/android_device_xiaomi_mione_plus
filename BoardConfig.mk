@@ -66,6 +66,7 @@ TARGET_USE_QCOM_BIONIC_OPTIMIZATION := true
 
 # QCOM BSP
 TARGET_USES_QCOM_BSP := true
+TARGET_USES_QCOM_BSP_LEGACY := true
 BOARD_GLOBAL_CFLAGS += -DQCOM_BSP
 
 # Recovery
@@ -173,6 +174,7 @@ BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.hardware=qcom kgsl
 BOARD_KERNEL_PAGE_SIZE := 2048
 BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000
 TARGET_KERNEL_SOURCE := kernel/xiaomi/mione_plus
+TARGET_KERNEL_CLANG_COMPILE := false
 TARGET_KERNEL_ARCH := arm
 TARGET_KERNEL_CONFIG := mione-user_defconfig
 TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
@@ -281,3 +283,6 @@ WIFI_HIDL_FEATURE_DISABLE_AP_MAC_RANDOMIZATION := true
 # Device-owned first-stage LVM bootstrap; stock init is preserved.
 BOARD_CUSTOM_BOOTIMG_MK := device/xiaomi/mione_plus/lvm/bootimage.mk
 TARGET_RELEASETOOLS_EXTENSIONS := device/xiaomi/mione_plus
+
+# Legacy proprietary ELF modules are installed through device copy rules.
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true

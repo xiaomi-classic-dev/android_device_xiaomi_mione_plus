@@ -318,7 +318,7 @@ $(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
 PRODUCT_PACKAGES += \
     android.hardware.health@2.0-service.mione \
     android.hardware.audio@2.0-impl \
-    android.hardware.audio@2.0-service \
+    android.hardware.audio.service \
     android.hardware.audio.effect@2.0-impl \
     android.hardware.bluetooth@1.0-impl \
     android.hardware.camera.provider@2.4-impl \
@@ -365,3 +365,8 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.camera.hal3on1.use_memfd=0 \
     persist.camera.hal3on1.use_preview_window_stub=0 \
     persist.camera.hal3on1.use_sysfs_torch=0
+
+# Android 12 keeps the legacy kernel cgroup layout behind vendor profiles.
+PRODUCT_COPY_FILES += \
+    system/core/libprocessgroup/profiles/cgroups_28.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
+    system/core/libprocessgroup/profiles/task_profiles_28.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
