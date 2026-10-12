@@ -375,7 +375,24 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.camera.hal3on1.use_preview_window_stub=0 \
     persist.camera.hal3on1.use_sysfs_torch=0
 
-# Android 12 keeps the legacy kernel cgroup layout behind vendor profiles.
+# Keep legacy task profiles and grant system_server access to BPF cgroup v2.
 PRODUCT_COPY_FILES += \
-    system/core/libprocessgroup/profiles/cgroups_28.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
+    device/xiaomi/mione_plus/configs/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
     system/core/libprocessgroup/profiles/task_profiles_28.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
+
+# Android 13 radio configuration uses the single-slot legacy HIDL service.
+PRODUCT_PACKAGES += android.hardware.radio.config@1.0-service
+
+# Explicit classic phone roles for the BCM4329 BR/EDR controller.
+PRODUCT_SYSTEM_PROPERTIES += \
+    bluetooth.profile.a2dp.source.enabled=true \
+    bluetooth.profile.avrcp.target.enabled=true \
+    bluetooth.profile.hfp.ag.enabled=true \
+    bluetooth.profile.hid.device.enabled=true \
+    bluetooth.profile.hid.host.enabled=true \
+    bluetooth.profile.map.server.enabled=true \
+    bluetooth.profile.opp.enabled=true \
+    bluetooth.profile.pan.nap.enabled=true \
+    bluetooth.profile.pan.panu.enabled=true \
+    bluetooth.profile.pbap.server.enabled=true \
+    bluetooth.profile.sap.server.enabled=true
