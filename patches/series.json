@@ -482,6 +482,19 @@
         }
       ],
       "source_head": "1a97cd729dcf0d504a194e2723745ae9e6e86aca"
+    },
+    {
+      "path": "lineage-sdk",
+      "base_commit": "dffcdd8c838aeb4c9b0662f3250bc0a8569c59e4",
+      "patches": [
+        {
+          "file": "lineage-sdk/0001-ChargingControl-No-need-to-log-a-crash-when-not-supported.patch",
+          "source_commit": "c979d37a4b1d204ec7b36bbac3155641ea64fa13",
+          "patch_id": "2f9613459396d8f3979f02d6ca920f87a4b9193a",
+          "sha256": "4ce237c226bc321c667266a21ab42d3adfa1406f590c8584af4ad2b977afccda"
+        }
+      ],
+      "source_head": "c979d37a4b1d204ec7b36bbac3155641ea64fa13"
     }
   ]
 }
