@@ -299,7 +299,7 @@ endif
 # xiaomi mione wifi config
 $(call inherit-product, device/xiaomi/mione_plus/mione_bcm43xx.mk)
 
-# WebView 145 retains automatic GLES 2 fallback for Adreno 220.
+# Use the requested WebView 120 ARM package with legacy GPU acceleration.
 PRODUCT_PACKAGES += mione_webview
 
 # dalvik tweak
