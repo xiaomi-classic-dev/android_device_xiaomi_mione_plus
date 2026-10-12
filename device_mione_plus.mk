@@ -16,6 +16,11 @@
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
+# Fully AOT-compile frequently used system apps.
+PRODUCT_DEXPREOPT_SPEED_APPS += \
+    Settings \
+    Camera2
+
 PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/msm8660
 
 # MiOne Plus originally shipped Android 2.3, before Treble and FBE.

@@ -266,12 +266,12 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/vendor/bin/rmt_storage=22 \
     /system/vendor/bin/thermald=22
 
-# Limit installed dex metadata on the legacy device.
-WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
+# Precompile system apps, boot image and system_server.
+WITH_DEXPREOPT := true
+WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := false
 MALLOC_SVELTE := true
 EXCLUDE_SERIF_FONTS := true
 USE_REDUCED_CJK_FONT_WEIGHTS := true
-WITH_DEXPREOPT_BOOT_IMG_AND_SYSTEM_SERVER_ONLY := true
 TARGET_USES_MKE2FS := true
 
 # Non-Treble ramdisk mount points, available before vendor init is parsed.
