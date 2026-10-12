@@ -16,6 +16,7 @@ LOCAL_SRC_FILES := \
     vendor_interface.cc \
     h4_protocol.cc
 LOCAL_C_INCLUDES := hardware/interfaces/bluetooth/1.0/default
+LOCAL_CPP_EXTENSION := .cc
 LOCAL_CPP_STD := c++17
 LOCAL_SHARED_LIBRARIES := android.hardware.bluetooth@1.0 libbase libcutils libhardware libhidlbase liblog libutils
 LOCAL_STATIC_LIBRARIES := android.hardware.bluetooth-async
