@@ -4,6 +4,7 @@ runtime_resource_overlay {
     sdk_version: "current",
     product_specific: true,
     overrides: [
+        "frameworks-base-overlays",
         "NavigationBarMode3ButtonOverlay",
         "NavigationBarMode2ButtonOverlay",
         "NavigationBarModeGesturalOverlay",

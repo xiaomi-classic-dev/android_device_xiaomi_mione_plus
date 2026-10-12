@@ -199,6 +199,7 @@ DEVICE_PACKAGE_OVERLAYS += device/xiaomi/mione_plus/overlay
 
 # Physical Home/Back/Menu keys; omit gesture-only navigation choices.
 PRODUCT_PACKAGES += MioneHardwareNavigationOverlay
+PRODUCT_PACKAGES += mione-framework-overlays
 
 # MSM8660 power policy
 PRODUCT_PACKAGES += \
