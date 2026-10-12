@@ -1,0 +1,21 @@
+{
+  "upstream_revision": "2f83e1bda9536aaf406352c868a8192cc3526a69",
+  "compatibility_patch": "8a3219d4bb6423aaf0e05a2acab3ff876ffc4255",
+  "files": [
+    {
+      "file": "h4_protocol.cc",
+      "source": "hardware/interfaces/bluetooth/1.0/default/h4_protocol.cc",
+      "upstream_sha256": "99c86b9cf0e98097849343c94e2e0f8bca7b9d57a48ef0a600d8bc27348d0c64"
+    },
+    {
+      "file": "h4_protocol.h",
+      "source": "hardware/interfaces/bluetooth/1.0/default/h4_protocol.h",
+      "upstream_sha256": "87389fa87632e0f8d28deca7f23cda4249e6f1e5943178bc593d1f793a529fd9"
+    },
+    {
+      "file": "vendor_interface.cc",
+      "source": "hardware/interfaces/bluetooth/1.0/default/vendor_interface.cc",
+      "upstream_sha256": "791dba880a3d397c8019cd4443cc81173849075eec1287326ab30dfa0eac21ac"
+    }
+  ]
+}

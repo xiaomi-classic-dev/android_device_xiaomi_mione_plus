@@ -329,7 +329,7 @@ PRODUCT_PACKAGES += \
     android.hardware.audio@4.0-impl \
     android.hardware.audio.effect@4.0-impl \
     android.hardware.bluetooth.audio@2.0-impl \
-    android.hardware.bluetooth@1.0-impl \
+    android.hardware.bluetooth@1.0-impl.mione \
     android.hardware.camera.provider@2.4-impl \
     android.hardware.camera.provider@2.4-service \
     android.hardware.gnss@1.0-impl \
