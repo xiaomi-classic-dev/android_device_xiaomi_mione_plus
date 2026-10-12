@@ -252,7 +252,6 @@ TARGET_PROCESS_SDK_VERSION_OVERRIDE := \
     /system/bin/mediaserver=22 \
     /system/bin/audioserver=22 \
     /system/vendor/bin/hw/android.hardware.camera.provider@2.4-service=22 \
-    /system/vendor/bin/hw/android.hardware.audio.service=22 \
     /system/vendor/bin/hw/android.hardware.sensors@1.0-service=22 \
     /system/vendor/bin/hw/android.hardware.gnss@1.0-service.mione=22 \
     /system/vendor/bin/hw/android.hardware.media.omx@1.0-service=22 \

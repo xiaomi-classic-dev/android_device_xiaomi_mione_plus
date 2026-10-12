@@ -62,7 +62,8 @@ PRODUCT_COPY_FILES += \
 
 # Audio
 PRODUCT_PACKAGES += \
-    audio.a2dp.default \
+    audio.bluetooth.default \
+    audio.bluetooth.msm8660 \
     audio.r_submix.default \
     audio.usb.default \
     audio.primary.msm8660 \
@@ -163,7 +164,7 @@ PRODUCT_COPY_FILES += \
 # Android 10 uses XML audio policy with the existing MSM8660 primary HAL.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
-    frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/bluetooth_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
@@ -325,9 +326,9 @@ $(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
 # Oreo adapters retain the device's source-built legacy HALs.
 PRODUCT_PACKAGES += \
     android.hardware.health@2.0-service.mione \
-    android.hardware.audio@2.0-impl \
-    android.hardware.audio.service \
-    android.hardware.audio.effect@2.0-impl \
+    android.hardware.audio@4.0-impl \
+    android.hardware.audio.effect@4.0-impl \
+    android.hardware.bluetooth.audio@2.0-impl \
     android.hardware.bluetooth@1.0-impl \
     android.hardware.camera.provider@2.4-impl \
     android.hardware.camera.provider@2.4-service \

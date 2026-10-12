@@ -4,3 +4,6 @@ ro.product.first_api_level=10
 # Android 12 rild uses the vendor property namespace.
 vendor.rild.libpath=/vendor/lib/libril_mione.so
 vendor.rild.libargs=-d /dev/smd0
+
+# The provider and Bluetooth PCM HAL share audioserver session state.
+ro.hardware.audio.bluetooth=msm8660

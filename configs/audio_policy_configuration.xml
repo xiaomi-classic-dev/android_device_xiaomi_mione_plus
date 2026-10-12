@@ -53,7 +53,7 @@
                 <route type="mix" sink="primary input" sources="Built-In Mic,Built-In Back Mic,Wired Headset Mic,BT SCO Headset Mic,HDMI In,Telephony Rx,Analog Dock In,FM Tuner" />
             </routes>
         </module>
-        <xi:include href="/vendor/etc/a2dp_audio_policy_configuration.xml" />
+        <xi:include href="/vendor/etc/bluetooth_audio_policy_configuration.xml" />
         <xi:include href="/vendor/etc/usb_audio_policy_configuration.xml" />
         <xi:include href="/vendor/etc/r_submix_audio_policy_configuration.xml" />
     </modules>
