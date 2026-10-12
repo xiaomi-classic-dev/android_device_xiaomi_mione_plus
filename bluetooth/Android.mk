@@ -21,3 +21,5 @@ LOCAL_SRC_FILES := mione_bdaddr.c
 LOCAL_SHARED_LIBRARIES := libdl liblog
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 include $(BUILD_EXECUTABLE)
+
+include $(call all-makefiles-under,$(LOCAL_PATH))

@@ -104,7 +104,6 @@ PRODUCT_PACKAGES += \
 # OMX
 PRODUCT_PACKAGES += \
     libc2dcolorconvert \
-    libdivxdrmdecrypt \
     libmm-omxcore \
     libOmxCore \
     libOmxVdec \
@@ -114,10 +113,6 @@ PRODUCT_PACKAGES += \
     libstagefrighthw \
     libOmxQcelp13Enc \
     libOmxEvrcEnc
-
-# HDMI
-PRODUCT_PACKAGES += \
-    hdmid
 
 # USB
 PRODUCT_PACKAGES += \
@@ -132,20 +127,9 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     camera.msm8660
 
-# IPv6 tethering
-PRODUCT_PACKAGES += \
-    ebtables \
-    ethertypes
-
-# Net
-PRODUCT_PACKAGES += \
-    libnetcmdiface \
-    crda
-
 # WiFi
 PRODUCT_PACKAGES += \
     hostapd \
-    hostapd_default.conf \
     wpa_supplicant \
     wpa_supplicant.conf
 
@@ -222,7 +206,6 @@ PRODUCT_PACKAGES += \
 # Hostapd (Required for Wi-Fi)
 PRODUCT_PACKAGES += \
     hostapd_cli \
-    calibrator \
     hostapd
 
 PRODUCT_PACKAGES += libmione_cnd_shim libmione_sensors_shim
@@ -250,7 +233,6 @@ PRODUCT_COPY_FILES += \
 # WiFi
 PRODUCT_PACKAGES += \
     hostapd \
-    hostapd_default.conf \
     wpa_supplicant \
     wpa_supplicant.conf
 
@@ -337,7 +319,6 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.allocator@2.0-impl \
     android.hardware.graphics.allocator@2.0-service \
     android.hardware.graphics.mapper@2.0-impl-2.1 \
-    android.hardware.graphics.composer@2.1-impl \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.keymaster@3.0-impl \
     android.hardware.keymaster@3.0-service \

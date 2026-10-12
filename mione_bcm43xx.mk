@@ -39,6 +39,3 @@ WIFI_DRIVER_FW_PATH_AP_DHD  := "/vendor/firmware/fw_bcmdhd_apsta.bin"
 
 # flag for xiaomi
 BOARD_USE_XIAOMI_MIONE_WIFI := true
-
-PRODUCT_PACKAGES += \
-    libnetcmdiface

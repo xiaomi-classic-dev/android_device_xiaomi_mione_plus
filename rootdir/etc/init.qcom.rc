@@ -216,7 +216,6 @@ service usbhub_init /vendor/bin/usbhub_init
 
 on property:init.svc.surfaceflinger=stopped
     stop ppd
-    stop hdmid
 
 on property:ro.board.platform=msm7630_fusion
     start usbhub_init
@@ -453,11 +452,6 @@ service atfwd /system/bin/ATFWD-daemon
     user system
     group system radio
     onrestart exec /system/bin/log -t RIL-ATFWD -p w "ATFWD daemon restarted"
-    disabled
-
-service hdmid /system/bin/hdmid
-    class late_start
-    socket hdmid stream 0660 root system
     disabled
 
 service ppd /vendor/bin/mm-pp-daemon
