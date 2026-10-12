@@ -1,269 +1,77 @@
 {
-  "android_branch": "lineage-19.1",
-  "camera_framework_hal1_restoration": false,
+  "schema_version": 1,
+  "scope": "Incremental MiOne changes after the LineageOS 20.0 port-docs platform prerequisite baseline",
+  "prerequisite": "Apply the LineageOS 20.0 port-docs platform prerequisite series first; this export contains only additional MiOne compatibility changes and the non-Treble audio registration increment. hardware/interfaces must remain at 2f83e1bda9536aaf406352c868a8192cc3526a69.",
   "projects": [
     {
       "path": "bionic",
-      "base_commit": "d7fa30785508733b0402cb86453fe84fd9047b0e",
+      "base_commit": "17bbf6d0d957193476c60a5ce467490f146a0c1a",
       "patches": [
         {
-          "file": "bionic/0006-linker-Preserve-device-selected-non-PIE-execution-on-Android-11.patch",
-          "source_commit": "2ed09a852c45569b668da5f68180182350c0b81f",
+          "file": "bionic/0001-linker-Preserve-device-selected-non-PIE-execution-on-Android-13.patch",
+          "source_commit": "31e73b8bb68685d64fe07a2a58eceb6abe78b537",
           "patch_id": "d65bffe0225c04edafb9c566015a3b0378a0ba39",
-          "sha256": "149d4438a03d1e56ffc2cc251cfaf681a52c34846542a06026afe771d29900f5"
+          "sha256": "9e8c218c291f30650de5e732228121d4a4671051302a5933a7b618c4436c6531"
         }
       ],
-      "source_head": "2ed09a852c45569b668da5f68180182350c0b81f"
-    },
-    {
-      "path": "hardware/interfaces",
-      "base_commit": "685f63fba79b8875448a58d39d3bee027a6aaa7b",
-      "patches": [
-        {
-          "file": "hardware-interfaces/0002-Bluetooth-HAL-Retain-the-bounded-BCM4329-firmware-download-quirk.patch",
-          "source_commit": "8a3219d4bb6423aaf0e05a2acab3ff876ffc4255",
-          "patch_id": "d975bb63430d0a875153260cf99c5682518337b7",
-          "sha256": "df135717fa0212df2cb36788495d132c4482dd68c894aa37d1a0851db8e05e8e"
-        }
-      ],
-      "source_head": "8a3219d4bb6423aaf0e05a2acab3ff876ffc4255"
+      "source_head": "31e73b8bb68685d64fe07a2a58eceb6abe78b537"
     },
     {
       "path": "vendor/lineage",
-      "base_commit": "fb2d3b0f9b9bf2b21458d7641a9825ee80a41d08",
+      "base_commit": "3683a2041a0e16440f24ec16b853fbe8e0a48699",
       "patches": [
         {
-          "file": "vendor-lineage/0004-soong-Export-the-optional-device-non-PIE-allowlist-on-Android-11.patch",
-          "source_commit": "7ca1700c9116fd0c65bdb3d927b06d6e72112c48",
-          "patch_id": "31bfab945af1961a2d4ddea7369ddee29b9b14ab",
-          "sha256": "fa3fd9482495ed75be5eabebb9e7800a47afa60bb0f583c1dd63a9584cfd6e97"
+          "file": "vendor-lineage/0001-soong-export-device-selected-non-PIE-compatibility-on-Android-13.patch",
+          "source_commit": "e8a48fad9727062687dabc20b2549c5f70d32219",
+          "patch_id": "beaec10f93d8cfb7a31f57cee066ebac751ca75f",
+          "sha256": "0e380632999153a1c1b948be7991311baab8e2a7ff765cfec0edc927dd944ce5"
+        }
+      ],
+      "source_head": "e8a48fad9727062687dabc20b2549c5f70d32219"
+    },
+    {
+      "path": "packages/modules/Bluetooth",
+      "base_commit": "410e0ab2d996577af40ed28514d9463465b4a18e",
+      "patches": [
+        {
+          "file": "packages-modules-Bluetooth/0001-Bluetooth-initialize-GD-LE-state-only-when-the-controller-suppor.patch",
+          "source_commit": "410cfe858a1321b1737b5d7ba61bb2ae35252710",
+          "patch_id": "9cdecc68aadcd4eb9762f67c7f9d5adbc874745a",
+          "sha256": "e88cf2618577ddec8bbd0cfad977209c8e0e3137b74a7366b3a486afb87675e5"
         },
         {
-          "file": "vendor-lineage/0005-soong-Register-optional-non-PIE-configuration-only-when-enabled.patch",
-          "source_commit": "fa13f020f8e604b1612d0197e5938fe72e462e2b",
-          "patch_id": "287eb37f7c8da35d4a445aad39c8f55c25eb5362",
-          "sha256": "ab1c9acf4f1cf26c09b59cd5f34cd6a504e5247b382e42fce61efe060fcbd6e0"
-        }
-      ],
-      "source_head": "fa13f020f8e604b1612d0197e5938fe72e462e2b"
-    },
-    {
-      "path": "prebuilts/clang/host/linux-x86",
-      "base_commit": "2cddc8015b6a61bbcb8bb58e55d67e4e4b4db6d2",
-      "patches": [
-        {
-          "file": "prebuilts-clang-host-linux-x86/0001-compiler-rt-Backport-the-ARM-inexact-status-bit-correction.patch",
-          "source_commit": "064a018fe9ddf29414e3b2a5930468c40a1f56c1",
-          "patch_id": "271917b73137b7bbbbf57010e1cc56647d80d9e8",
-          "sha256": "c3be39203283529b921c34dc52c5a732ed4890e912a0692394b18f3d9d2472a2"
-        }
-      ],
-      "source_head": "064a018fe9ddf29414e3b2a5930468c40a1f56c1"
-    },
-    {
-      "path": "system/bt",
-      "base_commit": "f6f0c30c842f0c65b91d5ecde0b944aa9dba9729",
-      "patches": [
-        {
-          "file": "system-bt/0001-Bluetooth-Validate-encryption-key-size-response-length-and-handl.patch",
-          "source_commit": "71d669ea1661ae68131fd2a0fb1d53faa501777c",
-          "patch_id": "3682b7d5685440c34fe3aa7cb5fe8c70228819f8",
-          "sha256": "3a1bdb6ff38eaf38efa7b63f3cccac6ef315c291ae1bb77fb0dee1f4834b50e3"
+          "file": "packages-modules-Bluetooth/0002-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
+          "source_commit": "3b695d3d1d7c1b2c1193b33fa51537bc8619c190",
+          "patch_id": "235cc6036892852ccbc8f62400e4e942d5268976",
+          "sha256": "2bc44408ecb8ec0fdfadc299728845a0a55cf0cab68eddc4c1340b4b35bde4ab"
         },
         {
-          "file": "system-bt/0002-Bluetooth-Port-the-explicit-legacy-BR-EDR-key-size-policy-to-And.patch",
-          "source_commit": "62fd0dc57b6e5bd1d36435e01fc84f070020daeb",
-          "patch_id": "bfed74931975ed92f87af938bb70eeaff4b50c31",
-          "sha256": "873d0b36ef125607c9515599178742839d2d3a079427aa66d3e37af1e94cd693"
+          "file": "packages-modules-Bluetooth/0003-Bluetooth-guard-LE-initialization-and-capability-reporting-for-c.patch",
+          "source_commit": "eca30ea0736094989ca6499889dbd60503779ab6",
+          "patch_id": "85b0b43726986ae8cb457ef6fdcf921dd1ca6f65",
+          "sha256": "2160b6ca527675f4501118cacee2a375adfd47427e2fbb27a5abe7f255b2b9bf"
         },
         {
-          "file": "system-bt/0003-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
-          "source_commit": "154e034c49660073122ebda9fb6233c462b22bf7",
-          "patch_id": "87ff89c59aea4f4617ceebce78b83bcf3c1b6c39",
-          "sha256": "12f912647d84044315d94bc26c3a24a3ce44857214c7d72e8ff8efd6216be0fc"
-        },
-        {
-          "file": "system-bt/0004-Bluetooth-Guard-LE-advertising-and-feature-access-for-classic-co.patch",
-          "source_commit": "046a0e146cfc1121879d8427ad239d77f456eeec",
-          "patch_id": "f7224d2d6b19c909c6c42bd99ed0003c5bf69b90",
-          "sha256": "f0327eb762c033de4dad01b3dcadd7d3c4a7b6b08c6ffaa4aaa7ae58a83f4e3c"
+          "file": "packages-modules-Bluetooth/0004-Bluetooth-leave-GD-LE-managers-inactive-on-classic-controllers.patch",
+          "source_commit": "eefbe788cd497dc8dd49e31047cd18e4edc2ea8c",
+          "patch_id": "3228685bd7d479efe7bedc088de5f692fd56f55b",
+          "sha256": "aba22cb8ac84071b9ac0dbd2644a49501b5fdf75cef059b007763814d47d1b55"
         }
       ],
-      "source_head": "046a0e146cfc1121879d8427ad239d77f456eeec"
-    },
-    {
-      "path": "packages/apps/Settings",
-      "base_commit": "cd9f7949413df68160aa5026e95d9591395e539e",
-      "patches": [
-        {
-          "file": "packages-apps-Settings/0001-Wi-Fi-Ignore-picker-callbacks-after-the-fragment-detaches.patch",
-          "source_commit": "1a97cd729dcf0d504a194e2723745ae9e6e86aca",
-          "patch_id": "4e32da8b3994a9b5291416918e1e7adde141f554",
-          "sha256": "215a9bbcb4a78997263a53aadc1e3d8a15ba386b7a0054c6230b775fcd9270c0"
-        }
-      ],
-      "source_head": "1a97cd729dcf0d504a194e2723745ae9e6e86aca"
-    },
-    {
-      "path": "lineage-sdk",
-      "base_commit": "dffcdd8c838aeb4c9b0662f3250bc0a8569c59e4",
-      "patches": [
-        {
-          "file": "lineage-sdk/0001-ChargingControl-No-need-to-log-a-crash-when-not-supported.patch",
-          "source_commit": "c979d37a4b1d204ec7b36bbac3155641ea64fa13",
-          "patch_id": "2f9613459396d8f3979f02d6ca920f87a4b9193a",
-          "sha256": "4ce237c226bc321c667266a21ab42d3adfa1406f590c8584af4ad2b977afccda"
-        }
-      ],
-      "source_head": "c979d37a4b1d204ec7b36bbac3155641ea64fa13"
-    }
-  ],
-  "scope": "Incremental changes after the LineageOS 19.1 port-docs prerequisite patch set",
-  "prerequisite": "Apply the LineageOS 19.1 port-docs patch set first; this series contains no copies of that patch set.",
-  "port_docs_baselines": [
-    {
-      "path": "build/soong",
-      "base_commit": "26c72b6e256228d10ad192b33c0ab05c9fa8ecda",
-      "source_commits": {
-        "3f2f28f47717d2b71f90f90eabac573b43edd754": "26c72b6e256228d10ad192b33c0ab05c9fa8ecda"
-      }
-    },
-    {
-      "path": "art",
-      "base_commit": "c692cfa74f82f3d115d19c40eecdbada5657cd26",
-      "source_commits": {
-        "82e7265965d169acc5ae8a9e981a6ca13be7abf6": "c692cfa74f82f3d115d19c40eecdbada5657cd26"
-      }
-    },
-    {
-      "path": "external/perfetto",
-      "base_commit": "1e8c7e940a357172d11c5ef971f73d4edc449044",
-      "source_commits": {
-        "570b2c4631329368e28dd348d8e14f7e95d9b165": "1e8c7e940a357172d11c5ef971f73d4edc449044"
-      }
-    },
-    {
-      "path": "bionic",
-      "base_commit": "d7fa30785508733b0402cb86453fe84fd9047b0e",
-      "source_commits": {
-        "6a448eafeb6368b5ab8d3832164c981076c902b8": "013dcf40814256ba413dee23650811ac752b8343",
-        "a2e4942049279868b7c43d412db41885375f40df": "517682d1d94b9974530150dc0b9a12a600e0763d",
-        "3a1df1c894b372425286cbf379ef3273cc1f2583": "fad5fcafeebf08cc43f56997a8c945e5aef25c92",
-        "b030c669dda95d2788ad5630d3088af83487b8af": "44e8a8b56c2d1ffda39644f630fc6f769ad9f829",
-        "d24dabfb375661e211268991440b0dddf7da0650": "d7fa30785508733b0402cb86453fe84fd9047b0e"
-      }
-    },
-    {
-      "path": "frameworks/av",
-      "base_commit": "924fe9aefaac006b0683c48fc5e1ca622828c53c",
-      "source_commits": {
-        "beb7b19aa956c41bb7846dfaebca5939329c684c": "8072a057f84d184fa6f1084391cb8aaf2be6da0e",
-        "0a01c0c5f027e94d961ac3a7d0e9ab39d78abe38": "852eda8889f258294720e3a671299d19a662df2f",
-        "0e389265067e66f631a98c890d5da373aeb51c35": "b07fc080380b52670e14ab143aee6911de462bdb",
-        "fb1d3783146a5282e7d15b8bd45562496cbd3380": "9aa36173b0069ea6aa0853caf9169255cfbcbe2a",
-        "2e560e3ef49d9cb1fc6dfc31642c37bd0a269787": "3c93a60055e6bf5cbefeb5410d58dc55ec084c0a",
-        "5fb0bab5805a5b909d84c12ba009c41f2e423284": "78e6eb129ff871c39fcd95908fdd9e64fa2d58e6",
-        "1728c3d32197d1e0ee45d9c5d9474e8cdd97f6e0": "06242587734a0e2783957507ce3be664fae66e09",
-        "44cd6b9e72b906973e4582e9f402cff647b4736d": "cbbe1d2d3a4901dc9ff33fabf80ef7954d08194f",
-        "d1502f80dab2793fc9977e1c55e375ee37e71722": "924fe9aefaac006b0683c48fc5e1ca622828c53c"
-      }
-    },
-    {
-      "path": "hardware/interfaces",
-      "base_commit": "685f63fba79b8875448a58d39d3bee027a6aaa7b",
-      "source_commits": {
-        "f3136d6babc0f1b564652f1d63b6722a5a673176": "685f63fba79b8875448a58d39d3bee027a6aaa7b"
-      }
-    },
-    {
-      "path": "frameworks/native",
-      "base_commit": "d04db46e05146d6096eac0f3f4a17a0bd9f1780c",
-      "source_commits": {
-        "788ec337b7598fdb64a04b83bd560ff7408c7bf3": "5593322f3b7bc38294512d6f71cee3d65abfd086",
-        "4e0058d58f2c374be5a274b17a41ada310ccf87f": "9d7d296ea2b0390173265e128c67858d730c4877",
-        "3564eda0b891b44bae6c557abd66f635a2a77b1e": "25247de427448565b27d1e5bdbe4f848e9b17d99",
-        "356388ce2a98e0088cffb38903759bed2785d4e1": "d04db46e05146d6096eac0f3f4a17a0bd9f1780c"
-      }
-    },
-    {
-      "path": "hardware/ril",
-      "base_commit": "463d08fa27815adba9fdc3802ede55c3233b55a0",
-      "source_commits": {
-        "f64c3605ebdc5a1a0cd020435f9f079b3dfebcd8": "c0f3d7726fa07a955608deb465453af17b0a383f",
-        "8994291cde5933c8534bb79aa74a34361ee20f9a": "913f31b8ec5ab0a248b66190905742a9a2cb1780",
-        "7cebf89d9ecd6df24b16110beb81a2c3181a033e": "fbfda18bb3253455e06d949d3a75430c3f9f8a9c",
-        "e44662c0652c9e9d96cb9c01df213a593caa3cef": "36360dc6df0e71889e2aa84a9b89eefa7945a30e",
-        "efa34b976dbb4a988c4753e1af278a514d4a6e2e": "0e2723c434aac119fcba0b726adf34f491572370",
-        "1ce1b2830396f33f0d1ed12c5cd5eda92fa9e4c5": "cfe328fb61e387d31aac128660a1e8b7921178c5",
-        "06dadc9bcf42068a1e2a72b073dc95ed3e4920e9": "463d08fa27815adba9fdc3802ede55c3233b55a0"
-      }
-    },
-    {
-      "path": "frameworks/opt/telephony",
-      "base_commit": "197e7325f0192f68affb81d139b9e4e3c4e1d5f6",
-      "source_commits": {
-        "2bc71a32253302d73bf20f432af4cfb21ca966b0": "f5a6cc0e62cd22a904d2477c17f771c00bc2059b",
-        "3949202159e1839befd528d644a081f17a852dd2": "fc1a2fc52799e73396798f17df70e0383f4b95b0",
-        "3176c688cab4144ade8440fae2cb07a0d1ff8376": "1ab2ad2e01bf808b3f075d0f6524153907fd451c",
-        "91c3c4346a6ee47506f55b2fa97b34199031b96f": "829bd3d5a881077acbd1edef82b01cd54d922751",
-        "f594d8be64876af2484ef433644ae59e6cdbd8e1": "197e7325f0192f68affb81d139b9e4e3c4e1d5f6"
-      }
-    },
-    {
-      "path": "hardware/lineage/interfaces",
-      "base_commit": "52d3f5bd7b5cfcd5a7ee59b61289c05bc4ca6a65",
-      "source_commits": {
-        "12831ad2e84c6ac05a090816d759b6f071cffa23": "52d3f5bd7b5cfcd5a7ee59b61289c05bc4ca6a65"
-      }
-    },
-    {
-      "path": "packages/modules/adb",
-      "base_commit": "bab5633da826a918be22e53a974bcb64ff41bedb",
-      "source_commits": {
-        "a6149d1255fc122ca6e39274faaadd841066a255": "bab5633da826a918be22e53a974bcb64ff41bedb"
-      }
-    },
-    {
-      "path": "system/bpf",
-      "base_commit": "9c7d22306b50d250a6d5dab607bb6f592812f676",
-      "source_commits": {
-        "b6e4614686ecd1d9f7e914d46316ca0b22b60cb1": "9c7d22306b50d250a6d5dab607bb6f592812f676"
-      }
-    },
-    {
-      "path": "system/netd",
-      "base_commit": "db5fbdb6329f6484c60c1e5506ed7414ab1d79e0",
-      "source_commits": {
-        "83e0a9454a9b34b99655a930cbd43915760b9fa1": "18181557ffb6a186d358e967b279cd6c4d91f965",
-        "ed589dd48d2a8f2476ac61b97cdb7606f2839522": "db5fbdb6329f6484c60c1e5506ed7414ab1d79e0"
-      }
+      "source_head": "eefbe788cd497dc8dd49e31047cd18e4edc2ea8c"
     },
     {
       "path": "system/sepolicy",
-      "base_commit": "bb2c7567bf90201460447c1e49f4543f84fc7ea6",
-      "source_commits": {
-        "ba992fe06181e45b01b90f08f0cecf141ee2d920": "b1f877393e2227e92281a0da3cd08cafeac9941d",
-        "1807083c3dd6042c407f73b7675d48a62d1c627e": "cd38d6daacbf1902f98d7f857128db884ba307d6",
-        "4a3a5344c3de2e878ba035dd934220805f5b7b35": "8ddf1ce738df7c24976bbfea64075f8898c9619f",
-        "4405a1f65f310485365341784c43a1648b69652e": "70957583b12819b91f9843849c985514a7023bb5",
-        "c62556785c9f8262883bf1f6db3c1ef340b87a92": "bb2c7567bf90201460447c1e49f4543f84fc7ea6"
-      }
-    },
-    {
-      "path": "system/security",
-      "base_commit": "3e920633f72fec2a163535ef9fca226b49914a9c",
-      "source_commits": {
-        "f02c1f6055610709b0341d5415fba5bcba638d56": "3e920633f72fec2a163535ef9fca226b49914a9c"
-      }
-    },
-    {
-      "path": "vendor/lineage",
-      "base_commit": "fb2d3b0f9b9bf2b21458d7641a9825ee80a41d08",
-      "source_commits": {
-        "d028fe88432c578b2fb33ffc29cfd4ed28eb4049": "35491405e8a58e9ca810e728abd320f5fcddac8e",
-        "305088296ccd333748dadb2e55a8b75d18b30cc4": "4b108e3e43f73e329507ac47e1e765257d31c670",
-        "5c8e6b28d27c6c0cb8ca68108b2033f837b3cc6a": "fb2d3b0f9b9bf2b21458d7641a9825ee80a41d08"
-      }
+      "base_commit": "3186fe80457196440303097465c0bb556e80ee07",
+      "patches": [
+        {
+          "file": "system-sepolicy/0001-sepolicy-allow-non-Treble-audioserver-to-publish-the-HIDL-audio-.patch",
+          "source_commit": "9042b6b9ac26b85d5fdcdf123cc08d933e0ec772",
+          "patch_id": "3c94253f6db94072682e52305cb7d85c40ecb59c",
+          "sha256": "a4b3b65a6328aa0cf775f2584dbb78bcb21086a6bfe0d3b74ea4885895fe84f0"
+        }
+      ],
+      "source_head": "9042b6b9ac26b85d5fdcdf123cc08d933e0ec772"
     }
   ],
   "port_docs_reference": {

@@ -1,8 +1,8 @@
-From 2ed09a852c45569b668da5f68180182350c0b81f Mon Sep 17 00:00:00 2001
+From 31e73b8bb68685d64fe07a2a58eceb6abe78b537 Mon Sep 17 00:00:00 2001
 From: Matt Mower <mowerm@gmail.com>
 Date: Wed, 7 Oct 2026 21:05:39 +0800
 Subject: [PATCH] linker: Preserve device-selected non-PIE execution on Android
- 11
+ 13
 
 Adapt the fixed-address exact-path compatibility to ExecutableInfo and the Android 11 Soong defaults. Devices without an allowlist retain normal PIE-only behavior. Compile the optional helper in liblinker_main rather than the final binary so all linker variants resolve the allowlist symbol.
 
@@ -10,6 +10,7 @@ Adapted-from: d75a7f53bf38a32de8bf8d08a17574ef9b78c8e7
 
 Original-upstream: LineageOS/android_bionic 55db1141913a77289abd293bca807e0520fd600a
 Change-Id: I19c7bd5964271bcf2a578079200b59f453068619
+(cherry picked from commit 2ed09a852c45569b668da5f68180182350c0b81f)
 ---
  linker/Android.bp         |  3 ++-
  linker/linker_main.cpp    |  9 ++++++++-
@@ -20,10 +21,10 @@ Change-Id: I19c7bd5964271bcf2a578079200b59f453068619
  create mode 100644 linker/linker_non_pie.h
 
 diff --git a/linker/Android.bp b/linker/Android.bp
-index 2ac05f768..8fee8444d 100644
+index 4ddf479e3..3ca354e7f 100644
 --- a/linker/Android.bp
 +++ b/linker/Android.bp
-@@ -82,6 +82,7 @@ cc_defaults {
+@@ -72,6 +72,7 @@ cc_defaults {
      name: "linker_defaults",
      defaults: [
          "process_sdk_version_overrides_defaults",
@@ -31,7 +32,7 @@ index 2ac05f768..8fee8444d 100644
          "shim_libs_defaults",
      ],
      arch: {
-@@ -153,7 +154,7 @@ cc_defaults {
+@@ -143,7 +144,7 @@ cc_defaults {
  cc_library_static {
      name: "liblinker_main",
      defaults: ["linker_defaults", "linker_all_targets"],
@@ -41,7 +42,7 @@ index 2ac05f768..8fee8444d 100644
      // Ensure that the compiler won't insert string function calls before ifuncs are resolved.
      cflags: ["-ffreestanding"],
 diff --git a/linker/linker_main.cpp b/linker/linker_main.cpp
-index 132068dc5..64123cd25 100644
+index 73947e161..d99bdfe5d 100644
 --- a/linker/linker_main.cpp
 +++ b/linker/linker_main.cpp
 @@ -27,6 +27,9 @@
@@ -54,7 +55,7 @@ index 132068dc5..64123cd25 100644
  
  #include <link.h>
  #include <sys/auxv.h>
-@@ -427,7 +430,11 @@ static ElfW(Addr) linker_main(KernelArgumentBlock& args, const char* exe_to_load
+@@ -428,7 +431,11 @@ static ElfW(Addr) linker_main(KernelArgumentBlock& args, const char* exe_to_load
    ElfW(Ehdr)* elf_hdr = reinterpret_cast<ElfW(Ehdr)*>(si->base);
  
    // We haven't supported non-PIE since Lollipop for security reasons.

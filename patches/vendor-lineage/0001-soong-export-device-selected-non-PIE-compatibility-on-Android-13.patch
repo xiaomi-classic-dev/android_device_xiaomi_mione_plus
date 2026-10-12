@@ -1,23 +1,25 @@
-From 7ca1700c9116fd0c65bdb3d927b06d6e72112c48 Mon Sep 17 00:00:00 2001
+From e8a48fad9727062687dabc20b2549c5f70d32219 Mon Sep 17 00:00:00 2001
 From: GuaiYiHu <guaiyihu@foxmail.com>
 Date: Wed, 7 Oct 2026 21:05:39 +0800
-Subject: [PATCH] soong: Export the optional device non-PIE allowlist on
- Android 11
+Subject: [PATCH] soong: export device-selected non-PIE compatibility on
+ Android 13
 
-Use the upstream Soong config module mechanism. Leave the value unset when no device allowlist is provided, preserving PIE-only behavior for other products.
+Register the allowlist directory only when the device explicitly provides it. Keep the configuration absent for products such as Aries, retaining the default PIE-only linker contract. Use the standard Soong config module for the linker defaults.
 
-Adapted-from: d4b7fedd9df5c36701346296925841d7000cb843
-Change-Id: Idd24bd603f22969f662654d3c5b92a745e7877a2
+(cherry picked from commit 7ca1700c9116fd0c65bdb3d927b06d6e72112c48)
+
+(cherry picked from commit fa13f020f8e604b1612d0197e5938fe72e462e2b)
+Change-Id: I92a05310ed3e7a3f32a7b7d215c8b19239422c26
 ---
  build/soong/Android.bp     | 19 +++++++++++++++++++
  config/BoardConfigSoong.mk |  6 ++++++
  2 files changed, 25 insertions(+)
 
 diff --git a/build/soong/Android.bp b/build/soong/Android.bp
-index 4465897f..8c40e585 100644
+index 1b984149..f93e88cd 100644
 --- a/build/soong/Android.bp
 +++ b/build/soong/Android.bp
-@@ -570,3 +570,22 @@ stagefright_qcom_legacy {
+@@ -469,3 +469,22 @@ stagefright_qcom_legacy {
          },
      },
  }
@@ -41,23 +43,16 @@ index 4465897f..8c40e585 100644
 +    },
 +}
 diff --git a/config/BoardConfigSoong.mk b/config/BoardConfigSoong.mk
-index 14729e0a..9ea67272 100644
+index 561f1628..afe43b57 100644
 --- a/config/BoardConfigSoong.mk
 +++ b/config/BoardConfigSoong.mk
-@@ -28,6 +28,7 @@ $(foreach v,$(EXPORT_TO_SOONG),$(eval $(call addVar,$(v))))
- 
- SOONG_CONFIG_NAMESPACES += lineageGlobalVars
- SOONG_CONFIG_lineageGlobalVars += \
-+    non_pie_executables_header_dir \
-     additional_gralloc_10_usage_bits \
-     bootloader_message_offset \
-     disable_postrender_cleanup \
-@@ -133,3 +134,8 @@ endif
- ifneq ($(TARGET_USE_QTI_BT_STACK),true)
- PRODUCT_SOONG_NAMESPACES += packages/apps/Bluetooth
- endif #TARGET_USE_QTI_BT_STACK
+@@ -125,3 +125,9 @@ else
+ SOONG_CONFIG_lineageQcomVars_qcom_display_headers_namespace := $(QCOM_SOONG_NAMESPACE)/display
+ endif
+ SOONG_CONFIG_lineageQcomVars_qti_vibrator_effect_lib := $(TARGET_QTI_VIBRATOR_EFFECT_LIB)
 +
-+# Unset devices keep the normal PIE-only linker contract.
++# Device-selected exact executable paths; absent devices retain PIE-only behavior.
 +ifneq ($(strip $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)),)
++SOONG_CONFIG_lineageGlobalVars += non_pie_executables_header_dir
 +SOONG_CONFIG_lineageGlobalVars_non_pie_executables_header_dir := $(LINKER_NON_PIE_EXECUTABLES_HEADER_DIR)
 +endif
