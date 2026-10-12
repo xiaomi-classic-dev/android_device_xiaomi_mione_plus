@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate the recorded platform patch series from its baseline commits."""
+"""Regenerate platform increments after the recorded prerequisite baseline commits."""
 import argparse
 import hashlib
 import json

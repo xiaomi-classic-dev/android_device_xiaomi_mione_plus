@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply the recorded LineageOS platform commits; --check only validates them."""
+"""Apply platform increments after the recorded port-docs baselines; --check only validates them."""
 import argparse
 import hashlib
 import json
@@ -61,6 +61,8 @@ def main():
                         help="Android source root")
     args = parser.parse_args()
     series = json.loads((PATCH_ROOT / "series.json").read_text())
+    if series.get("prerequisite"):
+        print(series["prerequisite"], flush=True)
     # Validate every repository before starting any git-am operation.
     plans = [prepare(args.top.resolve(), p) for p in series["projects"]]
     if not args.check:
