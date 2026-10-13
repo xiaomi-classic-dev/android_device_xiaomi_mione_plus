@@ -327,7 +327,7 @@ const char *QCameraParameters::getPreviewFrameRateMode() const
 }
 
     //ALOGD("dump: mMap.size = %d", mMap.size());
-        //ALOGD("%s: %s\n", k.string(), v.string());
+        //ALOGD("%s: %s\n", k.c_str(), v.c_str());
 void QCameraParameters::setTouchIndexAec(int x, int y)
 {
     char str[32];

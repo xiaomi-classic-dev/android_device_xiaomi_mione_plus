@@ -6,13 +6,13 @@ LOCAL_MODULE := camera.legacy.msm8660
 LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_TAGS := optional
-LOCAL_LDFLAGS := -Wl,--version-script=$(LOCAL_PATH)/hal.exports
+LOCAL_LDFLAGS := -Wl,-Bsymbolic -Wl,--version-script=$(LOCAL_PATH)/hal.exports
 LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/hal.exports
 LOCAL_ADDITIONAL_DEPENDENCIES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 LOCAL_SRC_FILES := QCameraHAL.cpp QCameraHWI_Parm.cpp QCameraHWI.cpp \
     QCameraHWI_Preview.cpp QCameraHWI_Record.cpp QCameraHWI_Still.cpp \
     QCameraHWI_Mem.cpp QCameraHWI_Display.cpp QCameraStream.cpp \
-    QualcommCamera2.cpp QCameraHWI_Rdi.cpp QCameraParameters.cpp
+    QualcommCamera2.cpp QCameraHWI_Rdi.cpp QCameraParameters.cpp CameraParameters.cpp
 LOCAL_CFLAGS := -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
     -DNUM_PREVIEW_BUFFERS=4 -DUSE_NEON_CONVERSION \
     -DMSM_CAMERA_BIONIC -DMSM_CAMERA_GCC \
@@ -24,16 +24,17 @@ LOCAL_CFLAGS := -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
     -DCAMERA_GRALLOC_FALLBACK_HEAP_ID=GRALLOC_USAGE_PRIVATE_CAMERA_HEAP \
     -DCAMERA_GRALLOC_CACHING_ID=0 \
     -include bionic/libc/include/sys/socket.h
-LOCAL_C_INCLUDES := $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
     $(LOCAL_PATH)/inc $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
     system/media/camera/include \
     $(call project-path-for,qcom-display)/libgralloc \
     $(call project-path-for,qcom-display)/libgenlock \
     $(call project-path-for,qcom-media)/mm-core/inc \
     $(call project-path-for,qcom-media)/libstagefrighthw
-LOCAL_SHARED_LIBRARIES := libutils libui libcamera_client liblog libcutils \
+LOCAL_SHARED_LIBRARIES := libutils libui libcamera_metadata liblog libcutils \
     libmmcamera_interface2 libgenlock libbinder libdl libnativewindow
-LOCAL_HEADER_LIBRARIES := libmedia_headers
+LOCAL_HEADER_LIBRARIES := libmedia_headers libutils_headers framework-permission-aidl-cpp
+LOCAL_STATIC_LIBRARIES := framework-permission-aidl-cpp
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
 include $(MIONE_DEVICE_CAMERA_PATH)/hal3on1/Android.mk

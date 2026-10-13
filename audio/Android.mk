@@ -9,4 +9,5 @@ LOCAL_SRC_FILES := bluetooth_audio.cpp
 LOCAL_CPP_STD := c++17
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 LOCAL_SHARED_LIBRARIES := libdl liblog libhidlbase libutils android.hardware.bluetooth.audio@2.0
+LOCAL_HEADER_LIBRARIES := audio_system_headers libhardware_headers
 include $(BUILD_SHARED_LIBRARY)

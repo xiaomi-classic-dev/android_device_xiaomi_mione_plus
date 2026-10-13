@@ -511,7 +511,7 @@ status_t QCameraHardwareInterface::dump(int fd, const Vector<String16>& args) co
     char buffer[SIZE];
     String8 result;
     AutoMutex lock(&mLock);
-    write(fd, result.string(), result.size());
+    write(fd, result.c_str(), result.size());
     ALOGI("dump: E");
     return NO_ERROR;
 }

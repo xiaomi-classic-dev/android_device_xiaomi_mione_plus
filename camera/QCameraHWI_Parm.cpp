@@ -812,7 +812,7 @@ void QCameraHardwareInterface::initDefaultParameters()
 
             mFpsRangesSupportedValues = create_fps_str(mSupportedFpsRanges, mSupportedFpsRangesCount);
 
-            ALOGD("supported fps ranges = %s", mFpsRangesSupportedValues.string());
+            ALOGD("supported fps ranges = %s", mFpsRangesSupportedValues.c_str());
             mParameters.set(QCameraParameters::KEY_SUPPORTED_PREVIEW_FPS_RANGE,
                 mFpsRangesSupportedValues);
             mParameters.setPreviewFpsRange(mSupportedFpsRanges[mSupportedFpsRangesCount-1].minFPS,
@@ -907,11 +907,11 @@ void QCameraHardwareInterface::initDefaultParameters()
     }
 
     //set supported video sizes
-    mParameters.set(QCameraParameters::KEY_SUPPORTED_VIDEO_SIZES, mVideoSizeValues.string());
+    mParameters.set(QCameraParameters::KEY_SUPPORTED_VIDEO_SIZES, mVideoSizeValues.c_str());
 
     //set default video size to first one in supported table
     String8 vSize = create_sizes_str(&mVideoSizes[0], 1);
-    mParameters.set(QCameraParameters::KEY_VIDEO_SIZE, vSize.string());
+    mParameters.set(QCameraParameters::KEY_VIDEO_SIZE, vSize.c_str());
 
     //Set Preview size
     int default_preview_width, default_preview_height;
@@ -921,7 +921,7 @@ void QCameraHardwareInterface::initDefaultParameters()
             &default_preview_height);
     mParameters.setPreviewSize(default_preview_width, default_preview_height);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_PREVIEW_SIZES,
-                    mPreviewSizeValues.string());
+                    mPreviewSizeValues.c_str());
     mDimension.display_width = default_preview_width;
     mDimension.display_height = default_preview_height;
 
@@ -937,7 +937,7 @@ void QCameraHardwareInterface::initDefaultParameters()
 
     if (cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_FPS)) {
         mParameters.set(QCameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES,
-                        mPreviewFrameRateValues.string());
+                        mPreviewFrameRateValues.c_str());
      } else {
         mParameters.set(
             QCameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES,
@@ -950,7 +950,7 @@ void QCameraHardwareInterface::initDefaultParameters()
             frame_rate_modes, sizeof(frame_rate_modes) / sizeof(str_map));
       if(cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_FPS_MODE)){
         mParameters.set(QCameraParameters::KEY_QC_SUPPORTED_PREVIEW_FRAME_RATE_MODES,
-                    mFrameRateModeValues.string());
+                    mFrameRateModeValues.c_str());
     }
 
     //Set Preview Format
@@ -960,7 +960,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mPreviewFormatValues = create_values_str(
         preview_formats, sizeof(preview_formats) / sizeof(str_map));
     mParameters.set(QCameraParameters::KEY_SUPPORTED_PREVIEW_FORMATS,
-            mPreviewFormatValues.string());
+            mPreviewFormatValues.c_str());
 
     //Set Overlay Format
     mParameters.set("overlay-format", HAL_PIXEL_FORMAT_YCbCr_420_SP);
@@ -990,7 +990,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     //Set Picture Size
     mParameters.setPictureSize(DEFAULT_PICTURE_WIDTH, DEFAULT_PICTURE_HEIGHT);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_PICTURE_SIZES,
-                    mPictureSizeValues.string());
+                    mPictureSizeValues.c_str());
 
     //Set Preview Frame Rate
     if(mFps >= MINIMUM_FPS && mFps <= MAXIMUM_FPS) {
@@ -1021,7 +1021,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set(QCameraParameters::KEY_JPEG_THUMBNAIL_QUALITY, "90");
     String8 valuesStr = create_sizes_str(default_thumbnail_sizes, thumbnail_sizes_count);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_JPEG_THUMBNAIL_SIZES,
-                valuesStr.string());
+                valuesStr.c_str());
     // Define CAMERA_SMOOTH_ZOOM in Android.mk file , to enable smoothzoom
 #ifdef CAMERA_SMOOTH_ZOOM
     mParameters.set(QCameraParameters::KEY_SMOOTH_ZOOM_SUPPORTED, "true");
@@ -1186,7 +1186,7 @@ void QCameraHardwareInterface::initDefaultParameters()
         mParameters.set(QCameraParameters::KEY_QC_VIDEO_HIGH_FRAME_RATE,
                     QCameraParameters::VIDEO_HFR_OFF);
         mParameters.set(QCameraParameters::KEY_QC_SUPPORTED_HFR_SIZES,
-                    mHfrSizeValues.string());
+                    mHfrSizeValues.c_str());
         mParameters.set(QCameraParameters::KEY_QC_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES,
                     mHfrValues);
     } else{
@@ -1482,7 +1482,7 @@ int QCameraHardwareInterface::getParameters(char **parms)
     rc = (char *)malloc(sizeof(char)*(str.length()+1));
     if(rc != NULL){
         memset(rc, 0, sizeof(char)*(str.length()+1));
-        strncpy(rc, str.string(), str.length());
+        strncpy(rc, str.c_str(), str.length());
 	rc[str.length()] = 0;
 	*parms = rc;
     }
@@ -1503,7 +1503,7 @@ void QCameraHardwareInterface::putParameters(char *rc)
 QCameraParameters& QCameraHardwareInterface::getParameters()
 {
     Mutex::Autolock lock(mLock);
-    mParameters.set(QCameraParameters::KEY_FOCUS_DISTANCES, mFocusDistance.string());
+    mParameters.set(QCameraParameters::KEY_FOCUS_DISTANCES, mFocusDistance.c_str());
     return mParameters;
 }
 
@@ -1753,7 +1753,7 @@ status_t QCameraHardwareInterface::updateFocusDistances()
             snprintf(buffer, sizeof(buffer), ",%f", focusDistances.focus_distance[2]);
             str.append(buffer);
         }
-        ALOGE("%s: setting KEY_FOCUS_DISTANCES as %s", __FUNCTION__, str.string());
+        ALOGE("%s: setting KEY_FOCUS_DISTANCES as %s", __FUNCTION__, str.c_str());
         mFocusDistance = str;
         return NO_ERROR;
     }
@@ -2090,7 +2090,7 @@ status_t QCameraHardwareInterface::setFocusMode(const QCameraParameters& params)
                ALOGE("%s: updateFocusDistances failed for %s", __FUNCTION__, str);
                return UNKNOWN_ERROR;
             }
-            mParameters.set(QCameraParameters::KEY_FOCUS_DISTANCES, mFocusDistance.string());
+            mParameters.set(QCameraParameters::KEY_FOCUS_DISTANCES, mFocusDistance.c_str());
             if(mHasAutoFocusSupport){
                 bool ret = native_set_parms(MM_CAMERA_PARM_FOCUS_MODE,
                                       sizeof(value),

@@ -397,7 +397,7 @@ status_t MemPool::dump(int fd, const Vector<String16>& args) const
              "buffer size (%d), number of buffers (%d), frame size(%d)",
              mBufferSize, mNumBuffers, mFrameSize);
     result.append(buffer);
-    write(fd, result.string(), result.size());
+    write(fd, result.c_str(), result.size());
     return NO_ERROR;
 }
 
