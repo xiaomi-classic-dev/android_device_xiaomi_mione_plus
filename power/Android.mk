@@ -23,9 +23,9 @@ LOCAL_OVERRIDES_MODULES := healthd android.hardware.health@2.1-service
 LOCAL_INIT_RC := android.hardware.health@2.1-service.mione.rc
 LOCAL_SRC_FILES := health_service.cpp
 LOCAL_WHOLE_STATIC_LIBRARIES := libhealthd.mione
-LOCAL_STATIC_LIBRARIES := libhealthservice \
-    android.hardware.health@2.0-impl android.hardware.health@1.0-convert \
-    libhealthstoragedefault libbatterymonitor
+LOCAL_STATIC_LIBRARIES := libhealth2impl libhealthloop \
+    android.hardware.health@1.0-convert libbatterymonitor
+LOCAL_HEADER_LIBRARIES := libhealthd_headers
 LOCAL_SHARED_LIBRARIES := libbase libcutils libhidlbase \
     liblog libutils android.hardware.health@2.0 android.hardware.health@2.1
 LOCAL_CFLAGS := -Wall -Wextra -Werror
