@@ -73,6 +73,12 @@ on post-fs-data
 # InputMethodManagerService
     mkdir /data/system/inputmethod 0755 system system
 
+# Apply MiOne memory thresholds after lmkd initializes its defaults.
+# minfree is in 4 KiB pages: 24/30/36/42/96/128 MiB.
+on property:sys.boot_completed=1
+    write /sys/module/lowmemorykiller/parameters/adj 0,100,200,250,900,950
+    write /sys/module/lowmemorykiller/parameters/minfree 6144,7680,9216,10752,24576,32768
+
 on charger
     write /sys/module/rpm_resources/enable_low_power/L2_cache 1
     write /sys/module/rpm_resources/enable_low_power/pxo 1
