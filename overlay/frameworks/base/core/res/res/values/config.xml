@@ -17,6 +17,9 @@
 */
 -->
 <resources>
+    <!-- Limit idle processes before legacy LMK pressure disrupts foreground apps. -->
+    <integer name="config_customizedMaxCachedProcesses">12</integer>
+
     <!-- Flag indicating whether we should enable the automatic brightness 
          in Settings. -->
     <bool name="config_automatic_brightness_available">true</bool>

@@ -305,8 +305,16 @@ $(call inherit-product, device/xiaomi/mione_plus/mione_bcm43xx.mk)
 # Use the requested WebView 120 ARM package with legacy GPU acceleration.
 PRODUCT_PACKAGES += mione_webview
 
-# dalvik tweak
-$(call inherit-product, frameworks/native/build/phone-hdpi-512-dalvik-heap.mk)
+# Use Android Go's bounded app heaps for the 745 MiB available to Android.
+# These are limits, not reservations; keep small initial/minimum allocations.
+PRODUCT_VENDOR_PROPERTIES += \
+    ro.config.low_ram=true \
+    dalvik.vm.heapstartsize=5m \
+    dalvik.vm.heapgrowthlimit=128m \
+    dalvik.vm.heapsize=256m \
+    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heapminfree=512k \
+    dalvik.vm.heapmaxfree=8m
 
 # Oreo adapters retain the device's source-built legacy HALs.
 PRODUCT_PACKAGES += \
