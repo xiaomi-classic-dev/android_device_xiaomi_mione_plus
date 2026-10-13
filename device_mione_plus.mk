@@ -318,7 +318,7 @@ PRODUCT_VENDOR_PROPERTIES += \
 
 # Oreo adapters retain the device's source-built legacy HALs.
 PRODUCT_PACKAGES += \
-    android.hardware.health@2.0-service.mione \
+    android.hardware.health@2.1-service.mione \
     android.hardware.audio@4.0-impl \
     android.hardware.audio.effect@4.0-impl \
     android.hardware.bluetooth.audio@2.0-impl \
