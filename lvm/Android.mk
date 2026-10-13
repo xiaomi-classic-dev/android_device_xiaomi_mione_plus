@@ -21,8 +21,8 @@ LOCAL_STATIC_LIBRARIES := libc
 include $(BUILD_EXECUTABLE)
 include $(CLEAR_VARS)
 LOCAL_MODULE := mione-lvm
-# Static Bionic is a platform library; retain the vendor install location.
-LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_EXECUTABLES)
+# Static Bionic is available to the platform static executable variant.
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
 LOCAL_SRC_FILES := mione_lvm.cpp
 LOCAL_CPPFLAGS := -std=c++11 -fno-exceptions -Wall -Wextra -Werror
 LOCAL_FORCE_STATIC_EXECUTABLE := true
