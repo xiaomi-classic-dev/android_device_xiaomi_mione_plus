@@ -14,7 +14,9 @@
           "sha256": "9e8c218c291f30650de5e732228121d4a4671051302a5933a7b618c4436c6531"
         }
       ],
-      "source_head": "31e73b8bb68685d64fe07a2a58eceb6abe78b537"
+      "source_head": "31e73b8bb68685d64fe07a2a58eceb6abe78b537",
+      "baseline_tree": "59fd2f6a59fb655f255c3bf2d2659c5eb3d8878d",
+      "equivalent_source_base": "6c64d96fc471982818d6b0fc1f96608a27151a89"
     },
     {
       "path": "vendor/lineage",
@@ -27,7 +29,9 @@
           "sha256": "0e380632999153a1c1b948be7991311baab8e2a7ff765cfec0edc927dd944ce5"
         }
       ],
-      "source_head": "e8a48fad9727062687dabc20b2549c5f70d32219"
+      "source_head": "e8a48fad9727062687dabc20b2549c5f70d32219",
+      "baseline_tree": "314d997c47ed20f89920c8e90c906b5fb152f823",
+      "equivalent_source_base": "f1110539e27ddff01de39bdd3c04369af8f4b268"
     },
     {
       "path": "packages/modules/Bluetooth",
@@ -58,7 +62,9 @@
           "sha256": "aba22cb8ac84071b9ac0dbd2644a49501b5fdf75cef059b007763814d47d1b55"
         }
       ],
-      "source_head": "eefbe788cd497dc8dd49e31047cd18e4edc2ea8c"
+      "source_head": "eefbe788cd497dc8dd49e31047cd18e4edc2ea8c",
+      "baseline_tree": "5a8cd8d31400d22705d8f659d04fdf3b94601ede",
+      "equivalent_source_base": "4b0f81313da4dce0f9b40d9161a33028f495e188"
     },
     {
       "path": "system/sepolicy",
@@ -71,7 +77,9 @@
           "sha256": "a4b3b65a6328aa0cf775f2584dbb78bcb21086a6bfe0d3b74ea4885895fe84f0"
         }
       ],
-      "source_head": "9042b6b9ac26b85d5fdcdf123cc08d933e0ec772"
+      "source_head": "9042b6b9ac26b85d5fdcdf123cc08d933e0ec772",
+      "baseline_tree": "9d2dbfb919c69ea2a62d6536ec4a75227a5c77b1",
+      "equivalent_source_base": "e053db49883a1bbe2817deca9ce040153a50fbae"
     }
   ],
   "port_docs_reference": {

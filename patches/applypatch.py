@@ -22,11 +22,29 @@ def prepare(top, project):
     git(repo, "rev-parse", "--show-toplevel")
     if git(repo, "status", "--porcelain", "--untracked-files=no").strip():
         raise RuntimeError("Tracked changes present: " + project["path"])
-    if subprocess.call(["git", "-C", str(repo), "merge-base", "--is-ancestor",
-                        base, "HEAD"]) != 0:
-        raise RuntimeError("Expected recorded baseline missing: " + project["path"])
+    baseline = None
+    for candidate in (base, project.get("equivalent_source_base")):
+        if candidate and subprocess.run(
+                ["git", "-C", str(repo), "merge-base", "--is-ancestor", candidate, "HEAD"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            baseline = candidate
+            break
+    # Replaying port-docs with git-am/cherry-pick changes commit identities.
+    # Accept the same complete source tree, including a partially applied
+    # increment series, without accepting an unrelated platform revision.
+    expected_tree = project.get("baseline_tree")
+    if baseline is None and expected_tree:
+        recent = git(repo, "rev-list", "--first-parent", "--max-count=" +
+                     str(len(project["patches"]) + 1), "HEAD").decode().splitlines()
+        baseline = next((commit for commit in recent if
+                         git(repo, "rev-parse", commit + "^{tree}").decode().strip()
+                         == expected_tree), None)
+    if baseline is None:
+        raise RuntimeError("Expected port-docs baseline missing: " + project["path"])
+    if expected_tree and git(repo, "rev-parse", baseline + "^{tree}").decode().strip() != expected_tree:
+        raise RuntimeError("Port-docs baseline tree differs: " + project["path"])
     history = git(repo, "log", "--no-merges", "--format=medium", "--binary", "-p",
-                  base + "..HEAD")
+                  baseline + "..HEAD")
     ids = subprocess.check_output(["git", "patch-id", "--stable"], input=history)
     applied = {line.split()[0].decode() for line in ids.splitlines()}
     pending = []

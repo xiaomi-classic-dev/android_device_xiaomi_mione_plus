@@ -25,7 +25,18 @@ def main():
         base = project["base_commit"]
         if git(repo, "status", "--porcelain", "--untracked-files=no").strip():
             raise RuntimeError("Tracked changes present: " + project["path"])
-        git(repo, "merge-base", "--is-ancestor", base, "HEAD")
+        candidates = (base, project.get("equivalent_source_base"))
+        base = next((candidate for candidate in candidates if candidate and
+                     subprocess.run(["git", "-C", str(repo), "merge-base", "--is-ancestor",
+                                     candidate, "HEAD"], stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.DEVNULL).returncode == 0), None)
+        if base is None:
+            raise RuntimeError("Recorded prerequisite missing: " + project["path"])
+        project["base_commit"] = base
+        baseline_tree = git(repo, "rev-parse", base + "^{tree}").decode().strip()
+        if project.get("baseline_tree", baseline_tree) != baseline_tree:
+            raise RuntimeError("Recorded prerequisite tree changed: " + project["path"])
+        project["baseline_tree"] = baseline_tree
         if git(repo, "rev-list", "--merges", base + "..HEAD").strip():
             raise RuntimeError("Nonlinear patch history: " + project["path"])
         previous = {p["source_commit"]: p["file"] for p in project["patches"]}
