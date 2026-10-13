@@ -244,6 +244,7 @@ TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE := true
 # Match Aries: use protocol v8 while retaining 32-bit ARM userspace.
 TARGET_USES_64_BIT_BINDER := true
 BOARD_KERNEL_IMAGE_NAME := zImage
+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := $(MIONE_PATH)/framework_compatibility_matrix.xml vendor/lineage/config/device_framework_matrix.xml
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
 # Enforce the declared HIDL transports without enabling full Treble.
 PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
