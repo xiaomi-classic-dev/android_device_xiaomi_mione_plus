@@ -296,8 +296,7 @@ PRODUCT_PACKAGES += libEGL_mione_compat
 # Use RGB video uploads while keeping WebView GPU rasterization/compositing.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/webview-command-line:$(TARGET_COPY_OUT_VENDOR)/etc/webview-command-line \
-    device/xiaomi/mione_plus/configs/init.mione.webview.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.mione.webview.rc \
-    device/xiaomi/mione_plus/configs/init.mione.memory.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.mione.memory.rc
+    device/xiaomi/mione_plus/configs/init.mione.webview.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.mione.webview.rc
 endif
 
 # xiaomi mione wifi config
