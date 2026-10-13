@@ -290,6 +290,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_ADB_KEYS := device/xiaomi/mione_plus/configs/adb_keys
 PRODUCT_PROPERTY_OVERRIDES += service.adb.root=1
 
+# Adapt the old Adreno window dequeue API to HWUI error recovery.
+PRODUCT_PACKAGES += libEGL_mione_compat
+
 # Use RGB video uploads while keeping WebView GPU rasterization/compositing.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/webview-command-line:$(TARGET_COPY_OUT_VENDOR)/etc/webview-command-line \
