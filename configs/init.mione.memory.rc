@@ -1,0 +1,11 @@
+# Apply the public framework setting after boot, when DeviceConfig is available.
+# Keep pre-boot protection; reclaim idle caches before legacy kernel LMK pressure.
+service mione-memory-config /system/bin/cmd device_config put activity_manager no_kill_cached_processes_post_boot_completed_duration_millis 30000 default
+    user root
+    group root
+    seclabel u:r:su:s0
+    disabled
+    oneshot
+
+on property:sys.boot_completed=1 && property:ro.config.low_ram=true && property:ro.debuggable=1
+    start mione-memory-config
