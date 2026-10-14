@@ -26,6 +26,9 @@ PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/msm8660
 # MiOne Plus originally shipped Android 2.3, before Treble and FBE.
 PRODUCT_SHIPPING_API_LEVEL := 10
 
+# Linux 3.4 has no userfaultfd; precompile with the runtime's supported GC.
+PRODUCT_ENABLE_UFFD_GC := false
+
 # Enable Android networking with the backported BPF kernel support.
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.kernel.ebpf.supported=1
 
@@ -318,7 +321,8 @@ PRODUCT_VENDOR_PROPERTIES += \
 
 # Concurrent-copying GC reserves twice dex2oat's heap capacity. A 512 MiB
 # compiler heap cannot reserve a contiguous 1 GiB region on this ARM32 layout.
-PRODUCT_SYSTEM_PROPERTIES += \
+# Product properties load after the platform defaults in system/build.prop.
+PRODUCT_PRODUCT_PROPERTIES += \
     dalvik.vm.dex2oat-Xms=32m \
     dalvik.vm.dex2oat-Xmx=256m
 
