@@ -5,6 +5,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES:= xdr.c rpc.c svc.c clnt.c ops.c svc_clnt_common.c
 
 LOCAL_C_INCLUDES:=$(LOCAL_PATH)
+LOCAL_HEADER_LIBRARIES := liblog_headers
 
 LOCAL_CFLAGS:= -fno-short-enums 
 

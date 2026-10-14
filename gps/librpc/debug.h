@@ -20,7 +20,7 @@
 #include <stdio.h>
 
 #define LOG_TAG "RPC"
-#include <utils/Log.h>
+#include <log/log.h>
 
 #ifdef RPC_LOG_TO_STDOUT_ONLY
 #define PRINT(x...) do {                                    \
@@ -39,7 +39,7 @@
 
 #ifdef DEBUG
 #define D(x...) PRINT(x...)
-#define LIBRPC_DEBUG(x...) do { SLOGD(x); } while(0)
+#define LIBRPC_DEBUG(x...) do { ALOGD(x); } while(0)
 #else
 #define D(x...) do { } while(0)
 #define LIBRPC_DEBUG(x...) do { } while(0)
