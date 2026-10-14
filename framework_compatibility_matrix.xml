@@ -36,6 +36,15 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <!-- The legacy single-SIM RIL still registers its Qualcomm OEM hook. -->
+    <hal format="hidl" optional="true">
+        <name>android.hardware.radio.deprecated</name>
+        <version>1.0</version>
+        <interface>
+            <name>IOemHook</name>
+            <instance>slot1</instance>
+        </interface>
+    </hal>
     <hal format="hidl" optional="true">
         <name>android.hardware.vibrator</name>
         <version>1.0</version>
