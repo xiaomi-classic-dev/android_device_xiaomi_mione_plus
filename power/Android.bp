@@ -13,7 +13,7 @@ cc_binary {
     name: "android.hardware.power-service.mione",
     vendor: true,
     relative_install_path: "hw",
-    init_rc: ["power.rc"],
+    init_rc: ["power-mione.rc"],
     vintf_fragments: ["power-mione.xml"],
     srcs: ["Power.cpp", "power.c"],
     shared_libs: ["liblog", "libcutils", "libbinder_ndk", "android.hardware.power-V3-ndk"],
