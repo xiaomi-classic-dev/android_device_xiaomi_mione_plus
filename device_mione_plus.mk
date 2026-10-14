@@ -316,6 +316,12 @@ PRODUCT_VENDOR_PROPERTIES += \
     dalvik.vm.heapminfree=512k \
     dalvik.vm.heapmaxfree=8m
 
+# Concurrent-copying GC reserves twice dex2oat's heap capacity. A 512 MiB
+# compiler heap cannot reserve a contiguous 1 GiB region on this ARM32 layout.
+PRODUCT_SYSTEM_PROPERTIES += \
+    dalvik.vm.dex2oat-Xms=32m \
+    dalvik.vm.dex2oat-Xmx=256m
+
 # Oreo adapters retain the device's source-built legacy HALs.
 PRODUCT_PACKAGES += \
     android.hardware.health@2.1-service.mione \
