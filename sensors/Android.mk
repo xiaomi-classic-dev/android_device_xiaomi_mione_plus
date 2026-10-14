@@ -5,5 +5,6 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_SRC_FILES := sensors_compat.cpp
 LOCAL_SHARED_LIBRARIES := libdl liblog
+LOCAL_HEADER_LIBRARIES := libhardware_headers
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 include $(BUILD_SHARED_LIBRARY)
