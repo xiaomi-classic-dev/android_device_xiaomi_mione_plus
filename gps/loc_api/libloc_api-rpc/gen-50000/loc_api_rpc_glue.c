@@ -50,6 +50,7 @@
 
 /* Include RPC headers */
 #include "loc_api_rpc_glue.h"
+#include "loc_api_sync_call.h"
 
 /* Callback init */
 #include "loc_apicb_appinit.h"
