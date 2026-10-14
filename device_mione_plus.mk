@@ -161,7 +161,7 @@ PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/firmware/vidc_1080p.fw:$(TARGET_COPY_OUT_VENDOR)/firmware/vidc_1080p.fw
 
 # Thermal configuration
-PRODUCT_PACKAGES += android.hardware.thermal@1.0-service.mione
+PRODUCT_PACKAGES += android.hardware.thermal@2.0-service.mione
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/thermald.conf:$(TARGET_COPY_OUT_VENDOR)/etc/thermald.conf
 

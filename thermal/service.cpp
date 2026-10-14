@@ -7,13 +7,14 @@
 #include "Thermal.h"
 
 int main() {
-    android::hardware::configureRpcThreadpool(1, true);
-    android::sp<android::hardware::thermal::V1_0::IThermal> service =
+    android::hardware::configureRpcThreadpool(4, true);
+    android::sp<android::hardware::thermal::V1_0::implementation::Thermal> service =
         new android::hardware::thermal::V1_0::implementation::Thermal();
     if (service->registerAsService() != android::OK) {
         ALOGE("Cannot register MiOne thermal service");
         return 1;
     }
+    service->start();
     android::hardware::joinRpcThreadpool();
     return 1;
 }

@@ -4,6 +4,8 @@
 #include "Thermal.h"
 #include <android-base/file.h>
 #include <android-base/strings.h>
+#include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <sstream>
@@ -152,5 +154,196 @@ Return<void> Thermal::getCoolingDevices(getCoolingDevices_cb cb) {
     status.code = ThermalStatusCode::SUCCESS;
     cb(status, hidl_vec<CoolingDevice>());
     return Void();
+}
+
+Thermal::Thermal() {
+    for (auto& threshold : mThresholds) {
+        for (size_t level = 0; level < 7; ++level) {
+            threshold.hotThrottlingThresholds[level] = NAN;
+            threshold.coldThrottlingThresholds[level] = NAN;
+        }
+        threshold.vrThrottlingThreshold = NAN;
+    }
+    mThresholds[0].type = t2::TemperatureType::CPU;
+    mThresholds[0].name = "tsens_tz_sensor0";
+    mThresholds[1].type = t2::TemperatureType::BATTERY;
+    mThresholds[1].name = "battery";
+    // Read the three actual MSM8660 thermald mitigation levels and hysteresis.
+    // No APQ8064 channels or invented critical/emergency thresholds.
+    std::ifstream config("/vendor/etc/thermald.conf");
+    std::string line;
+    bool section = false, hot = false, cold = false;
+    while (std::getline(config, line)) {
+        line = android::base::Trim(line);
+        if (!line.empty() && line[0] == '[')
+            section = line == "[tsens_tz_sensor0]";
+        if (!section)
+            continue;
+        std::istringstream fields(line);
+        std::string key;
+        fields >> key;
+        if (key != "thresholds" && key != "thresholds_clr")
+            continue;
+        auto& values = key == "thresholds" ? mThresholds[0].hotThrottlingThresholds :
+                                            mThresholds[0].coldThrottlingThresholds;
+        bool valid = true;
+        for (size_t level = 1; level <= 3; ++level)
+            valid = static_cast<bool>(fields >> values[level]) &&
+                    std::isfinite(values[level]) && valid;
+        if (key == "thresholds") hot = valid;
+        else cold = valid;
+    }
+    mPolicyValid = hot && cold;
+    for (size_t level = 1; level <= 3; ++level) {
+        const auto& threshold = mThresholds[0];
+        mPolicyValid = mPolicyValid &&
+            threshold.coldThrottlingThresholds[level] < threshold.hotThrottlingThresholds[level];
+        if (level > 1)
+            mPolicyValid = mPolicyValid &&
+                threshold.hotThrottlingThresholds[level-1] < threshold.hotThrottlingThresholds[level] &&
+                threshold.coldThrottlingThresholds[level-1] < threshold.coldThrottlingThresholds[level];
+    }
+    const float shutdown = shutdownThreshold();
+    mThresholds[0].hotThrottlingThresholds[6] = shutdown;
+    mThresholds[0].coldThrottlingThresholds[6] = shutdown;
+}
+
+Thermal::~Thermal() {
+    { std::lock_guard<std::mutex> guard(mClientMutex); mStopping = true; }
+    mChanged.notify_all();
+    if (mWorker.joinable()) mWorker.join();
+}
+
+void Thermal::start() { mWorker = std::thread([this] { poll(); }); }
+
+Return<void> Thermal::getCurrentTemperatures(bool filter, t2::TemperatureType type,
+        getCurrentTemperatures_cb cb) {
+    std::vector<t2::Temperature> selected;
+    bool valid = true;
+    {
+        std::lock_guard<std::mutex> guard(mSensorMutex);
+        getTemperatures([&](const ThermalStatus&, const hidl_vec<Temperature>& legacy) {
+            for (const auto& sensor : legacy) {
+                auto severity = t2::ThrottlingSeverity::NONE;
+                const auto sensorType = static_cast<t2::TemperatureType>(sensor.type);
+                if (sensorType == t2::TemperatureType::CPU && std::isfinite(sensor.currentValue)) {
+                    if (mPolicyValid) {
+                        while (mCpuSeverity > 0 && sensor.currentValue <=
+                                mThresholds[0].coldThrottlingThresholds[mCpuSeverity]) --mCpuSeverity;
+                        while (mCpuSeverity < 3 && sensor.currentValue >=
+                                mThresholds[0].hotThrottlingThresholds[mCpuSeverity+1]) ++mCpuSeverity;
+                        severity = static_cast<t2::ThrottlingSeverity>(mCpuSeverity);
+                    }
+                    const float shutdown = mThresholds[0].hotThrottlingThresholds[6];
+                    if (std::isfinite(shutdown) && sensor.currentValue >= shutdown)
+                        severity = t2::ThrottlingSeverity::SHUTDOWN;
+                }
+                if (!filter || sensorType == type) {
+                    valid = valid && std::isfinite(sensor.currentValue) &&
+                        (sensorType != t2::TemperatureType::CPU || mPolicyValid);
+                    selected.push_back({sensorType, sensor.name, sensor.currentValue, severity});
+                }
+            }
+        });
+    }
+    valid = valid && !selected.empty();
+    cb({valid ? ThermalStatusCode::SUCCESS : ThermalStatusCode::FAILURE,
+        valid ? "" : "MiOne sensor or thermald policy is unavailable"}, selected);
+    return Void();
+}
+
+Return<void> Thermal::getTemperatureThresholds(bool filter, t2::TemperatureType type,
+        getTemperatureThresholds_cb cb) {
+    std::vector<t2::TemperatureThreshold> selected;
+    bool valid = true;
+    for (const auto& threshold : mThresholds) {
+        if (filter && threshold.type != type) continue;
+        if (threshold.type == t2::TemperatureType::CPU) valid = mPolicyValid;
+        selected.push_back(threshold);
+    }
+    valid = valid && !selected.empty();
+    cb({valid ? ThermalStatusCode::SUCCESS : ThermalStatusCode::FAILURE,
+        valid ? "" : "Requested MiOne thermal policy is unavailable"}, selected);
+    return Void();
+}
+
+Return<void> Thermal::getCurrentCoolingDevices(bool, t2::CoolingType,
+        getCurrentCoolingDevices_cb cb) {
+    // The kernel has no cooling_device state interface; thermald sets CPU caps.
+    cb({ThermalStatusCode::SUCCESS, ""}, hidl_vec<t2::CoolingDevice>());
+    return Void();
+}
+
+Return<void> Thermal::registerThermalChangedCallback(const sp<t2::IThermalChangedCallback>& callback,
+        bool filter, t2::TemperatureType type, registerThermalChangedCallback_cb cb) {
+    bool valid = callback != nullptr;
+    {
+        std::lock_guard<std::mutex> guard(mClientMutex);
+        for (const auto& client : mClients)
+            if (android::hardware::interfacesEqual(client.callback, callback)) valid = false;
+        if (valid) mClients.push_back({callback, filter, type, {{-1, -1}}});
+    }
+    if (valid) mChanged.notify_all();
+    cb({valid ? ThermalStatusCode::SUCCESS : ThermalStatusCode::FAILURE,
+        valid ? "" : "Null or already registered callback"});
+    return Void();
+}
+
+Return<void> Thermal::unregisterThermalChangedCallback(const sp<t2::IThermalChangedCallback>& callback,
+        unregisterThermalChangedCallback_cb cb) {
+    bool removed;
+    {
+        std::lock_guard<std::mutex> guard(mClientMutex);
+        const auto before = mClients.size();
+        mClients.erase(std::remove_if(mClients.begin(), mClients.end(), [&](const Client& client) {
+            return android::hardware::interfacesEqual(client.callback, callback);
+        }), mClients.end());
+        removed = mClients.size() != before;
+    }
+    mChanged.notify_all();
+    cb({removed ? ThermalStatusCode::SUCCESS : ThermalStatusCode::FAILURE,
+        removed ? "" : "Callback is not registered"});
+    return Void();
+}
+
+void Thermal::poll() {
+    for (;;) {
+        {
+            std::unique_lock<std::mutex> guard(mClientMutex);
+            mChanged.wait(guard, [this] { return mStopping || !mClients.empty(); });
+            if (mStopping) return;
+        }
+        std::vector<t2::Temperature> temperatures;
+        getCurrentTemperatures(false, t2::TemperatureType::UNKNOWN,
+            [&](const ThermalStatus&, const hidl_vec<t2::Temperature>& current) {
+                temperatures.assign(current.begin(), current.end());
+            });
+        std::vector<std::pair<sp<t2::IThermalChangedCallback>, t2::Temperature>> notifications;
+        {
+            std::lock_guard<std::mutex> guard(mClientMutex);
+            for (auto& client : mClients) for (size_t i = 0; i < temperatures.size(); ++i) {
+                const auto& temperature = temperatures[i];
+                if (!std::isfinite(temperature.value) || (client.filter && client.type != temperature.type))
+                    continue;
+                const int severity = static_cast<int>(temperature.throttlingStatus);
+                if (client.last[i] != severity) {
+                    client.last[i] = severity;
+                    notifications.emplace_back(client.callback, temperature);
+                }
+            }
+        }
+        for (const auto& event : notifications) {
+            const auto result = event.first->notifyThrottling(event.second);
+            if (!result.isOk()) {
+                std::lock_guard<std::mutex> guard(mClientMutex);
+                mClients.erase(std::remove_if(mClients.begin(), mClients.end(), [&](const Client& client) {
+                    return android::hardware::interfacesEqual(client.callback, event.first);
+                }), mClients.end());
+            }
+        }
+        std::unique_lock<std::mutex> guard(mClientMutex);
+        mChanged.wait_for(guard, std::chrono::seconds(2), [this] { return mStopping || mClients.empty(); });
+        if (mStopping) return;
+    }
 }
 }}}}}

@@ -12,7 +12,7 @@
 /(vendor|system/vendor)/bin/hw/android\.hardware\.health@2\.1-service\.mione  u:object_r:hal_health_default_exec:s0
 /(vendor|system/vendor)/bin/hw/android\.hardware\.light@2\.0-service\.mione  u:object_r:hal_light_default_exec:s0
 /(vendor|system/vendor)/bin/hw/android\.hardware\.power-service\.mione  u:object_r:hal_power_default_exec:s0
-/(vendor|system/vendor)/bin/hw/android\.hardware\.thermal@1\.0-service\.mione  u:object_r:hal_thermal_default_exec:s0
+/(vendor|system/vendor)/bin/hw/android\.hardware\.thermal@2\.0-service\.mione  u:object_r:hal_thermal_default_exec:s0
 
 # The legacy sysfs inodes need userspace restorecon in addition to HAL labels.
 /sys/devices/i2c-0/0-0036/leds/backlight(/.*)?  u:object_r:sysfs_leds:s0
