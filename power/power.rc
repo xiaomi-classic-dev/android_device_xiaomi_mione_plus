@@ -1,0 +1,8 @@
+on post-fs-data
+    restorecon_recursive /sys/devices/system/cpu
+
+service vendor.power-mione /vendor/bin/hw/android.hardware.power-service.mione
+    class hal
+    user system
+    group system
+    interface aidl android.hardware.power.IPower/default

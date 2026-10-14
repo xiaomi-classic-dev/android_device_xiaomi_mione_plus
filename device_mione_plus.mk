@@ -188,7 +188,7 @@ PRODUCT_PACKAGES += mione-framework-overlays
 
 # MSM8660 power policy
 PRODUCT_PACKAGES += \
-    android.hardware.power@1.0-service.mione
+    android.hardware.power-service.mione
 
 # Translate the shipped CAF v6 RIL contract at the vendor library boundary.
 PRODUCT_PACKAGES += libril_mione

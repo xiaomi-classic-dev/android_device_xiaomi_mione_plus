@@ -8,3 +8,14 @@ cc_library_static {
     shared_libs: ["libcutils", "liblog"],
     cflags: ["-Wall", "-Wextra", "-Werror"],
 }
+
+cc_binary {
+    name: "android.hardware.power-service.mione",
+    vendor: true,
+    relative_install_path: "hw",
+    init_rc: ["power.rc"],
+    vintf_fragments: ["power-mione.xml"],
+    srcs: ["Power.cpp", "power.c"],
+    shared_libs: ["liblog", "libcutils", "libbinder_ndk", "android.hardware.power-V3-ndk"],
+    cflags: ["-Wall", "-Wextra", "-Werror"],
+}
