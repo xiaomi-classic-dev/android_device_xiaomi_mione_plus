@@ -17,7 +17,8 @@ WIFI_DRIVER_FW_PATH_PARAM := "/sys/module/bcmdhd/parameters/firmware_path"
 WPA_SUPPLICANT_VERSION := VER_0_8_X
 
 # old mione device have bcm4329 chip (M1, M1CU, M1C1, M1youth)
-WIFI_DRIVER_MODULE_NAME := bcmdhd
+# Android 14 libwifi-hal passes this value directly as a C string macro.
+WIFI_DRIVER_MODULE_NAME := "bcmdhd"
 WIFI_DRIVER_MODULE_PATH := "/vendor/lib/modules/bcmdhd.ko"
 WIFI_DRIVER_MODULE_ARG  := "firmware_path=/vendor/firmware/fw_bcm4329.bin nvram_path=/vendor/etc/wifi/nvram.txt"
 WIFI_DRIVER_FW_PATH_STA := "/vendor/firmware/fw_bcm4329.bin"
