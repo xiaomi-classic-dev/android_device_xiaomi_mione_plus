@@ -1,9 +1,13 @@
 type mione_bdaddr, domain;
 type mione_bdaddr_exec, exec_type, vendor_file_type, file_type;
+type mione_bdaddr_data_file, file_type, data_file_type;
 init_daemon_domain(mione_bdaddr)
 
 # The legacy RPC blobs request executable anonymous memory.
 allow mione_bdaddr self:process execmem;
 allow mione_bdaddr mione_nv_device:chr_file rw_file_perms;
-allow mione_bdaddr bluetooth_data_file:dir rw_dir_perms;
-allow mione_bdaddr bluetooth_data_file:file create_file_perms;
+allow mione_bdaddr mione_bdaddr_data_file:dir rw_dir_perms;
+allow mione_bdaddr mione_bdaddr_data_file:file create_file_perms;
+
+file_type_auto_trans(mione_bdaddr, mione_bdaddr_data_file, mione_bdaddr_data_file)
+r_dir_file(hal_bluetooth_default, mione_bdaddr_data_file)

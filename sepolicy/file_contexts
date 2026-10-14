@@ -25,3 +25,5 @@
 /dev/block/mmcblk0                            u:object_r:mione_disk_device:s0
 /dev/block/mmcblk0p15                         u:object_r:mione_pv_device:s0
 /dev/block/mmcblk0p20                         u:object_r:mione_pv_device:s0
+
+/data/vendor/bluetooth(/.*)?                   u:object_r:mione_bdaddr_data_file:s0

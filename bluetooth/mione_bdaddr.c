@@ -13,7 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BDADDR_FILE "/data/misc/bluetooth/bdaddr"
+#define BDADDR_FILE "/data/vendor/bluetooth/bdaddr"
 #define NV_READ_F 0
 #define NV_BD_ADDR_I 447
 

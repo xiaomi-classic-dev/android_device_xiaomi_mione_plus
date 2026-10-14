@@ -61,7 +61,13 @@ on post-fs-data
     # its trace-marker mode before WebView zygote reopens the inherited fd.
     chmod 0222 /sys/kernel/debug/tracing/trace_marker
     mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
-    setprop ro.bt.bdaddr_path /data/misc/bluetooth/bdaddr
+    mkdir /data/vendor/bluetooth 0770 bluetooth bluetooth
+    # Retain the previous address if the modem/NV read is temporarily unavailable.
+    copy /data/misc/bluetooth/bdaddr /data/vendor/bluetooth/bdaddr
+    chown bluetooth bluetooth /data/vendor/bluetooth/bdaddr
+    chmod 0640 /data/vendor/bluetooth/bdaddr
+    restorecon_recursive /data/vendor/bluetooth
+    setprop ro.bt.bdaddr_path /data/vendor/bluetooth/bdaddr
     restorecon /vendor/bin/mione_bdaddr
     start mione-bdaddr
 # double check /data/radio
