@@ -216,8 +216,9 @@ TARGET_USERIMAGES_USE_EXT4 := true
 BUILD_BROKEN_NINJA_USES_ENV_VARS += MKE2FS_CONFIG
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
-# Requires at least a 1.5 GiB System logical volume in the MiOne LVM pool.
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1610612736
+# Android 14 plus the LVM-aware recovery refresh needs a 1600 MiB System LV.
+# The OTA checker verifies the actual active LV capacity before any writes.
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1677721600
 # Cache keeps its physical p19 capacity.
 BOARD_CACHEIMAGE_PARTITION_SIZE := 188743680
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
