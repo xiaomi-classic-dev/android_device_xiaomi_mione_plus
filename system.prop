@@ -39,8 +39,10 @@ ro.bq.gpu_to_cpu_unsupported=1
 debug.egl.recordable.rgba8888=1
 
 #system props for the MM modules
-# Codec2's uncached system-heap buffers cannot be mapped by legacy MSM8660 ION.
-debug.stagefright.ccodec=0
+# Keep OMX hardware video first while enabling Android 14 Codec2 audio.
+debug.stagefright.ccodec=1
+# ION + BufferQueue + gralloc BLOB; linear buffers prefer cached BLOB allocations.
+debug.stagefright.c2-poolmask=851968
 media.stagefright.enable-record=true
 media.stagefright.enable-player=true
 media.stagefright.enable-http=true
