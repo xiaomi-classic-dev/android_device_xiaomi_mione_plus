@@ -7,7 +7,8 @@
  */
 
 #define LOG_TAG "libreadmac"
-#include "cutils/log.h"
+#include <log/log.h>
+#include <stddef.h>
 
 /* temp until they appear in a header file somewhere */
 extern void oncrpc_task_start(void);
@@ -86,4 +87,3 @@ const unsigned char *read_mac()
  * ret = wifi_get_mac_addr(buf);
  *
  */
-

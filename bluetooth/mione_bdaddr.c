@@ -3,7 +3,7 @@
  */
 
 #define LOG_TAG "mione_bdaddr"
-#include <cutils/log.h>
+#include <log/log.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>

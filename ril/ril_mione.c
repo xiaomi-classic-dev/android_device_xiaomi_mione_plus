@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cutils/log.h>
+#include <log/log.h>
 #include <telephony/ril.h>
 
 #ifndef MIONE_VENDOR_RIL

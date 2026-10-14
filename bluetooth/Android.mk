@@ -19,6 +19,7 @@ LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := mione_bdaddr.c
 LOCAL_SHARED_LIBRARIES := libdl liblog
+LOCAL_HEADER_LIBRARIES := liblog_headers
 LOCAL_CFLAGS := -Wall -Wextra -Werror
 include $(BUILD_EXECUTABLE)
 

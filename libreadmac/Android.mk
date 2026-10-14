@@ -6,6 +6,6 @@ LOCAL_MODULE:= libreadmac
 LOCAL_VENDOR_MODULE := true
 LOCAL_MODULE_TAGS := optional
 LOCAL_SHARED_LIBRARIES := libnv liboncrpc liblog
+LOCAL_HEADER_LIBRARIES := liblog_headers
 
 include $(BUILD_STATIC_LIBRARY)
-
