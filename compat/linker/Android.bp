@@ -42,6 +42,7 @@ cc_library_static {
     srcs: ["dl_iterate_phdr_static.cpp", "exidx_static.c"],
     cflags: ["-DLIBC_STATIC"],
     include_dirs: ["bionic/libc", "bionic/libc/bionic"],
+    static_libs: ["libc"],
     stl: "none",
     system_shared_libs: [],
 }
