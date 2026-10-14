@@ -118,3 +118,7 @@ media.settings.xml=/vendor/etc/media_profiles.xml
 
 # Adreno 220 uses the GLES RenderEngine path on Android 12.
 debug.renderengine.backend=gles
+
+# First-boot APN/import and role setup exceed modern defaults on MSM8660.
+# Preserve watchdogs while scaling their hardware-dependent deadlines.
+ro.hw_timeout_multiplier=3
