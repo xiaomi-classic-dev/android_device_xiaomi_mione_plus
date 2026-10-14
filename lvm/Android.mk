@@ -24,7 +24,7 @@ LOCAL_MODULE := mione-lvm
 # Static Bionic is available to the platform static executable variant.
 LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
 LOCAL_SRC_FILES := mione_lvm.cpp
-LOCAL_CPPFLAGS := -std=c++11 -fno-exceptions -Wall -Wextra -Werror
+LOCAL_CPPFLAGS := -std=c++11 -fno-exceptions -Wall -Wextra -Werror -DMIONE_RUNTIME
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_PACK_MODULE_RELOCATIONS := false
 LOCAL_CXX_STL := libc++_static

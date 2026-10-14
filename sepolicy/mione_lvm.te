@@ -1,12 +1,13 @@
 # The static runtime helper activates the existing volume group before mount_all.
-type mione_lvm, domain;
+type mione_lvm, domain, coredomain;
 type mione_lvm_exec, exec_type, system_file_type, file_type;
-type mione_lvm2_exec, exec_type, vendor_file_type, file_type;
+type mione_lvm2_exec, exec_type, system_file_type, file_type;
 type mione_lvm_tmp_file, file_type;
 type mione_disk_device, dev_type;
+type mione_pv_device, dev_type;
 init_daemon_domain(mione_lvm)
 
-allow mione_lvm self:global_capability_class_set { sys_admin mknod };
+allow mione_lvm self:global_capability_class_set sys_admin;
 allow mione_lvm mione_lvm2_exec:file { rx_file_perms execute_no_trans };
 r_dir_file(mione_lvm, vendor_file)
 r_dir_file(mione_lvm, sysfs)
@@ -14,14 +15,12 @@ r_dir_file(mione_lvm, sysfs_type)
 r_dir_file(mione_lvm, proc)
 allow mione_lvm proc_mounts:file r_file_perms;
 allow mione_lvm mione_disk_device:blk_file r_file_perms;
-allow mione_lvm { system_block_device userdata_block_device }:blk_file rw_file_perms;
-allow mione_lvm dm_device:blk_file { create rw_file_perms };
-allow mione_lvm dm_device:chr_file { create rw_file_perms };
+allow mione_lvm mione_pv_device:blk_file rw_file_perms;
+allow mione_lvm dm_device:blk_file rw_file_perms;
+allow mione_lvm dm_device:chr_file rw_file_perms;
 allow mione_lvm device:dir rw_dir_perms;
 allow mione_lvm device:lnk_file { create_file_perms };
 type_transition mione_lvm device:dir mione_lvm_tmp_file "mione-lvm";
-type_transition mione_lvm device:chr_file dm_device "control";
-type_transition mione_lvm device:blk_file dm_device;
 file_type_auto_trans(mione_lvm, mione_lvm_tmp_file, mione_lvm_tmp_file)
 r_dir_file(init, mione_lvm_tmp_file)
 r_dir_file(vendor_init, mione_lvm_tmp_file)

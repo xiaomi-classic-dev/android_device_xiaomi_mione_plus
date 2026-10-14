@@ -98,12 +98,28 @@ static std::string lvm(std::vector<std::string> a) { a.insert(a.begin(),tool); /
 static void mkdirs() {
     for(const char *p:{"/dev/mione-lvm","/dev/mione-lvm/run","/dev/mione-lvm/lock","/dev/mione-lvm/archive","/dev/mione-lvm/backup","/dev/block/mapper"})
         need(mkdir(p,0700)==0 || errno==EEXIST,"mkdir failed");
-    if(access(tool,X_OK)) tool="/vendor/bin/mione-lvm2";
+    if(access(tool,X_OK)) tool="/system/bin/mione-lvm2";
     setenv("LVM_SYSTEM_DIR",!strcmp(tool,"/sbin/mione-lvm2")?"/lvm/etc":"/vendor/etc/lvm",1);
     need(mkdir("/dev/mapper",0755)==0 || errno==EEXIST,"cannot create mapper directory");
     unsigned ma=0,mi=0; FILE *dm=fopen("/sys/class/misc/device-mapper/dev","r");
     need(dm && fscanf(dm,"%u:%u",&ma,&mi)==2,"kernel lacks device mapper"); fclose(dm);
-    need(mknod("/dev/mapper/control",S_IFCHR|0600,makedev(ma,mi))==0 || errno==EEXIST,"cannot create dm control"); setenv("LC_ALL","C",1);
+#ifdef MIONE_RUNTIME
+    // Init/ueventd own device-node creation once Android policy is active.
+    struct stat control;
+    if (stat("/dev/mapper/control", &control) != 0) {
+        for (unsigned retry=0; retry<50 && stat("/dev/device-mapper", &control)!=0; ++retry)
+            usleep(100000);
+        need(!stat("/dev/device-mapper", &control) && S_ISCHR(control.st_mode) &&
+             control.st_rdev==makedev(ma,mi), "ueventd device-mapper control unavailable");
+        need(symlink("/dev/device-mapper", "/dev/mapper/control")==0 || errno==EEXIST,
+             "cannot link dm control");
+    }
+    need(!stat("/dev/mapper/control", &control) && S_ISCHR(control.st_mode) &&
+         control.st_rdev==makedev(ma,mi), "dm control identity mismatch");
+#else
+    need(mknod("/dev/mapper/control",S_IFCHR|0600,makedev(ma,mi))==0 || errno==EEXIST,"cannot create dm control");
+#endif
+    setenv("LC_ALL","C",1);
 }
 static uint64_t integer(const std::string &s) {
     need(!s.empty() && s.find_first_not_of("0123456789")==std::string::npos,"invalid numeric value");
@@ -181,7 +197,15 @@ static std::string dmNode(const char *name) {
         result="/dev/block/"+n;
         auto dev=trim(file("/sys/class/block/"+n+"/dev")); auto p=dev.find(':'); need(p!=std::string::npos,"bad dm device number");
         dev_t number=makedev(integer(dev.substr(0,p)),integer(dev.substr(p+1)));
+#ifdef MIONE_RUNTIME
+        struct stat st;
+        for (unsigned retry=0; retry<50 && stat(result.c_str(), &st)!=0; ++retry)
+            usleep(100000);
+        need(!stat(result.c_str(), &st) && S_ISBLK(st.st_mode) && st.st_rdev==number,
+             "ueventd dm node unavailable or conflicting");
+#else
         if(mknod(result.c_str(),S_IFBLK|0600,number)!=0) { struct stat st; need(errno==EEXIST && !stat(result.c_str(),&st) && S_ISBLK(st.st_mode) && st.st_rdev==number,"dm node conflict"); }
+#endif
     }
     closedir(dir); need(!result.empty(),"missing dm map"); return result;
 }

@@ -20,8 +20,8 @@
 /sys/devices/system/cpu(/.*)?  u:object_r:sysfs_devices_system_cpu:s0
 
 /system/bin/mione-lvm                         u:object_r:mione_lvm_exec:s0
-/(vendor|system/vendor)/bin/mione-lvm2         u:object_r:mione_lvm2_exec:s0
+/system/bin/mione-lvm2         u:object_r:mione_lvm2_exec:s0
 /dev/mione-lvm(/.*)?                          u:object_r:mione_lvm_tmp_file:s0
 /dev/block/mmcblk0                            u:object_r:mione_disk_device:s0
-/dev/block/mmcblk0p15                         u:object_r:system_block_device:s0
-/dev/block/mmcblk0p20                         u:object_r:userdata_block_device:s0
+/dev/block/mmcblk0p15                         u:object_r:mione_pv_device:s0
+/dev/block/mmcblk0p20                         u:object_r:mione_pv_device:s0
