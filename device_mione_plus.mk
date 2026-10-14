@@ -389,3 +389,6 @@ PRODUCT_SYSTEM_PROPERTIES += \
     bluetooth.profile.pan.panu.enabled=true \
     bluetooth.profile.pbap.server.enabled=true \
     bluetooth.profile.sap.server.enabled=true
+
+# Fixed-address legacy vendor daemons use a MiOne-only Android 14 interpreter.
+PRODUCT_PACKAGES += linker_mione_legacy

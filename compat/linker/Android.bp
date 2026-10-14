@@ -1,0 +1,37 @@
+// Device-only Android 14 interpreter for MiOne's retained vendor daemons.
+// The shared implementation and all dependencies come from the current Bionic
+// checkout. Only linker_main.cpp differs, by an exact vendor executable allowlist.
+cc_binary {
+    name: "linker_mione_legacy",
+    defaults: ["process_sdk_version_overrides_defaults", "shim_libs_defaults"],
+    compile_multilib: "32",
+    srcs: [
+        ":linker_sources",
+        ":linker_sources_arm",
+        "linker_main.cpp",
+        "linker_translate_path.cpp",
+    ],
+    include_dirs: ["bionic/linker", "bionic/libc"],
+    cflags: ["-ffreestanding", "-fno-stack-protector", "-Wstrict-overflow=5", "-fvisibility=hidden", "-Wall", "-Wextra", "-Wunused", "-Werror", "-D__work_around_b_24465209__"],
+    cppflags: ["-Wold-style-cast"],
+    asflags: ["-fno-stack-protector", "-fvisibility=hidden"],
+    product_variables: { debuggable: { cppflags: ["-DUSE_LD_CONFIG_FILE"] } },
+    ldflags: ["-shared", "-Wl,-Bsymbolic", "-Wl,--exclude-libs,ALL", "-Wl,-soname,ld-android.so"],
+    version_script: "linker.arm.map",
+    stl: "none",
+    nocrt: true,
+    static_executable: true,
+    prefix_symbols: "__dl_",
+    strip: { keep_symbols_and_debug_frame: true },
+    static_libs: [
+        "liblinker_malloc", "libc++_static", "libc_nomalloc",
+        "libc_dynamic_dispatch", "libm", "libunwind",
+        "libziparchive", "libbase", "libz", "libasync_safe", "liblog",
+        "liblinker_debuggerd_stub",
+    ],
+    whole_static_libs: ["libc_unwind_static"],
+    system_shared_libs: [],
+    native_coverage: false,
+    sanitize: { hwaddress: false },
+    symlinks: ["mld"],
+}
