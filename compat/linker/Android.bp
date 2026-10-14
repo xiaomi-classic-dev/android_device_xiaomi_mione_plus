@@ -10,6 +10,7 @@ cc_binary {
         ":linker_sources_arm",
         "linker_main.cpp",
         "linker_translate_path.cpp",
+        "linker_memory.cpp",
     ],
     include_dirs: ["bionic/linker", "bionic/libc"],
     cflags: ["-ffreestanding", "-fno-stack-protector", "-Wstrict-overflow=5", "-fvisibility=hidden", "-Wall", "-Wextra", "-Wunused", "-Werror", "-D__work_around_b_24465209__"],
@@ -24,8 +25,7 @@ cc_binary {
     prefix_symbols: "__dl_",
     strip: { keep_symbols_and_debug_frame: true },
     static_libs: [
-        "liblinker_malloc", "libc++_static", "libc_nomalloc",
-        "libc_dynamic_dispatch", "libm", "libunwind",
+        "libc++_static", "libc", "libm", "libunwind",
         "libziparchive", "libbase", "libz", "libasync_safe", "liblog",
         "liblinker_debuggerd_stub",
     ],

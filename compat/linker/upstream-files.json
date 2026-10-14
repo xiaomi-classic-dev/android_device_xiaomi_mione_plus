@@ -10,16 +10,16 @@
       "upstream_sha256": "ddfe220f9dddc717cc72b3692188a1d63a44741cd04e12e24996a9ca866b3860"
     },
     {
-      "file": "linker_debuggerd_android.cpp",
-      "upstream_sha256": "5e37f9d185afacde390ddc35bb13a22f441a738aaa7436108e5ad2b0a00069a8"
-    },
-    {
       "file": "linker.arm.map",
       "upstream_sha256": "c20a64a56452c704df941dd1a5affb0ca5d6b4a486b15e9f99c65f3595b37a4f"
     },
     {
       "file": "NOTICE",
       "upstream_sha256": "9b21ce9515b6a293469aab6a98de5ed242760c9f90e2026fb8e9c2602220c0eb"
+    },
+    {
+      "file": "linker_memory.cpp",
+      "upstream_sha256": "61bfc193da321ac1444c448fa854f6fa4fc5f5a37704bdeea0d5cbeece271635"
     }
   ],
   "allowlist_origin": "LineageOS/android_bionic non-PIE patch55db1141913a77289abd293bca807e0520fd600a; MiOne Lineage20 adaptation31e73b8bb68685d64fe07a2a58eceb6abe78b537",
