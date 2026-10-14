@@ -1,0 +1,68 @@
+From f8d49ae546e72d7846294524c8fe910e3017a128 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Thu, 15 Oct 2026 00:33:21 +0800
+Subject: [PATCH] Bluetooth: report zero LE capabilities on classic controllers
+
+Adapt the MiOne Android13 BTA startup and feature reporting guards to the Android14 ACL callback. LE controllers retain their existing initialization.
+
+Adapted-from: eca30ea0736094989ca6499889dbd60503779ab6
+Change-Id: I0d6de0af7d53074a2894855067616b8b3eb75ff5
+---
+ system/bta/dm/bta_dm_act.cc  | 22 +++++++++++++---------
+ system/btif/src/btif_core.cc |  9 ++++++++-
+ 2 files changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/system/bta/dm/bta_dm_act.cc b/system/bta/dm/bta_dm_act.cc
+index d66f68450c..23637035d7 100644
+--- a/system/bta/dm/bta_dm_act.cc
++++ b/system/bta/dm/bta_dm_act.cc
+@@ -268,16 +268,20 @@ void BTA_dm_on_hw_on() {
+       osi_property_get_int32(PROPERTY_PAGE_TIMEOUT,
+                              p_bta_dm_cfg->page_timeout));
+ 
+-  if (ble_vnd_is_included()) {
+-    get_btm_client_interface().ble.BTM_BleReadControllerFeatures(
+-        bta_dm_ctrl_features_rd_cmpl_cback);
+-  } else {
+-    /* Set controller features even if vendor support is not included */
+-    if (bta_dm_acl_cb.p_acl_cback)
+-      bta_dm_acl_cb.p_acl_cback(BTA_DM_LE_FEATURES_READ, NULL);
+-  }
++  if (controller_get_interface()->supports_ble()) {
++    if (ble_vnd_is_included()) {
++      get_btm_client_interface().ble.BTM_BleReadControllerFeatures(
++          bta_dm_ctrl_features_rd_cmpl_cback);
++    } else {
++      /* Set controller features even if vendor support is not included */
++      if (bta_dm_acl_cb.p_acl_cback)
++        bta_dm_acl_cb.p_acl_cback(BTA_DM_LE_FEATURES_READ, NULL);
++    }
+ 
+-  btm_ble_scanner_init();
++    btm_ble_scanner_init();
++  } else if (bta_dm_acl_cb.p_acl_cback) {
++    bta_dm_acl_cb.p_acl_cback(BTA_DM_LE_FEATURES_READ, NULL);
++  }
+ 
+   /* Earlier, we used to invoke BTM_ReadLocalAddr which was just copying the
+      bd_addr
+diff --git a/system/btif/src/btif_core.cc b/system/btif/src/btif_core.cc
+index 56ffd20f1e..a54274838c 100644
+--- a/system/btif/src/btif_core.cc
++++ b/system/btif/src/btif_core.cc
+@@ -454,7 +454,14 @@ void btif_get_adapter_property(bt_property_type_t type) {
+   prop.len = sizeof(buf);
+   if (prop.type == BT_PROPERTY_LOCAL_LE_FEATURES) {
+     tBTM_BLE_VSC_CB cmn_vsc_cb;
+-    bt_local_le_features_t local_le_features;
++    bt_local_le_features_t local_le_features = {};
++
++    if (!controller_get_interface()->supports_ble()) {
++      prop.len = sizeof(local_le_features);
++      memcpy(prop.val, &local_le_features, prop.len);
++      invoke_adapter_properties_cb(status, 1, &prop);
++      return;
++    }
+ 
+     /* LE features are not stored in storage. Should be retrived from stack
+      */

@@ -1,10 +1,10 @@
 {
   "android_version": 14,
   "lineage_branch": "lineage-21.0",
-  "prerequisite": "Apply the Android 14 port-docs baseline (34 repositories, 129 commits) before any MiOne platform increments. The exact prerequisite heads and trees are recorded per project. MiOne device/vendor/kernel/MSM8660 HAL changes live in their own lineage-21.0 Git histories; no Android 13 patch is reused here.",
+  "prerequisite": "Apply the Android14 port-docs baseline (34 repositories, 129 commits) first. Exact prerequisite heads/trees are recorded per project. MiOne device/vendor/kernel/MSM8660 HAL changes live in their own Git histories. Bluetooth classic-controller increments are adapted from the previous device patches to Android14 APIs.",
   "android14_prerequisite_repository_count": 34,
   "android14_prerequisite_commit_count": 129,
-  "mione_platform_increment_count": 0,
+  "mione_platform_increment_count": 4,
   "projects": [
     {
       "path": "art",
@@ -233,9 +233,34 @@
       "port_docs_commit_count": 3,
       "base_commit": "ae19826fe5f097280104fd0c2fa9391c8bc3d33f",
       "baseline_tree": "e1d92865ad095798c3eaf647de3d56146bff22c6",
-      "patches": [],
+      "patches": [
+        {
+          "file": "packages-modules-Bluetooth/0001-Bluetooth-initialize-GD-LE-capabilities-only-on-LE-controllers.patch",
+          "source_commit": "0c72713d86013fcc12c03c57f522b42c375950bc",
+          "patch_id": "b1e9b4491e2aed47ba00eccddfc744386cdd2143",
+          "sha256": "0315722e1a71ed28f975d4f09c6362259f996d7b245bad1c40b63c76e510e691"
+        },
+        {
+          "file": "packages-modules-Bluetooth/0002-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
+          "source_commit": "19374b63b213b2807290d2c915e88fbd7f4a8e14",
+          "patch_id": "67437f19d52db04ec8c2c67f01c9646b8679575a",
+          "sha256": "ab77389f1d2aee52917d030f751bfb9213501b429000caec385caddace6cf776"
+        },
+        {
+          "file": "packages-modules-Bluetooth/0003-Bluetooth-report-zero-LE-capabilities-on-classic-controllers.patch",
+          "source_commit": "f8d49ae546e72d7846294524c8fe910e3017a128",
+          "patch_id": "0d36d4c15b334d0df6d7b013a3ef5b29c796c803",
+          "sha256": "5c6361af882457f47e2c33c3d72bc7b8fbf9a48ebca931e1330e77371edaa630"
+        },
+        {
+          "file": "packages-modules-Bluetooth/0004-Bluetooth-keep-LE-managers-inactive-on-classic-controllers.patch",
+          "source_commit": "2d07f7260c40b8986bc9d0ee826834ebcf9fbdd5",
+          "patch_id": "f913cb5ccc5e123d35d952f09897da7bdc2ed908",
+          "sha256": "b2a52ee0119cd91e10c0f9e2a3d76df69fcc7c70a9f904c84c424c695fafe5ac"
+        }
+      ],
       "inherited_commit_count": 0,
-      "source_head": "ae19826fe5f097280104fd0c2fa9391c8bc3d33f"
+      "source_head": "2d07f7260c40b8986bc9d0ee826834ebcf9fbdd5"
     },
     {
       "path": "packages/modules/NetworkStack",

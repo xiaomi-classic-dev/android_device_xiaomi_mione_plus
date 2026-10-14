@@ -63,6 +63,7 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
+    series["mione_platform_increment_count"] = sum(len(p["patches"]) for p in series["projects"])
     (PATCH_ROOT / "series.json").write_text(json.dumps(series, indent=2) + "\n")
     print("Exported %d platform patches" % sum(len(p["patches"]) for p in series["projects"]))
 
