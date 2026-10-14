@@ -4,6 +4,7 @@
 #include "Thermal.h"
 #include <android-base/file.h>
 #include <android-base/strings.h>
+#include <hidl/HidlTransportSupport.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
