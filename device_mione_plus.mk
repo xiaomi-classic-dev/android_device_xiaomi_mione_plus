@@ -352,11 +352,12 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += fs_config_files
 
 
-# LVM utilities: bootstrap in the ramdisk and runtime fstab preparation in vendor.
+# LVM utilities: bootstrap in the ramdisk and runtime fstab preparation in system.
 PRODUCT_PACKAGES += mione-lvm-ramdisk mione-lvm-init mione-lvm-recovery-init mione-lvm
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/lvm/prebuilt/lvm:$(TARGET_COPY_OUT_SYSTEM)/bin/mione-lvm2 \
-    device/xiaomi/mione_plus/lvm/lvm.conf:$(TARGET_COPY_OUT_VENDOR)/etc/lvm/lvm.conf
+    device/xiaomi/mione_plus/lvm/lvm.conf:$(TARGET_COPY_OUT_SYSTEM)/etc/lvm/lvm.conf \
+    device/xiaomi/mione_plus/rootdir/etc/fstab.qcom:$(TARGET_COPY_OUT_SYSTEM)/etc/fstab.mione_lvm
 
 # Camera3 adapter over the source-built MSM8660 backend.
 PRODUCT_PACKAGES += Camera2

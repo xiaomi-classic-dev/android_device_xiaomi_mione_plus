@@ -1,0 +1,5 @@
+# Actual MSM8660 eMMC controller and device-mapper attributes used by LVM.
+genfscon sysfs /devices/platform/msm_sdcc.1/mmc_host u:object_r:mione_lvm_sysfs:s0
+genfscon sysfs /devices/virtual/misc/device-mapper u:object_r:mione_lvm_sysfs:s0
+# The static LVM tool discovers block major numbers here.
+genfscon proc /devices u:object_r:mione_lvm_proc_devices:s0

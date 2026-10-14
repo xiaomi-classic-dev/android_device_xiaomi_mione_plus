@@ -2,17 +2,24 @@
 type mione_lvm, domain, coredomain;
 type mione_lvm_exec, exec_type, system_file_type, file_type;
 type mione_lvm2_exec, exec_type, system_file_type, file_type;
+type mione_lvm_config_file, system_file_type, file_type;
 type mione_lvm_tmp_file, file_type;
+type mione_lvm_sysfs, fs_type, sysfs_type;
+type mione_lvm_proc_devices, fs_type, proc_type;
 type mione_disk_device, dev_type;
 type mione_pv_device, dev_type;
 init_daemon_domain(mione_lvm)
 
 allow mione_lvm self:global_capability_class_set sys_admin;
 allow mione_lvm mione_lvm2_exec:file { rx_file_perms execute_no_trans };
-r_dir_file(mione_lvm, vendor_file)
-r_dir_file(mione_lvm, sysfs)
-r_dir_file(mione_lvm, sysfs_type)
-r_dir_file(mione_lvm, proc)
+r_dir_file(mione_lvm, mione_lvm_config_file)
+# Traverse class/dev symlinks, but read only explicitly labeled block attributes.
+allow mione_lvm sysfs:dir r_dir_perms;
+allow mione_lvm sysfs:lnk_file r_file_perms;
+r_dir_file(mione_lvm, mione_lvm_sysfs)
+r_dir_file(mione_lvm, sysfs_devices_block)
+r_dir_file(mione_lvm, sysfs_dm)
+allow mione_lvm mione_lvm_proc_devices:file r_file_perms;
 allow mione_lvm proc_mounts:file r_file_perms;
 allow mione_lvm mione_disk_device:blk_file r_file_perms;
 allow mione_lvm mione_pv_device:blk_file rw_file_perms;
@@ -21,6 +28,10 @@ allow mione_lvm dm_device:chr_file rw_file_perms;
 allow mione_lvm device:dir rw_dir_perms;
 allow mione_lvm device:lnk_file { create_file_perms };
 type_transition mione_lvm device:dir mione_lvm_tmp_file "mione-lvm";
-file_type_auto_trans(mione_lvm, mione_lvm_tmp_file, mione_lvm_tmp_file)
+# LVM needs directories, locks, metadata backups and the generated fstab, no sockets.
+allow mione_lvm mione_lvm_tmp_file:dir create_dir_perms;
+allow mione_lvm mione_lvm_tmp_file:file create_file_perms;
+type_transition mione_lvm mione_lvm_tmp_file:dir mione_lvm_tmp_file;
+type_transition mione_lvm mione_lvm_tmp_file:file mione_lvm_tmp_file;
 r_dir_file(init, mione_lvm_tmp_file)
 r_dir_file(vendor_init, mione_lvm_tmp_file)

@@ -21,6 +21,8 @@
 
 /system/bin/mione-lvm                         u:object_r:mione_lvm_exec:s0
 /system/bin/mione-lvm2         u:object_r:mione_lvm2_exec:s0
+/system/etc/lvm(/.*)?                         u:object_r:mione_lvm_config_file:s0
+/system/etc/fstab\.mione_lvm                   u:object_r:mione_lvm_config_file:s0
 /dev/mione-lvm(/.*)?                          u:object_r:mione_lvm_tmp_file:s0
 /dev/block/mmcblk0                            u:object_r:mione_disk_device:s0
 /dev/block/mmcblk0p15                         u:object_r:mione_pv_device:s0

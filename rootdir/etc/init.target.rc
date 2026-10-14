@@ -36,7 +36,7 @@ on boot
 on fs
 # mount mmc partitions
     # Activate and validate before mount_all; never mount LVM PVs as ext4.
-    exec -- /system/bin/mione-lvm prepare /vendor/etc/fstab.qcom /dev/mione-lvm/fstab.qcom
+    exec -- /system/bin/mione-lvm prepare /system/etc/fstab.mione_lvm /dev/mione-lvm/fstab.qcom
     mount_all /dev/mione-lvm/fstab.qcom
     # Optional calibration storage; a failed mount must not block Android.
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist wait nosuid nodev barrier=1,data=ordered,nodelalloc

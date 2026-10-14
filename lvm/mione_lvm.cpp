@@ -99,7 +99,7 @@ static void mkdirs() {
     for(const char *p:{"/dev/mione-lvm","/dev/mione-lvm/run","/dev/mione-lvm/lock","/dev/mione-lvm/archive","/dev/mione-lvm/backup","/dev/block/mapper"})
         need(mkdir(p,0700)==0 || errno==EEXIST,"mkdir failed");
     if(access(tool,X_OK)) tool="/system/bin/mione-lvm2";
-    setenv("LVM_SYSTEM_DIR",!strcmp(tool,"/sbin/mione-lvm2")?"/lvm/etc":"/vendor/etc/lvm",1);
+    setenv("LVM_SYSTEM_DIR",!strcmp(tool,"/sbin/mione-lvm2")?"/lvm/etc":"/system/etc/lvm",1);
     need(mkdir("/dev/mapper",0755)==0 || errno==EEXIST,"cannot create mapper directory");
     unsigned ma=0,mi=0; FILE *dm=fopen("/sys/class/misc/device-mapper/dev","r");
     need(dm && fscanf(dm,"%u:%u",&ma,&mi)==2,"kernel lacks device mapper"); fclose(dm);
