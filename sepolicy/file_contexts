@@ -29,3 +29,9 @@
 /dev/block/mmcblk0p20                         u:object_r:mione_pv_device:s0
 
 /data/vendor/bluetooth(/.*)?                   u:object_r:mione_bdaddr_data_file:s0
+
+# Retained MSM8660 modem executables need explicit init transitions.
+/(vendor|system/vendor)/bin/cnd                u:object_r:mione_cnd_exec:s0
+/(vendor|system/vendor)/bin/netmgrd            u:object_r:mione_netmgrd_exec:s0
+/(vendor|system/vendor)/bin/qmuxd              u:object_r:mione_qmuxd_exec:s0
+/(vendor|system/vendor)/bin/rmt_storage        u:object_r:mione_rmt_storage_exec:s0
