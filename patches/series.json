@@ -4,7 +4,7 @@
   "prerequisite": "Apply the Android14 port-docs baseline (34 repositories, 129 commits) first. Exact prerequisite heads/trees are recorded per project. MiOne device/vendor/kernel/MSM8660 HAL changes live in their own Git histories. Bluetooth classic-controller increments are adapted from the previous device patches to Android14 APIs.",
   "android14_prerequisite_repository_count": 34,
   "android14_prerequisite_commit_count": 129,
-  "mione_platform_increment_count": 4,
+  "mione_platform_increment_count": 5,
   "projects": [
     {
       "path": "art",
@@ -257,10 +257,16 @@
           "source_commit": "2d07f7260c40b8986bc9d0ee826834ebcf9fbdd5",
           "patch_id": "f913cb5ccc5e123d35d952f09897da7bdc2ed908",
           "sha256": "b2a52ee0119cd91e10c0f9e2a3d76df69fcc7c70a9f904c84c424c695fafe5ac"
+        },
+        {
+          "file": "packages-modules-Bluetooth/0005-Bluetooth-use-Android14-controller-and-profile-callback-interfac.patch",
+          "source_commit": "b823053b6af7d0fe66d94d8b8bd1e912c9b1827d",
+          "patch_id": "305ec19ba5011c9408aa9eadf8ad16f085ae8dbe",
+          "sha256": "02c23627ca27dc1acbc86bacb0a539a052afb3b999049c79c6fb65357e9f0b8f"
         }
       ],
       "inherited_commit_count": 0,
-      "source_head": "2d07f7260c40b8986bc9d0ee826834ebcf9fbdd5"
+      "source_head": "b823053b6af7d0fe66d94d8b8bd1e912c9b1827d"
     },
     {
       "path": "packages/modules/NetworkStack",
