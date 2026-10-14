@@ -19,6 +19,7 @@ done < "$MY_DIR/proprietary-files.txt"
 
 python3 "$BASE/../tools/patch-isp-poll.py" "$STAGE/vendor/lib/liboemcamera.so"
 python3 "$BASE/../tools/patch-vendor-paths.py" "$STAGE"
+python3 "$BASE/../tools/patch-legacy-interpreter.py" "$STAGE"
 cp -a "$STAGE/." "$BASE/"
 
 cd "$MY_DIR"
