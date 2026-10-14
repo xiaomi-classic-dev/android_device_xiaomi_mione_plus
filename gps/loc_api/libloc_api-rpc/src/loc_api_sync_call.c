@@ -40,7 +40,7 @@
 /* Logging */
 #define LOG_TAG "loc_api_rpc_glue"
 // #define LOG_NDDEBUG 0
-#include <utils/Log.h>
+#include <log/log.h>
 
 /***************************************************************************
  *                 DATA FOR ASYNCHRONOUS RPC PROCESSING
@@ -528,5 +528,4 @@ int loc_api_sync_ioctl
 
    return rc;
 }
-
 

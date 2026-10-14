@@ -57,7 +57,7 @@
 /* Logging */
 #define LOG_TAG "loc_api_rpc_glue"
 #define LOG_NDDEBUG 0
-#include <utils/Log.h>
+#include <log/log.h>
 
 /* Uncomment to force ALOGD messages */
 // #define ALOGD ALOGI

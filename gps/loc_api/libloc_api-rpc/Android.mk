@@ -42,7 +42,7 @@ LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/inc \
 	$(LOCAL_PATH)/$(RPC_INC)
 
-LOCAL_HEADER_LIBRARIES := mione_rpc_headers
+LOCAL_HEADER_LIBRARIES := mione_rpc_headers liblog_headers
 
 LOCAL_MODULE:= libloc_api-rpc
 LOCAL_VENDOR_MODULE := true
