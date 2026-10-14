@@ -29,9 +29,20 @@ cc_binary {
         "libziparchive", "libbase", "libz", "libasync_safe", "liblog",
         "liblinker_debuggerd_stub",
     ],
-    whole_static_libs: ["libc_unwind_static"],
+    whole_static_libs: ["libmione_linker_unwind"],
     system_shared_libs: [],
     native_coverage: false,
     sanitize: { hwaddress: false },
     symlinks: ["mld"],
+}
+
+cc_library_static {
+    name: "libmione_linker_unwind",
+    compile_multilib: "32",
+    srcs: ["dl_iterate_phdr_static.cpp", "exidx_static.c"],
+    cflags: ["-DLIBC_STATIC"],
+    include_dirs: ["bionic/libc", "bionic/libc/bionic"],
+    header_libs: ["libc_headers"],
+    stl: "none",
+    system_shared_libs: [],
 }

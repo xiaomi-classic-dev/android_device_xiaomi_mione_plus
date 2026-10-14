@@ -20,6 +20,16 @@
     {
       "file": "linker_memory.cpp",
       "upstream_sha256": "61bfc193da321ac1444c448fa854f6fa4fc5f5a37704bdeea0d5cbeece271635"
+    },
+    {
+      "file": "dl_iterate_phdr_static.cpp",
+      "upstream_path": "bionic/libc/bionic/dl_iterate_phdr_static.cpp",
+      "upstream_sha256": "7334a2b58085a5c65019859c08fc903fbb4038f020b5ba596591e585c1202406"
+    },
+    {
+      "file": "exidx_static.c",
+      "upstream_path": "bionic/libc/arch-arm/bionic/exidx_static.c",
+      "upstream_sha256": "72290bfc0e6c2a632c002cf4114da0709b3118024194b4e120b0a093dafe06a9"
     }
   ],
   "allowlist_origin": "LineageOS/android_bionic non-PIE patch55db1141913a77289abd293bca807e0520fd600a; MiOne Lineage20 adaptation31e73b8bb68685d64fe07a2a58eceb6abe78b537",
