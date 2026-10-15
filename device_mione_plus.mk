@@ -383,10 +383,12 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.camera.hal3on1.use_preview_window_stub=0 \
     persist.camera.hal3on1.use_sysfs_torch=0
 
-# Keep legacy task profiles and grant system_server access to BPF cgroup v2.
+# Use Android 14's CPU/cpuset profiles with the existing cpuctl hierarchy.
+# Deadline has no blkio weight controller; its I/O profiles are explicit no-ops.
+# Grant system_server access to the BPF cgroup v2 hierarchy.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
-    system/core/libprocessgroup/profiles/task_profiles_28.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
+    device/xiaomi/mione_plus/configs/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
 
 # Android 13 radio configuration uses the single-slot legacy HIDL service.
 PRODUCT_PACKAGES += android.hardware.radio.config@1.0-service

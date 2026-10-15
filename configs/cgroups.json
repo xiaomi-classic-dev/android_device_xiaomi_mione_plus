@@ -1,4 +1,14 @@
 {
+  "Cgroups": [
+    {
+      "Controller": "blkio",
+      "Path": "/dev/blkio",
+      "Mode": "0775",
+      "UID": "system",
+      "GID": "system",
+      "Optional": true
+    }
+  ],
   "Cgroups2": {
     "Path": "/sys/fs/cgroup",
     "Mode": "0755",
