@@ -4,6 +4,7 @@
 cc_binary {
     name: "linker_mione_legacy",
     defaults: ["linker_defaults"],
+    apex_available: ["com.android.runtime"],
     compile_multilib: "32",
     srcs: [
         ":linker_sources",
@@ -31,5 +32,29 @@ cc_binary {
     system_shared_libs: [],
     native_coverage: false,
     sanitize: { hwaddress: false },
-    symlinks: ["mld"],
+}
+
+// Keep the interpreter with the private Bionic libraries it uses. The base
+// runtime APEX retains its manifest, signing keys, libraries and linkerconfig.
+override_apex {
+    name: "com.android.runtime.mione",
+    base: "com.android.runtime",
+    overrides: ["com.android.runtime"],
+    multilib: {
+        both: {
+            binaries: ["crash_dump", "linker", "linker_mione_legacy"],
+        },
+    },
+}
+
+install_symlink {
+    name: "mione_legacy_linker_path",
+    installed_location: "bin/linker_mione_legacy",
+    symlink_target: "/apex/com.android.runtime/bin/linker_mione_legacy",
+}
+
+install_symlink {
+    name: "mione_legacy_interpreter_path",
+    installed_location: "bin/mld",
+    symlink_target: "/system/bin/linker_mione_legacy",
 }
