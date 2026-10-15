@@ -5,6 +5,8 @@ cc_binary {
     name: "linker_mione_legacy",
     defaults: ["linker_defaults"],
     apex_available: ["com.android.runtime"],
+    // The APEX packages the output; only the compatibility symlink lives here.
+    installable: false,
     compile_multilib: "32",
     srcs: [
         ":linker_sources",
