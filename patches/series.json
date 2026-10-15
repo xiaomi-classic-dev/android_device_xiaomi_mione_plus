@@ -34,8 +34,16 @@
       "path": "build/soong",
       "base_commit": "8de4749aeeffc7cc55c94e56268dec1fcca0409f",
       "baseline_tree": "768266d3537fed4358e030a95f74a003c1e63870",
-      "patches": [],
-      "source_head": "8de4749aeeffc7cc55c94e56268dec1fcca0409f"
+      "patches": [
+        {
+          "file": "build-soong/0001-apex-Preserve-runtime-interpreter-rules-for-device-overrides.patch",
+          "source_commit": "9ba2585e79da909fa35ec7341d5f8dca7f2f2b76",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "f5c998837d83537619ca824a78006135d40e4dea",
+          "sha256": "b1b8a07e1c355b68a2827caeb4c19ae3cd4dd15e442d6206846dde5be62684ad"
+        }
+      ],
+      "source_head": "9ba2585e79da909fa35ec7341d5f8dca7f2f2b76"
     },
     {
       "path": "device/lineage/sepolicy",
@@ -329,5 +337,5 @@
       "source_head": "fff981f6409077eefe676d3aa4f7cc4d80f7fe6d"
     }
   ],
-  "mione_platform_increment_count": 6
+  "mione_platform_increment_count": 7
 }

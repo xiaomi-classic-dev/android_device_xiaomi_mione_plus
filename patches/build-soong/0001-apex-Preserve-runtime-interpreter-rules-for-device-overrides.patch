@@ -1,0 +1,35 @@
+From 9ba2585e79da909fa35ec7341d5f8dca7f2f2b76 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Fri, 16 Oct 2026 06:57:49 +0800
+Subject: [PATCH] apex: Preserve runtime interpreter rules for device overrides
+
+Use the base APEX module identity for the static interpreter allowlist, matching the APEX availability check. An override variation name otherwise rejects even the stock runtime linker. Admit the MiOne interpreter only in the runtime APEX; retain the static executable check for every other executable and APEX.
+
+Change-Id: I8e35d59a1c96882dcb6fef5dc2f983f4cecfb2ba
+---
+ apex/apex.go | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/apex/apex.go b/apex/apex.go
+index 9fdb2a2a5..7cc583682 100644
+--- a/apex/apex.go
++++ b/apex/apex.go
+@@ -2753,7 +2753,9 @@ func (a *apexBundle) checkStaticExecutables(ctx android.ModuleContext) {
+ 		}
+ 
+ 		if android.OtherModuleProviderOrDefault(ctx, module, cc.LinkableInfoKey).StaticExecutable {
+-			apex := a.ApexVariationName()
++			// An override keeps the base APEX identity and its static-runtime
++			// contract, even though its build variation has a different name.
++			apex := ctx.ModuleName()
+ 			exec := ctx.OtherModuleName(module)
+ 			if isStaticExecutableAllowed(apex, exec) {
+ 				return
+@@ -2769,6 +2771,7 @@ func isStaticExecutableAllowed(apex string, exec string) bool {
+ 		"com.android.runtime": {
+ 			"linker",
+ 			"linkerconfig",
++			"linker_mione_legacy",
+ 		},
+ 	}
+ 	execNames, ok := m[apex]
