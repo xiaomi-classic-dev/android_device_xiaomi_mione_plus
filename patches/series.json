@@ -1,7 +1,7 @@
 {
   "android_version": 15,
   "lineage_branch": "lineage-22.2",
-  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) first. Six additional unchanged upstream repositories are pinned for validation. Only actual platform increments beyond these exact heads/trees are exported. MiOne device/vendor/kernel/MSM8660 changes remain in their own Git histories. Android14 patches are preserved on backup/mione21-input-20261016-013923; never apply that old series to Android15.",
+  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) first. Eight additional upstream repositories are pinned, including the two scoped linker build-visibility increments. Only actual platform increments beyond these exact heads/trees are exported. MiOne device/vendor/kernel/MSM8660 changes remain in their own Git histories. Android14 patches are preserved on backup/mione21-input-20261016-013923; never apply that old series to Android15.",
   "android15_prerequisite_repository_count": 31,
   "android15_prerequisite_commit_count": 123,
   "upstream_already_contains": {
@@ -297,7 +297,37 @@
       "baseline_tree": "6a2e394469264d482f8e8604c3189431ad5ee0ae",
       "patches": [],
       "source_head": "42f77549fc9d96709966c04f31011a27bc2b26c5"
+    },
+    {
+      "path": "prebuilts/clang/host/linux-x86",
+      "base_commit": "96266255abde668f1bf100bf2c47363b96b7a21e",
+      "baseline_tree": "0e56d142f1ac60a26f61c9c422655ca179dd1031",
+      "patches": [
+        {
+          "file": "prebuilts-clang-host-linux-x86/0001-libc-Allow-the-scoped-MiOne-legacy-vendor-interpreter.patch",
+          "source_commit": "73c44645147db2730976c9003b20ace61c3a5f3d",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "0b441cd380352dc3a260e35ed2ba41f0022b999d",
+          "sha256": "f0cb79da0f56b19f1ba7a61127e809881410fd6688d6bb69fe957d1e9a5ce384"
+        }
+      ],
+      "source_head": "73c44645147db2730976c9003b20ace61c3a5f3d"
+    },
+    {
+      "path": "system/logging",
+      "base_commit": "0a02c4d13e882ec9b67dcb2cb3b135f08656593a",
+      "baseline_tree": "23a26fe1d2127bda332b454d60b046e4c3a790a4",
+      "patches": [
+        {
+          "file": "system-logging/0001-liblog-Allow-the-scoped-MiOne-vendor-interpreter-to-use-linker-d.patch",
+          "source_commit": "fff981f6409077eefe676d3aa4f7cc4d80f7fe6d",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "25dc3aae5519dba93af11559c197a35c90a94ffc",
+          "sha256": "355a68334848eebb3bedd7ef9e981bafff3ddc2bbf7679ab40b683d6933fa448"
+        }
+      ],
+      "source_head": "fff981f6409077eefe676d3aa4f7cc4d80f7fe6d"
     }
   ],
-  "mione_platform_increment_count": 4
+  "mione_platform_increment_count": 6
 }

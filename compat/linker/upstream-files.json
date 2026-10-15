@@ -1,37 +1,44 @@
 {
-  "bionic_head": "777c413e8f5b9c136a9f0e6f5dce8d0a32d6f043",
+  "bionic_head": "f2c50f309cc756f65cf0a87b7bd5749e79ca3d9e",
   "files": [
     {
       "file": "linker_main.cpp",
-      "upstream_sha256": "b792b05415532ece7659e8c5ef05647d4e88cb46b6559fab7592ba86ddf38082"
+      "upstream_sha256": "0a43f0042ade2f888aac72e16b1447f0d4042067f229dee1c0f3c4fe0d2b4937",
+      "upstream_path": "bionic/linker/linker_main.cpp"
     },
     {
       "file": "linker_translate_path.cpp",
-      "upstream_sha256": "ddfe220f9dddc717cc72b3692188a1d63a44741cd04e12e24996a9ca866b3860"
+      "upstream_sha256": "8ebd4a696267d47b5952ed0cf09e34d1463241a663ec314781b2ae855d53f2ed",
+      "upstream_path": "bionic/linker/linker_translate_path.cpp"
     },
     {
       "file": "linker.arm.map",
-      "upstream_sha256": "c20a64a56452c704df941dd1a5affb0ca5d6b4a486b15e9f99c65f3595b37a4f"
+      "upstream_sha256": "96de17658715f87838f7b380aa9ef6fbb1cbac59cfc68bc9b427407c3cdb8a24",
+      "upstream_path": "bionic/linker/linker.arm.map"
     },
     {
       "file": "NOTICE",
-      "upstream_sha256": "9b21ce9515b6a293469aab6a98de5ed242760c9f90e2026fb8e9c2602220c0eb"
+      "upstream_sha256": "9b21ce9515b6a293469aab6a98de5ed242760c9f90e2026fb8e9c2602220c0eb",
+      "upstream_path": "bionic/linker/NOTICE"
     },
     {
       "file": "linker_memory.cpp",
-      "upstream_sha256": "61bfc193da321ac1444c448fa854f6fa4fc5f5a37704bdeea0d5cbeece271635"
+      "upstream_sha256": "61bfc193da321ac1444c448fa854f6fa4fc5f5a37704bdeea0d5cbeece271635",
+      "upstream_path": "bionic/linker/linker_memory.cpp"
     },
     {
       "file": "dl_iterate_phdr_static.cpp",
       "upstream_path": "bionic/libc/bionic/dl_iterate_phdr_static.cpp",
-      "upstream_sha256": "7334a2b58085a5c65019859c08fc903fbb4038f020b5ba596591e585c1202406"
+      "upstream_sha256": "7334a2b58085a5c65019859c08fc903fbb4038f020b5ba596591e585c1202406",
+      "compiled": false
     },
     {
       "file": "exidx_static.c",
       "upstream_path": "bionic/libc/arch-arm/bionic/exidx_static.c",
-      "upstream_sha256": "72290bfc0e6c2a632c002cf4114da0709b3118024194b4e120b0a093dafe06a9"
+      "upstream_sha256": "72290bfc0e6c2a632c002cf4114da0709b3118024194b4e120b0a093dafe06a9",
+      "compiled": false
     }
   ],
   "allowlist_origin": "LineageOS/android_bionic non-PIE patch55db1141913a77289abd293bca807e0520fd600a; MiOne Lineage20 adaptation31e73b8bb68685d64fe07a2a58eceb6abe78b537",
-  "changes": "only linker_main exact-path ET_EXEC admission; direct invocation still rejects ET_EXEC"
+  "changes": "Android15 Bionic linker sources/defaults; only linker_main exact-path ET_EXEC admission differs. Direct invocation still rejects ET_EXEC. Runtime shims are scoped by device init services."
 }
