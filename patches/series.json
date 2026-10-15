@@ -1,10 +1,10 @@
 {
   "android_version": 14,
   "lineage_branch": "lineage-21.0",
-  "prerequisite": "Apply the Android14 port-docs baseline (34 repositories, 129 commits) first. Exact prerequisite heads/trees are recorded per project. MiOne device/vendor/kernel/MSM8660 HAL changes live in their own Git histories. Bluetooth classic-controller increments are adapted from the previous device patches to Android14 APIs.",
+  "prerequisite": "Apply the Android14 port-docs baseline (34 repositories, 129 commits) first. Exact prerequisite heads/trees are recorded per project. MiOne device/vendor/kernel/MSM8660 HAL changes live in their own Git histories. Bluetooth classic-controller increments are adapted from the previous device patches to Android14 APIs. Additional application fixes use their separately recorded unmodified LineageOS 21 baselines.",
   "android14_prerequisite_repository_count": 34,
   "android14_prerequisite_commit_count": 129,
-  "mione_platform_increment_count": 5,
+  "mione_platform_increment_count": 6,
   "projects": [
     {
       "path": "art",
@@ -225,6 +225,27 @@
       "patches": [],
       "inherited_commit_count": 0,
       "source_head": "9f6f8b90ac7258e3bd5c44114c4027873a5d3e48"
+    },
+    {
+      "path": "packages/apps/DocumentsUI",
+      "baseline_kind": "unmodified-lineage-21.0-upstream",
+      "upstream_branch": "lineage-21.0",
+      "upstream_repository": "https://github.com/LineageOS/android_packages_apps_DocumentsUI",
+      "port_docs_commit_count": 0,
+      "base_commit": "afe80c8f00b177b391a169824feb58d278332534",
+      "baseline_tree": "99069f10758d31e0b39b061e36a9f4782c5d3d8f",
+      "patches": [
+        {
+          "file": "packages-apps-DocumentsUI/0001-fix-DocumentsUI-crash.patch",
+          "source_commit": "a7967aeac22379d957ad12c42099cd626b2398a4",
+          "patch_id": "3cc82dc7a39ae3a84d6f951df90cc54ddccabcda",
+          "sha256": "c90557d3d07c8b87ce592472c8f67d5a906573dd077682f8147f44d40487f957"
+        }
+      ],
+      "inherited_commit_count": 0,
+      "source_head": "a7967aeac22379d957ad12c42099cd626b2398a4",
+      "upstream_fix_commit": "0025b72fb9ed29dfc343d0b7829634243aeeef43",
+      "upstream_fix_url": "https://github.com/LineageOS/android_packages_apps_DocumentsUI/commit/0025b72fb9ed29dfc343d0b7829634243aeeef43"
     },
     {
       "path": "packages/modules/Bluetooth",
