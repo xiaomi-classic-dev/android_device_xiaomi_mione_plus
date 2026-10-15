@@ -18,4 +18,4 @@ PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/lineage_mione_plus.mk
 
 COMMON_LUNCH_CHOICES := \
-    lineage_mione_plus-ap2a-userdebug
+    lineage_mione_plus-bp1a-userdebug

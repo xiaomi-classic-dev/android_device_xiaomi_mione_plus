@@ -216,7 +216,7 @@ TARGET_USERIMAGES_USE_EXT4 := true
 BUILD_BROKEN_NINJA_USES_ENV_VARS += MKE2FS_CONFIG
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
-# Android 14 uses the requested 1900 MiB System image.
+# Android 15 retains the requested 1900 MiB System image.
 # The OTA checker verifies the actual active LV capacity before any writes.
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1992294400
 # Cache keeps its physical p19 capacity.
@@ -242,8 +242,7 @@ RECOVERY_FSTAB_VERSION := 2
 USE_DEVICE_SPECIFIC_CAMERA := true
 TARGET_NEEDS_LEGACY_CAMERA_HAL1_DYN_NATIVE_HANDLE := true
 
-# Match Aries: use protocol v8 while retaining 32-bit ARM userspace.
-TARGET_USES_64_BIT_BINDER := true
+# The kernel retains Binder protocol v8 with 32-bit ARM userspace.
 BOARD_KERNEL_IMAGE_NAME := zImage
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := $(MIONE_PATH)/framework_compatibility_matrix.xml vendor/lineage/config/device_framework_matrix.xml
 DEVICE_MANIFEST_FILE := $(MIONE_PATH)/manifest.xml
@@ -287,6 +286,7 @@ WIFI_HIDL_FEATURE_DISABLE_AP_MAC_RANDOMIZATION := true
 # Device-owned first-stage LVM bootstrap; stock init is preserved.
 BOARD_CUSTOM_BOOTIMG_MK := device/xiaomi/mione_plus/lvm/bootimage.mk
 TARGET_RELEASETOOLS_EXTENSIONS := device/xiaomi/mione_plus
+AB_OTA_UPDATER := false
 
 # Legacy proprietary ELF modules are installed through device copy rules.
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
