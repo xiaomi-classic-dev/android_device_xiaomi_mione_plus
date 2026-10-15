@@ -319,6 +319,11 @@ PRODUCT_VENDOR_PROPERTIES += \
     dalvik.vm.heapminfree=512k \
     dalvik.vm.heapmaxfree=8m
 
+# Per-app memcg caused reclaim stalls in the MiOne 3.4 kernel A/B/A test.
+# Keep the low-RAM app limits and global memory controller enabled.
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.config.per_app_memcg=false
+
 # Concurrent-copying GC reserves twice dex2oat's heap capacity. A 512 MiB
 # compiler heap cannot reserve a contiguous 1 GiB region on this ARM32 layout.
 # Product properties load after the platform defaults in system/build.prop.
