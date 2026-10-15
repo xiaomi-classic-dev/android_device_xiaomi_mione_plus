@@ -1,0 +1,13 @@
+# CFS groups use the MSM8660 kernel's existing CPU controller.
+on post-fs-data
+    write /dev/cpuctl/background/cpu.shares 52
+    write /dev/cpuctl/dex2oat/cpu.shares 52
+
+    # RT_GROUP_SCHED requires nonzero child budgets for audio/video FIFO/RR.
+    # Together these fit the existing 950000 us per 1000000 us root budget.
+    # Keep background and dex2oat groups non-realtime.
+    write /dev/cpuctl/foreground/cpu.rt_runtime_us 300000
+    write /dev/cpuctl/top-app/cpu.rt_runtime_us 300000
+    write /dev/cpuctl/rt/cpu.rt_runtime_us 200000
+    write /dev/cpuctl/camera-daemon/cpu.rt_runtime_us 100000
+    write /dev/cpuctl/system/cpu.rt_runtime_us 50000

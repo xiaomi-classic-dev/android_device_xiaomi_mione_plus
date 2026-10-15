@@ -388,7 +388,8 @@ PRODUCT_VENDOR_PROPERTIES += \
 # Grant system_server access to the BPF cgroup v2 hierarchy.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/configs/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
-    device/xiaomi/mione_plus/configs/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json
+    device/xiaomi/mione_plus/configs/task_profiles.json:$(TARGET_COPY_OUT_VENDOR)/etc/task_profiles.json \
+    device/xiaomi/mione_plus/configs/init.mione.cgroups.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.mione.cgroups.rc
 
 # Android 13 radio configuration uses the single-slot legacy HIDL service.
 PRODUCT_PACKAGES += android.hardware.radio.config@1.0-service
