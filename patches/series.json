@@ -1,463 +1,303 @@
 {
-  "android_version": 14,
-  "lineage_branch": "lineage-21.0",
-  "prerequisite": "Apply the Android14 port-docs baseline (34 repositories, 129 commits) first. Exact prerequisite heads/trees are recorded per project. MiOne device/vendor/kernel/MSM8660 HAL changes live in their own Git histories. Bluetooth classic-controller increments are adapted from the previous device patches to Android14 APIs. Additional application fixes use their separately recorded unmodified LineageOS 21 baselines.",
-  "android14_prerequisite_repository_count": 34,
-  "android14_prerequisite_commit_count": 129,
-  "mione_platform_increment_count": 7,
+  "android_version": 15,
+  "lineage_branch": "lineage-22.2",
+  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) first. Six additional unchanged upstream repositories are pinned for validation. Only actual platform increments beyond these exact heads/trees are exported. MiOne device/vendor/kernel/MSM8660 changes remain in their own Git histories. Android14 patches are preserved on backup/mione21-input-20261016-013923; never apply that old series to Android15.",
+  "android15_prerequisite_repository_count": 31,
+  "android15_prerequisite_commit_count": 123,
+  "upstream_already_contains": {
+    "DocumentsUI": "0025b72fb9ed29dfc343d0b7829634243aeeef43",
+    "Trebuchet": "4dfb35acc147280c15ed14d1d8458309e33f805e"
+  },
   "projects": [
     {
       "path": "art",
-      "android14_port_docs_head": "36b8491efe9c844b252268b4db8a1c4de1217374",
-      "android14_port_docs_base": "72ebd02eb8f4360951af04443fe059e67357bfdb",
-      "port_docs_commit_count": 1,
-      "base_commit": "36b8491efe9c844b252268b4db8a1c4de1217374",
-      "baseline_tree": "12e7e2770b939dbc8e9531ff5cd103f27253e88d",
+      "base_commit": "19e19c30a8b5e28365d2f844638c5b130cef116a",
+      "baseline_tree": "f38dffcff820c7867daae9cf0d68d8f27fd9591c",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "36b8491efe9c844b252268b4db8a1c4de1217374"
+      "source_head": "19e19c30a8b5e28365d2f844638c5b130cef116a"
     },
     {
       "path": "bionic",
-      "android14_port_docs_head": "777c413e8f5b9c136a9f0e6f5dce8d0a32d6f043",
-      "android14_port_docs_base": "c9fb1e8640d34e81966f3ff874bc310cabc151bf",
-      "port_docs_commit_count": 4,
-      "base_commit": "777c413e8f5b9c136a9f0e6f5dce8d0a32d6f043",
-      "baseline_tree": "3138092ce4de26272df2e31ba80c70900246ed79",
+      "base_commit": "f2c50f309cc756f65cf0a87b7bd5749e79ca3d9e",
+      "baseline_tree": "e97daef96222f20cb2910d73d50a40682a27a051",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "777c413e8f5b9c136a9f0e6f5dce8d0a32d6f043"
+      "source_head": "f2c50f309cc756f65cf0a87b7bd5749e79ca3d9e"
     },
     {
       "path": "build/make",
-      "android14_port_docs_head": "73b07953e4667d1e36ef7df0b2c523f2ee8b12b8",
-      "android14_port_docs_base": "bc95152efc6a43f3b103b1848c946e9bf8d4e493",
-      "port_docs_commit_count": 1,
-      "base_commit": "73b07953e4667d1e36ef7df0b2c523f2ee8b12b8",
-      "baseline_tree": "473e0a80e4de35164b06501c460dab5804f10124",
+      "base_commit": "920456178be2f5d17119448972bbf7a19c3b2a65",
+      "baseline_tree": "f4e9c84e667d52e3fb442851f046f2c38be4ba86",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "73b07953e4667d1e36ef7df0b2c523f2ee8b12b8"
+      "source_head": "920456178be2f5d17119448972bbf7a19c3b2a65"
     },
     {
       "path": "build/soong",
-      "android14_port_docs_head": "d68211d6055cfa1027adc1667fafbc6a2940ddba",
-      "android14_port_docs_base": "7e2be266cfde19c5e0cbc8e4ed016d5572abd4fb",
-      "port_docs_commit_count": 2,
-      "base_commit": "d68211d6055cfa1027adc1667fafbc6a2940ddba",
-      "baseline_tree": "7218b7b065e94a293935b2ad47d16f1c10a14a68",
+      "base_commit": "8de4749aeeffc7cc55c94e56268dec1fcca0409f",
+      "baseline_tree": "768266d3537fed4358e030a95f74a003c1e63870",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "d68211d6055cfa1027adc1667fafbc6a2940ddba"
+      "source_head": "8de4749aeeffc7cc55c94e56268dec1fcca0409f"
     },
     {
       "path": "device/lineage/sepolicy",
-      "android14_port_docs_head": "463189fdf6f50f156386d59e95a33b731a8340e7",
-      "android14_port_docs_base": "126b2bdd0f6fdc815999e44b9e134c7ae6c39d8c",
-      "port_docs_commit_count": 4,
-      "base_commit": "463189fdf6f50f156386d59e95a33b731a8340e7",
-      "baseline_tree": "426093e3940bc445e07985ac6c3a29fb4a291881",
+      "base_commit": "ebce294fe532ae7b8f78086bd86038e0ca5c4d6b",
+      "baseline_tree": "9739a1035a2a1c43da64406b605f5e7e2e91455e",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "463189fdf6f50f156386d59e95a33b731a8340e7"
+      "source_head": "ebce294fe532ae7b8f78086bd86038e0ca5c4d6b"
     },
     {
       "path": "external/jemalloc_new",
-      "android14_port_docs_head": "20155798db3f4a1277ee571a1da5c426a2937def",
-      "android14_port_docs_base": "2b6695941402dc26f034afa73f8e177f29f10cb1",
-      "port_docs_commit_count": 3,
-      "base_commit": "20155798db3f4a1277ee571a1da5c426a2937def",
-      "baseline_tree": "496f8c6cf29ad5a69bad22840f59f5357d22cc9f",
+      "base_commit": "b5356b16e94f99e32053fa0803e20f8acdf1b0ad",
+      "baseline_tree": "5d4acd59478c23412b67e02546c390d8f554f3f7",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "20155798db3f4a1277ee571a1da5c426a2937def"
+      "source_head": "b5356b16e94f99e32053fa0803e20f8acdf1b0ad"
     },
     {
       "path": "external/perfetto",
-      "android14_port_docs_head": "4c13afb8565c794875d46275f1986f5fe796dbfa",
-      "android14_port_docs_base": "7c79c3ab0136f16b149f449f9178ed4027189e5d",
-      "port_docs_commit_count": 1,
-      "base_commit": "4c13afb8565c794875d46275f1986f5fe796dbfa",
-      "baseline_tree": "889796954477e4fc3add8e8dba3ae009accfaa0e",
+      "base_commit": "a9ba55851214173467d30ef50dcbb45f565b1280",
+      "baseline_tree": "17c910ac2e870707d09203b144882849048690fd",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "4c13afb8565c794875d46275f1986f5fe796dbfa"
+      "source_head": "a9ba55851214173467d30ef50dcbb45f565b1280"
     },
     {
       "path": "external/wpa_supplicant_8",
-      "android14_port_docs_head": "ba4606cde541472fda8aff0125940b1d5493ee58",
-      "android14_port_docs_base": "43981d45ca035decd00c9f0c2efd62786e5e0229",
-      "port_docs_commit_count": 1,
-      "base_commit": "ba4606cde541472fda8aff0125940b1d5493ee58",
-      "baseline_tree": "3ed890ad95a42f370d1be947ff2157fd2558c266",
+      "base_commit": "1b3d657cc8d988467387de3be17a99fff3e33e57",
+      "baseline_tree": "1e8f459ad065202bbc6e107926b27afbcef97e07",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "ba4606cde541472fda8aff0125940b1d5493ee58"
+      "source_head": "1b3d657cc8d988467387de3be17a99fff3e33e57"
     },
     {
       "path": "frameworks/av",
-      "android14_port_docs_head": "6fab1964d7b982d3174e59a39ba3205108dbabe6",
-      "android14_port_docs_base": "d3075fbfd3aa59a541a025388f0fd744d045940c",
-      "port_docs_commit_count": 11,
-      "base_commit": "6fab1964d7b982d3174e59a39ba3205108dbabe6",
-      "baseline_tree": "13eef86bcdfd2d2f1c55e8e3e026e48fa1ad71c9",
+      "base_commit": "d22d13d3b15dec8a5267619aabecdcd027ca26dd",
+      "baseline_tree": "ba00427cfe57bbdc858c2add02c5eba69386fe8e",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "6fab1964d7b982d3174e59a39ba3205108dbabe6"
+      "source_head": "d22d13d3b15dec8a5267619aabecdcd027ca26dd"
     },
     {
       "path": "frameworks/base",
-      "android14_port_docs_head": "82285e83a66893c3bb13cf3fb59a42ac7850b170",
-      "android14_port_docs_base": "83ba19abfe428a0a9982a3fc51524bec53563281",
-      "port_docs_commit_count": 8,
-      "base_commit": "82285e83a66893c3bb13cf3fb59a42ac7850b170",
-      "baseline_tree": "acfa0509512d3a19217bf8d9485cac81520e9844",
+      "base_commit": "251a63d84347899d2b9a0ba1091499f23e315f2a",
+      "baseline_tree": "94b7c41d4463991473d31953dc5ba23a9d0f6c09",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "82285e83a66893c3bb13cf3fb59a42ac7850b170"
+      "source_head": "251a63d84347899d2b9a0ba1091499f23e315f2a"
     },
     {
       "path": "frameworks/native",
-      "android14_port_docs_head": "e74778cf1e36328e9cef925387d774ae170d882a",
-      "android14_port_docs_base": "bb156c091b21aab6e5752bc7368832065c2fa0c8",
-      "port_docs_commit_count": 14,
-      "base_commit": "e74778cf1e36328e9cef925387d774ae170d882a",
-      "baseline_tree": "d12a5ca5ab5d9e746b44ea19730178f52471b660",
+      "base_commit": "46e41ca81a6863a1f7e62455edf9f873ba3204e2",
+      "baseline_tree": "a53e679b835f50b363358d425ba1d4f6a9846784",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "e74778cf1e36328e9cef925387d774ae170d882a"
+      "source_head": "46e41ca81a6863a1f7e62455edf9f873ba3204e2"
     },
     {
       "path": "frameworks/opt/net/wifi",
-      "android14_port_docs_head": "02b33a5a0332e3f72a65074057efbeba66056a99",
-      "android14_port_docs_base": "8ea518057eca198e286d4dab083a251383d9d5d5",
-      "port_docs_commit_count": 6,
-      "base_commit": "02b33a5a0332e3f72a65074057efbeba66056a99",
-      "baseline_tree": "2542273b2fb692fb529ca4fd8c95c00bebf049a9",
+      "base_commit": "8ec9c37aea33f0e7ee8eae0cb410932f751abb84",
+      "baseline_tree": "ca0b6e54a0645586ef13d355a855d46005472288",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "02b33a5a0332e3f72a65074057efbeba66056a99"
+      "source_head": "8ec9c37aea33f0e7ee8eae0cb410932f751abb84"
     },
     {
       "path": "frameworks/opt/telephony",
-      "android14_port_docs_head": "807fd6075a8b08d6389fcb51dd6d201cff1668d8",
-      "android14_port_docs_base": "0983bbab8d91f5ed2a0cbe440430b0df9e4bec3d",
-      "port_docs_commit_count": 15,
-      "base_commit": "807fd6075a8b08d6389fcb51dd6d201cff1668d8",
-      "baseline_tree": "18718dce5bbdc3fea7b33740ff8559c348e9cc5d",
+      "base_commit": "ee4a584d53e587b4d75ef34b4ecc4050d2d3e151",
+      "baseline_tree": "ec36bddb8ede8496cd87b93eb11fa2e8d24c387e",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "807fd6075a8b08d6389fcb51dd6d201cff1668d8"
+      "source_head": "ee4a584d53e587b4d75ef34b4ecc4050d2d3e151"
     },
     {
       "path": "hardware/interfaces",
-      "android14_port_docs_head": "45aae2dd4b270403f25dea40e03b8f0bd75f8be3",
-      "android14_port_docs_base": "727cbe0377d351973034826bc6704f531bf12fc6",
-      "port_docs_commit_count": 1,
-      "base_commit": "45aae2dd4b270403f25dea40e03b8f0bd75f8be3",
-      "baseline_tree": "0d6a9f5a3ad17aafeb54896883664ddbf745a641",
+      "base_commit": "3f5a46bef29c0015bc3b921fa547bdc4abd66e89",
+      "baseline_tree": "a77954c211d51e9ffa2c42b98940f04f644d3966",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "45aae2dd4b270403f25dea40e03b8f0bd75f8be3"
-    },
-    {
-      "path": "hardware/libhardware_legacy",
-      "android14_port_docs_head": "923561bccb38d3d8bececd4ee2e224ff00dd13d3",
-      "android14_port_docs_base": "d38a44065863ae6edd31b758aa4049ea49dcc764",
-      "port_docs_commit_count": 2,
-      "base_commit": "923561bccb38d3d8bececd4ee2e224ff00dd13d3",
-      "baseline_tree": "bfe388f72806eef356e3ee2a1d7b2ab6b4ba7292",
-      "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "923561bccb38d3d8bececd4ee2e224ff00dd13d3"
+      "source_head": "3f5a46bef29c0015bc3b921fa547bdc4abd66e89"
     },
     {
       "path": "hardware/lineage/interfaces",
-      "android14_port_docs_head": "54d472d97f7b053db8823913c95ba427c012b924",
-      "android14_port_docs_base": "239c3734f1842d0876217449323bebab74e2e515",
-      "port_docs_commit_count": 10,
-      "base_commit": "54d472d97f7b053db8823913c95ba427c012b924",
-      "baseline_tree": "2e438403b225c059a5275fd4618708118a213099",
+      "base_commit": "6f47b52dcc132565657c8c160df91c81bb93c891",
+      "baseline_tree": "057906f9b082beec8c516822d42615720972bb44",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "54d472d97f7b053db8823913c95ba427c012b924"
+      "source_head": "6f47b52dcc132565657c8c160df91c81bb93c891"
     },
     {
       "path": "hardware/qcom-caf/bt",
-      "android14_port_docs_head": "751780747728c036a3c9facc972492f5115a609a",
-      "android14_port_docs_base": "b7218e4c89817079546f035f3cfe5f99b4730d43",
-      "port_docs_commit_count": 1,
-      "base_commit": "751780747728c036a3c9facc972492f5115a609a",
-      "baseline_tree": "c375c8fc296ab1b5f5587c068262840390e7ba45",
+      "base_commit": "4adff8a76ae24f5bc568ced44c332bbad092a8f4",
+      "baseline_tree": "379df759379344096e0a3bfdd3cc50e332d88251",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "751780747728c036a3c9facc972492f5115a609a"
+      "source_head": "4adff8a76ae24f5bc568ced44c332bbad092a8f4"
     },
     {
       "path": "hardware/qcom-caf/common",
-      "android14_port_docs_head": "89eb4ddad8f755d1c23634b38c66e4c6454a3e59",
-      "android14_port_docs_base": "dd56f9a82ff2c3fdfe6257ed266cee3c373b8290",
-      "port_docs_commit_count": 1,
-      "base_commit": "89eb4ddad8f755d1c23634b38c66e4c6454a3e59",
-      "baseline_tree": "ac0348629a829edb939dc0b06ca90a2b500ad2b6",
+      "base_commit": "b99f9b375eca83138f6c1be95894631374688af4",
+      "baseline_tree": "673eb7e1dc8daf7e874dee044dd4c6df5abdebc6",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "89eb4ddad8f755d1c23634b38c66e4c6454a3e59"
+      "source_head": "b99f9b375eca83138f6c1be95894631374688af4"
     },
     {
       "path": "hardware/qcom-caf/wlan",
-      "android14_port_docs_head": "1ee6fd2e296daaa62202550b48b5ae74eb83b069",
-      "android14_port_docs_base": "e5d5b06280de3d3414b4b911a7e1fc00796c434c",
-      "port_docs_commit_count": 2,
-      "base_commit": "1ee6fd2e296daaa62202550b48b5ae74eb83b069",
-      "baseline_tree": "c6d31a47a2262a21efdab004fc8613405bbf9cba",
+      "base_commit": "4617d3874ef4656a7dcfcc0bb2df5c97be01466e",
+      "baseline_tree": "8425421274ad86e7cdd2826d0bd1d4d1972163a6",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "1ee6fd2e296daaa62202550b48b5ae74eb83b069"
+      "source_head": "4617d3874ef4656a7dcfcc0bb2df5c97be01466e"
     },
     {
       "path": "hardware/ril",
-      "android14_port_docs_head": "9f6f8b90ac7258e3bd5c44114c4027873a5d3e48",
-      "android14_port_docs_base": "e1d539d38fecd4f1c0baf7478726352b1cea634f",
-      "port_docs_commit_count": 6,
-      "base_commit": "9f6f8b90ac7258e3bd5c44114c4027873a5d3e48",
-      "baseline_tree": "39a4b72bed60161e26ea5ee890ae908cc9167566",
+      "base_commit": "f0de2468ec75b0f2ef871aa72dd80a6c0014b601",
+      "baseline_tree": "e8d4eb5b0506294cf26cac04ac1b69b5c69a0883",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "9f6f8b90ac7258e3bd5c44114c4027873a5d3e48"
-    },
-    {
-      "path": "packages/apps/DocumentsUI",
-      "baseline_kind": "unmodified-lineage-21.0-upstream",
-      "upstream_branch": "lineage-21.0",
-      "upstream_repository": "https://github.com/LineageOS/android_packages_apps_DocumentsUI",
-      "port_docs_commit_count": 0,
-      "base_commit": "afe80c8f00b177b391a169824feb58d278332534",
-      "baseline_tree": "99069f10758d31e0b39b061e36a9f4782c5d3d8f",
-      "patches": [
-        {
-          "file": "packages-apps-DocumentsUI/0001-fix-DocumentsUI-crash.patch",
-          "source_commit": "a7967aeac22379d957ad12c42099cd626b2398a4",
-          "patch_id": "3cc82dc7a39ae3a84d6f951df90cc54ddccabcda",
-          "sha256": "c90557d3d07c8b87ce592472c8f67d5a906573dd077682f8147f44d40487f957"
-        }
-      ],
-      "inherited_commit_count": 0,
-      "source_head": "a7967aeac22379d957ad12c42099cd626b2398a4",
-      "upstream_fix_commit": "0025b72fb9ed29dfc343d0b7829634243aeeef43",
-      "upstream_fix_url": "https://github.com/LineageOS/android_packages_apps_DocumentsUI/commit/0025b72fb9ed29dfc343d0b7829634243aeeef43"
+      "source_head": "f0de2468ec75b0f2ef871aa72dd80a6c0014b601"
     },
     {
       "path": "packages/modules/Bluetooth",
-      "android14_port_docs_head": "ae19826fe5f097280104fd0c2fa9391c8bc3d33f",
-      "android14_port_docs_base": "d6a96de844c7ab46fbaa172064a0715b3790d662",
-      "port_docs_commit_count": 3,
-      "base_commit": "ae19826fe5f097280104fd0c2fa9391c8bc3d33f",
-      "baseline_tree": "e1d92865ad095798c3eaf647de3d56146bff22c6",
+      "base_commit": "e27d24a6672835ff0718416cb19303168676e3df",
+      "baseline_tree": "ed1bf87f8555fff42feb43b2f4bb33e2f6d4218d",
       "patches": [
         {
-          "file": "packages-modules-Bluetooth/0001-Bluetooth-initialize-GD-LE-capabilities-only-on-LE-controllers.patch",
-          "source_commit": "0c72713d86013fcc12c03c57f522b42c375950bc",
-          "patch_id": "b1e9b4491e2aed47ba00eccddfc744386cdd2143",
-          "sha256": "0315722e1a71ed28f975d4f09c6362259f996d7b245bad1c40b63c76e510e691"
+          "file": "packages-modules-Bluetooth/0001-Bluetooth-Initialize-LE-capabilities-only-for-capable-Android-15.patch",
+          "source_commit": "1cdf9d0f16cb71ed0784082f2f6512685ec879cf",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "fdbffbc6e3ff781099f9ab95e7a8b4f56e4b863a",
+          "sha256": "c6a7bb71095d102625303675e382bcdad22ebf4261ade2c5376c26663837a951"
         },
         {
-          "file": "packages-modules-Bluetooth/0002-Bluetooth-skip-LE-identity-generation-on-classic-controllers.patch",
-          "source_commit": "19374b63b213b2807290d2c915e88fbd7f4a8e14",
-          "patch_id": "67437f19d52db04ec8c2c67f01c9646b8679575a",
-          "sha256": "ab77389f1d2aee52917d030f751bfb9213501b429000caec385caddace6cf776"
+          "file": "packages-modules-Bluetooth/0002-Bluetooth-Keep-classic-only-startup-free-of-LE-identity-and-scan.patch",
+          "source_commit": "c1878335d5177561d8b92356753e6858b9833ae4",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "d7e766a4b89962e50b13d8fefbe95adb545a2c8b",
+          "sha256": "d72408a9501061ed4fd93b950689f098e6fd30bbdc70f01d45b30026adc7b020"
         },
         {
-          "file": "packages-modules-Bluetooth/0003-Bluetooth-report-zero-LE-capabilities-on-classic-controllers.patch",
-          "source_commit": "f8d49ae546e72d7846294524c8fe910e3017a128",
-          "patch_id": "0d36d4c15b334d0df6d7b013a3ef5b29c796c803",
-          "sha256": "5c6361af882457f47e2c33c3d72bc7b8fbf9a48ebca931e1330e77371edaa630"
-        },
-        {
-          "file": "packages-modules-Bluetooth/0004-Bluetooth-keep-LE-managers-inactive-on-classic-controllers.patch",
-          "source_commit": "2d07f7260c40b8986bc9d0ee826834ebcf9fbdd5",
-          "patch_id": "f913cb5ccc5e123d35d952f09897da7bdc2ed908",
-          "sha256": "b2a52ee0119cd91e10c0f9e2a3d76df69fcc7c70a9f904c84c424c695fafe5ac"
-        },
-        {
-          "file": "packages-modules-Bluetooth/0005-Bluetooth-use-Android14-controller-and-profile-callback-interfac.patch",
-          "source_commit": "b823053b6af7d0fe66d94d8b8bd1e912c9b1827d",
-          "patch_id": "305ec19ba5011c9408aa9eadf8ad16f085ae8dbe",
-          "sha256": "02c23627ca27dc1acbc86bacb0a539a052afb3b999049c79c6fb65357e9f0b8f"
+          "file": "packages-modules-Bluetooth/0003-Bluetooth-Keep-Android-15-LE-managers-inactive-on-classic-contro.patch",
+          "source_commit": "1ed6418e42a0cd8784ce3c3053cc78f3074c5cc5",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "f98d5bfc42f2209d5a3f065e5fae9893f1bf7a83",
+          "sha256": "e4feca0c31361d97ca205075de0b33020a8eaf2cc54bd1e177a33e9a73205d14"
         }
       ],
-      "inherited_commit_count": 0,
-      "source_head": "b823053b6af7d0fe66d94d8b8bd1e912c9b1827d"
+      "source_head": "1ed6418e42a0cd8784ce3c3053cc78f3074c5cc5"
     },
     {
       "path": "packages/modules/NetworkStack",
-      "android14_port_docs_head": "ce76b3a6afc84d65296ba8569901dd0bfacf7d88",
-      "android14_port_docs_base": "a415d3808f8b6ab9c15b8d873eb88e96f4a506a8",
-      "port_docs_commit_count": 4,
-      "base_commit": "ce76b3a6afc84d65296ba8569901dd0bfacf7d88",
-      "baseline_tree": "be08c90569c1982b7dc379056032f6d120ec9ee7",
+      "base_commit": "9180779b933d2b4b4b5756aee6e029b369d8be34",
+      "baseline_tree": "d4d611222fa2b5268dd4d89cdc0aa41f5abdbc87",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "ce76b3a6afc84d65296ba8569901dd0bfacf7d88"
+      "source_head": "9180779b933d2b4b4b5756aee6e029b369d8be34"
     },
     {
       "path": "packages/modules/Wifi",
-      "android14_port_docs_head": "2e65c2c540b3c07743d699d7aeedf5fd6860f315",
-      "android14_port_docs_base": "6f6ab02c57799b4c3f7d7217a3d2291f2ebebd70",
-      "port_docs_commit_count": 1,
-      "base_commit": "2e65c2c540b3c07743d699d7aeedf5fd6860f315",
-      "baseline_tree": "5467cf675d46fdc20f1d0cfec86a32b5ca11afa6",
+      "base_commit": "4b208d3ee76d7492db9c1caa7bd966fdd5a24b51",
+      "baseline_tree": "f613d57bc63d45edf28a27d07d33a8ec5b664541",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "2e65c2c540b3c07743d699d7aeedf5fd6860f315"
+      "source_head": "4b208d3ee76d7492db9c1caa7bd966fdd5a24b51"
     },
     {
       "path": "packages/modules/adb",
-      "android14_port_docs_head": "398a3b3915b72dd8977ba2a7cee1d332625b5540",
-      "android14_port_docs_base": "b10ce8e4edce5b71d302ec5b33edc84a24be5904",
-      "port_docs_commit_count": 3,
-      "base_commit": "398a3b3915b72dd8977ba2a7cee1d332625b5540",
-      "baseline_tree": "b05695bb2e78aa740463515403cfbffcb99132cf",
+      "base_commit": "f2313227451e3d2192095eef09f9aa56585ac600",
+      "baseline_tree": "6edd660ba3df6e80582d520b540c10585d9c4e1f",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "398a3b3915b72dd8977ba2a7cee1d332625b5540"
-    },
-    {
-      "path": "packages/modules/common",
-      "android14_port_docs_head": "1bf759c0f4bc0724f4d2116197f6364e7d707950",
-      "android14_port_docs_base": "722642177b706716fa79a26938d363d438f2c90a",
-      "port_docs_commit_count": 1,
-      "base_commit": "1bf759c0f4bc0724f4d2116197f6364e7d707950",
-      "baseline_tree": "48efce6eda39686e78c4123747e3515cd83e8ae6",
-      "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "1bf759c0f4bc0724f4d2116197f6364e7d707950"
+      "source_head": "f2313227451e3d2192095eef09f9aa56585ac600"
     },
     {
       "path": "packages/services/Telephony",
-      "android14_port_docs_head": "6004b5915e37935a2ffd49b7c2cb1b1136b3db4a",
-      "android14_port_docs_base": "39bf819da6d78fe7f5358da04a2c0c272682cd1c",
-      "port_docs_commit_count": 1,
-      "base_commit": "6004b5915e37935a2ffd49b7c2cb1b1136b3db4a",
-      "baseline_tree": "093a71bfa935520b40130111040a3173f4f82ae0",
+      "base_commit": "c150728ac1f5155ef25ef814a3e163f80f49e270",
+      "baseline_tree": "d8ac94b7c7364d3a1b72ffffc57db624ad309101",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "6004b5915e37935a2ffd49b7c2cb1b1136b3db4a"
-    },
-    {
-      "path": "prebuilts/sdk",
-      "android14_port_docs_head": "8a911d9600b7d198904f93366bccc290d625da83",
-      "android14_port_docs_base": "7a8acb7d37bfc84892f53931f667f3aa08932455",
-      "port_docs_commit_count": 1,
-      "base_commit": "8a911d9600b7d198904f93366bccc290d625da83",
-      "baseline_tree": "2be6380bbd6521f2d4724ac187b02ec515e14121",
-      "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "8a911d9600b7d198904f93366bccc290d625da83"
+      "source_head": "c150728ac1f5155ef25ef814a3e163f80f49e270"
     },
     {
       "path": "system/core",
-      "android14_port_docs_head": "8a608316c888da2859eacef00dd83dc43e21f31b",
-      "android14_port_docs_base": "ec299bf6da55702b7b9675d60a0faf2815f0dc6d",
-      "port_docs_commit_count": 2,
-      "base_commit": "8a608316c888da2859eacef00dd83dc43e21f31b",
-      "baseline_tree": "6b5c7a5310d4c52e26392595be3ca8835cb9efab",
+      "base_commit": "ec4b63bc204fc0379653291292abd369105ada92",
+      "baseline_tree": "b8e6fcb0bedb52227fd78419add76e9c6debcabc",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "8a608316c888da2859eacef00dd83dc43e21f31b"
+      "source_head": "ec4b63bc204fc0379653291292abd369105ada92"
     },
     {
       "path": "system/libhidl",
-      "android14_port_docs_head": "2ba6ca8ba1aca70dd74aaf04cc420546ecda1e4d",
-      "android14_port_docs_base": "0ca22f22769ecc8ddf4ef34d8e0b5fff3d0429e5",
-      "port_docs_commit_count": 2,
-      "base_commit": "2ba6ca8ba1aca70dd74aaf04cc420546ecda1e4d",
-      "baseline_tree": "c48e2df0764acf457d06b812cf01edfecca643db",
+      "base_commit": "2025ed34aad10de4e66f5d9854fa782a12654d1e",
+      "baseline_tree": "b8c17f7b679c5d3885e31c5964680e1ce212808d",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "2ba6ca8ba1aca70dd74aaf04cc420546ecda1e4d"
+      "source_head": "2025ed34aad10de4e66f5d9854fa782a12654d1e"
     },
     {
       "path": "system/libhwbinder",
-      "android14_port_docs_head": "72a6633115da6960105b786e4d9318a1d64f773e",
-      "android14_port_docs_base": "f2a1ea3202192ac2c0ac89d95f03567dccc6ca50",
-      "port_docs_commit_count": 1,
-      "base_commit": "72a6633115da6960105b786e4d9318a1d64f773e",
-      "baseline_tree": "78ad212da9aa384b6cf0f3acfffcc2194d60ba1b",
+      "base_commit": "25a53a36f6f37273c488d7a7462715da07358d8f",
+      "baseline_tree": "0023417ba1024c2ebb0997d609a1a2f1fa2adbe8",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "72a6633115da6960105b786e4d9318a1d64f773e"
+      "source_head": "25a53a36f6f37273c488d7a7462715da07358d8f"
     },
     {
       "path": "system/security",
-      "android14_port_docs_head": "44eb36af8ca84b3db2b612f1b71151de4eab58a7",
-      "android14_port_docs_base": "12112e1d80e6c4b31bf1aac46fa5fab940706884",
-      "port_docs_commit_count": 1,
-      "base_commit": "44eb36af8ca84b3db2b612f1b71151de4eab58a7",
-      "baseline_tree": "f33897709af9f284e544e11620b3db8b2faf4f6c",
+      "base_commit": "bd6d8a903af2a09fa2035617d42814a9650b9452",
+      "baseline_tree": "ed64d431dba5d9099006fa6c897cdf50c1bef17b",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "44eb36af8ca84b3db2b612f1b71151de4eab58a7"
+      "source_head": "bd6d8a903af2a09fa2035617d42814a9650b9452"
     },
     {
       "path": "system/sepolicy",
-      "android14_port_docs_head": "6ecc3e4a638910218cd3dd14c4740d481a8c1a86",
-      "android14_port_docs_base": "83bf38d56eac5d44b59bad9b497521274734ee34",
-      "port_docs_commit_count": 3,
-      "base_commit": "6ecc3e4a638910218cd3dd14c4740d481a8c1a86",
-      "baseline_tree": "72b78357e9ed08350dc6adcba74acc46471f21a8",
-      "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "6ecc3e4a638910218cd3dd14c4740d481a8c1a86"
+      "base_commit": "c935a114d40d20cb55a4d395446e61289dcc6667",
+      "baseline_tree": "1aa423458311154a555fda77a0249597db4f88a0",
+      "patches": [
+        {
+          "file": "system-sepolicy/0001-sepolicy-allow-non-Treble-audioserver-to-publish-the-HIDL-audio-.patch",
+          "source_commit": "b85f3358d20a06514ebbbb2e05e3c5b681d59cce",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "9b20152588c22f38ff57359185da661c5c7e4aa5",
+          "sha256": "b1da14f3f94fc66035d28bc0bba15757c5e1f18896b6c9160c6f963857b5a5df"
+        }
+      ],
+      "source_head": "b85f3358d20a06514ebbbb2e05e3c5b681d59cce"
     },
     {
       "path": "vendor/lineage",
-      "android14_port_docs_head": "55d429ee9926b4ebe9ba779e7cde8698f92fc96d",
-      "android14_port_docs_base": "85fbbf9a6601ca7af759aa0aa06d32f7a9800b36",
-      "port_docs_commit_count": 10,
-      "base_commit": "55d429ee9926b4ebe9ba779e7cde8698f92fc96d",
-      "baseline_tree": "4152631eb3bcd7c84d458e91a18395547e46e85b",
+      "base_commit": "8a040c29025b95b7532f0a9a35b878c56c09b439",
+      "baseline_tree": "a24fb34b9c83e473f75e41fb49a6a8b8775d12fa",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "55d429ee9926b4ebe9ba779e7cde8698f92fc96d"
+      "source_head": "8a040c29025b95b7532f0a9a35b878c56c09b439"
     },
     {
       "path": "vendor/qcom/opensource/power",
-      "android14_port_docs_head": "51f70303ebff8d31d7d5d2e8690ec2fbeceaa4d8",
-      "android14_port_docs_base": "6dce78ab54b4d715077a89bd249f47fed2957f3a",
-      "port_docs_commit_count": 2,
-      "base_commit": "51f70303ebff8d31d7d5d2e8690ec2fbeceaa4d8",
-      "baseline_tree": "0d06125f2d96b3fcabb527ba56b2855f6e2d4c0d",
+      "base_commit": "cdcb2104d336d072ecd18de7db11c538eb8aeb08",
+      "baseline_tree": "aaf9af637aecdaf42ee36e457984c5eac147799d",
       "patches": [],
-      "inherited_commit_count": 0,
-      "source_head": "51f70303ebff8d31d7d5d2e8690ec2fbeceaa4d8"
+      "source_head": "cdcb2104d336d072ecd18de7db11c538eb8aeb08"
+    },
+    {
+      "path": "packages/apps/DocumentsUI",
+      "base_commit": "514aa82fc1d7786dce5900c339b210e42581462d",
+      "baseline_tree": "e53fc33c4bc46fd27b2807fadf25438dcf744e70",
+      "patches": [],
+      "source_head": "514aa82fc1d7786dce5900c339b210e42581462d"
     },
     {
       "path": "packages/apps/Trebuchet",
-      "baseline_kind": "unmodified-lineage-21.0-upstream",
-      "upstream_branch": "lineage-21.0",
-      "upstream_repository": "https://github.com/LineageOS/android_packages_apps_Trebuchet",
-      "port_docs_commit_count": 0,
-      "base_commit": "fd2e5694d077d32bf9b092589a8ed335bc83bf92",
-      "baseline_tree": "804e4d17b473bac22c691590e9a7e8dfeeb35b4c",
-      "patches": [
-        {
-          "file": "packages-apps-Trebuchet/0001-cancel-unlock-callback-after-TIS-destroy.patch",
-          "source_commit": "1be41c374af50a8dbb9ecc272ce1555d800a645b",
-          "patch_id": "2d99d28db1ca72d318ebe40ce67a2dc6fbce7702",
-          "sha256": "1ed5ceca281ebf9ae0d97dc54c9475ba6d7f388245aee4835fd455795b406ba0"
-        }
-      ],
-      "inherited_commit_count": 0,
-      "source_head": "1be41c374af50a8dbb9ecc272ce1555d800a645b",
-      "upstream_fix_commit": "4dfb35acc147280c15ed14d1d8458309e33f805e",
-      "upstream_fix_url": "https://github.com/LineageOS/android_packages_apps_Trebuchet/commit/4dfb35acc147280c15ed14d1d8458309e33f805e"
+      "base_commit": "2bee8237d1bb4bc79c348cc7178a780e44a822a3",
+      "baseline_tree": "1cb7e025f63d5b7dff8caf6ef3be4b8caf23078b",
+      "patches": [],
+      "source_head": "2bee8237d1bb4bc79c348cc7178a780e44a822a3"
+    },
+    {
+      "path": "system/memory/lmkd",
+      "base_commit": "4812ac8dbb7efa0bc01789d80ee7604e456f10f5",
+      "baseline_tree": "66c6b8100c3389121a71e1ff33f7b96926143a0b",
+      "patches": [],
+      "source_head": "4812ac8dbb7efa0bc01789d80ee7604e456f10f5"
+    },
+    {
+      "path": "system/bpf",
+      "base_commit": "26a836fc2bae1bf8dca48c5692b9efda00d2a75a",
+      "baseline_tree": "22d4615e5d56d8d37329a7433844102dfa3115f3",
+      "patches": [],
+      "source_head": "26a836fc2bae1bf8dca48c5692b9efda00d2a75a"
+    },
+    {
+      "path": "system/netd",
+      "base_commit": "bc405f84541602df142fe470967cca349bee6af7",
+      "baseline_tree": "e2ea54261bf9624293e21d9555218b57f4321df9",
+      "patches": [],
+      "source_head": "bc405f84541602df142fe470967cca349bee6af7"
+    },
+    {
+      "path": "packages/modules/Connectivity",
+      "base_commit": "42f77549fc9d96709966c04f31011a27bc2b26c5",
+      "baseline_tree": "6a2e394469264d482f8e8604c3189431ad5ee0ae",
+      "patches": [],
+      "source_head": "42f77549fc9d96709966c04f31011a27bc2b26c5"
     }
   ],
-  "schema_version": 1,
-  "scope": "MiOne shared-platform increments after the verified Android 14 port-docs prerequisite",
-  "port_docs_reference": {
-    "repository": "https://github.com/tiger-cave/port_docs",
-    "baseline_snapshot": "Android 14: 34 repositories, 129 commits; exact heads and trees recorded per project"
-  }
+  "mione_platform_increment_count": 4
 }

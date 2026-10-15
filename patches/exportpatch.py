@@ -51,6 +51,7 @@ def main():
                 filename = project["path"].replace("/", "-") + "/%04d-%s.patch" % (number, name)
             patch_id = subprocess.check_output(["git", "patch-id", "--stable"], input=data).split()[0].decode()
             patches.append({"file": filename, "source_commit": commit,
+                            "source_author": git(repo, "show", "-s", "--format=%an <%ae>", commit).decode().strip(),
                             "patch_id": patch_id, "sha256": hashlib.sha256(data).hexdigest()})
             exports.append((PATCH_ROOT / filename, data))
         project["source_head"] = git(repo, "rev-parse", "HEAD").decode().strip()
