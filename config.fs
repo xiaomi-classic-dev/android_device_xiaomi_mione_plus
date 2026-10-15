@@ -7,6 +7,25 @@ value: 2951
 [AID_VENDOR_QCOM_RFS_SHARED]
 value: 2952
 
+[system/build.prop]
+mode: 0644
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
+# Embedded partition properties must also be covered by the system table.
+[system/*/build.prop]
+mode: 0644
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
+[vendor/build.prop]
+mode: 0644
+user: AID_ROOT
+group: AID_ROOT
+caps: 0
+
 # The legacy Wi-Fi HAL loads bcmdhd.ko itself while running as wifi.
 [vendor/bin/hw/android.hardware.wifi@1.0-service]
 mode: 0755
