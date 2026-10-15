@@ -169,12 +169,13 @@ service vendor.ril-daemon /vendor/bin/hw/rild
     user radio
     group radio system cache inet misc audio log readproc wakelock oem_2950
     capabilities BLOCK_SUSPEND NET_ADMIN NET_RAW
+    setenv LD_PRELOAD libmione_cnd_shim.so
 
 service qcamerasvr /vendor/bin/mm-qcamera-daemon
     class late_start
     user camera
     group camera system inet input
-    setenv LD_PRELOAD libmione_cnd_shim.so
+    setenv LD_PRELOAD "libmione_cnd_shim.so libmione_camera_unwind_shim.so"
 
 service kickstart /system/bin/qcks l
     oneshot

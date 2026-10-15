@@ -121,14 +121,8 @@ BOARD_GLOBAL_CFLAGS += -DDISABLE_HW_ID_MATCH_CHECK
 # Limit fixed-address execution to the shipped CAF executables.
 LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := $(MIONE_PATH)/include
 
-# Oreo linker shims are selected at build time.
-TARGET_LD_SHIM_LIBS := \
-    /vendor/bin/cnd|libmione_cnd_shim.so \
-    /vendor/bin/netmgrd|libmione_cnd_shim.so \
-    /vendor/lib/libnetmgr.so|libmione_cnd_shim.so \
-    /vendor/lib/hw/sensors.vendor.msm8660.so|libmione_sensors_shim.so \
-    /vendor/bin/mm-qcamera-daemon|libmione_camera_unwind_shim.so \
-    /vendor/bin/hw/android.hardware.camera.provider@2.4-service|libmione_camera_unwind_shim.so
+# Android 15 loads the required compatibility shims through device service rc
+# LD_PRELOAD entries, scoped to the daemons hosting the legacy libraries.
 
 # Misc
 BOARD_USES_LEGACY_MMAP := true

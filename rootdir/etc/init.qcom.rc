@@ -242,6 +242,7 @@ on property:vold.decrypt=trigger_restart_framework
 service cnd /vendor/bin/cnd
     class late_start
     socket cnd stream 666 root radio
+    setenv LD_PRELOAD libmione_cnd_shim.so
 
 service rmt_storage /vendor/bin/rmt_storage
     class core
@@ -287,6 +288,7 @@ service netmgrd /vendor/bin/netmgrd
     class main
     group radio system wakelock
     disabled
+    setenv LD_PRELOAD libmione_cnd_shim.so
 
 service sensors /system/bin/sensors.qcom
     class late_start
