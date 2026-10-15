@@ -185,6 +185,11 @@ BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
 BOARD_CUSTOM_BT_CONFIG := device/xiaomi/mione_plus/bluetooth/vnd_mione_plus.txt
 
+# Android 15's Broadcom Soong module consumes a source filegroup for the
+# device configuration instead of the removed Make configuration bridge.
+$(call soong_config_set,brcm_libbt,custom_bt_config,:mione_bluetooth_vendor_buildcfg)
+$(call soong_config_set,brcm_libbt,bdroid_buildcfg_include_dir,$(BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR))
+
 BOARD_SEPOLICY_DIRS += device/xiaomi/mione_plus/sepolicy
 
 # Display

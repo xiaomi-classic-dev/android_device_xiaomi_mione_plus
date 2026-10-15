@@ -1,0 +1,8 @@
+// Copyright (C) 2026 The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+
+filegroup {
+    name: "mione_bluetooth_vendor_buildcfg",
+    srcs: ["vnd_mione_plus.txt"],
+    visibility: ["//hardware/broadcom/libbt"],
+}
