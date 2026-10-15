@@ -35,9 +35,8 @@ PRODUCT_ENABLE_UFFD_GC := false
 # Enable Android networking with the backported BPF kernel support.
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.kernel.ebpf.supported=1
 
-# Android 10 Soong merges the platform profile with the device additions.
-PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION := \
-    frameworks/base/config/boot-image-profile.txt \
+# Keep Android 15's platform profiles and merge the device additions.
+PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION += \
     device/xiaomi/mione_plus/dexpreopt/wallpaper-profile.txt
 
 # Copy Bluetooth firmware, since BCM4329 is a BT/WiFi chip
