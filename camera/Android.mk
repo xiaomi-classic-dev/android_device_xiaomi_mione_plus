@@ -33,7 +33,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include $(LOCAL_PATH) $(LOCAL_PATH)/mm-came
     $(call project-path-for,qcom-media)/libstagefrighthw
 LOCAL_SHARED_LIBRARIES := libutils libui libcamera_metadata liblog libcutils \
     libmmcamera_interface2 libgenlock libbinder libdl libnativewindow
-LOCAL_HEADER_LIBRARIES := libmedia_headers libutils_headers framework-permission-aidl-cpp
+LOCAL_HEADER_LIBRARIES := libaudiofoundation_headers libmedia_headers libutils_headers framework-permission-aidl-cpp
 LOCAL_STATIC_LIBRARIES := framework-permission-aidl-cpp
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
