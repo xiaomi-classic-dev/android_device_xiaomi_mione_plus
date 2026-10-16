@@ -118,8 +118,8 @@ ro.bluetooth.bcm4329_patch_quirk=true
 # MediaProfiles uses the legacy XML schema at the device vendor path.
 media.settings.xml=/vendor/etc/media_profiles.xml
 
-# Adreno 220 uses the GLES RenderEngine path on Android 12.
-debug.renderengine.backend=gles
+# Use threaded legacy GLES for Android 15 screen captures on Adreno 220.
+debug.renderengine.backend=threaded
 
 # First-boot APN/import and role setup exceed modern defaults on MSM8660.
 # Preserve watchdogs while scaling their hardware-dependent deadlines.
