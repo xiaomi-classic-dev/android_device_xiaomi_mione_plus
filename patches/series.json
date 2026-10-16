@@ -1,7 +1,7 @@
 {
   "android_version": 15,
   "lineage_branch": "lineage-22.2",
-  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) first. Eight additional upstream repositories are pinned, including the two scoped linker build-visibility increments. Only actual platform increments beyond these exact heads/trees are exported. MiOne device/vendor/kernel/MSM8660 changes remain in their own Git histories. Android14 patches are preserved on backup/mione21-input-20261016-013923; never apply that old series to Android15.",
+  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) first. Nine additional upstream repositories are pinned, including the two scoped linker build-visibility increments. Only actual platform increments beyond these exact heads/trees are exported. MiOne device/vendor/kernel/MSM8660 changes remain in their own Git histories. Android14 patches are preserved on backup/mione21-input-20261016-013923; never apply that old series to Android15. The ninth additional pin is hardware/broadcom/wlan at its original Android 15 source; its RTT registration increment preserves the port_docs ultra-legacy HAL table ABI.",
   "android15_prerequisite_repository_count": 31,
   "android15_prerequisite_commit_count": 123,
   "upstream_already_contains": {
@@ -335,7 +335,23 @@
         }
       ],
       "source_head": "fff981f6409077eefe676d3aa4f7cc4d80f7fe6d"
+    },
+    {
+      "path": "hardware/broadcom/wlan",
+      "base_commit": "f02ad0aae51350bcf45b7b8dae40a1a1e386d4f5",
+      "baseline_tree": "2909874652308cbb50f24cb82c5cd96406004d5b",
+      "patches": [
+        {
+          "file": "hardware-broadcom-wlan/0001-bcmdhd-Register-RTT-v3-only-with-a-compatible-HAL-table.patch",
+          "source_commit": "494c8845648bb6cbea1493dfa4d899da032eb677",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "d063d36414cf6897f42549b279d428e12ee0b3a2",
+          "sha256": "591bfa20f74911268c65450d2899dd5b46ca648eb05b75bb67907a9a466b192a"
+        }
+      ],
+      "source_head": "494c8845648bb6cbea1493dfa4d899da032eb677"
     }
   ],
-  "mione_platform_increment_count": 7
+  "mione_platform_increment_count": 8,
+  "additional_upstream_pin_count": 9
 }
