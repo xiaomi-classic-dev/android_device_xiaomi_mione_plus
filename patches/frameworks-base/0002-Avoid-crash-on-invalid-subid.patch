@@ -1,0 +1,36 @@
+From 841135df685b40033f75baa4df3cef848eecdc66 Mon Sep 17 00:00:00 2001
+From: Tomasz Wasilczyk <twasilczyk@google.com>
+Date: Fri, 7 Mar 2025 10:47:42 -0800
+Subject: [PATCH] Avoid crash on invalid subid
+
+This sometimes happen in notifyCarrierRoamingNtnSignalStrengthChanged
+
+Bug: 371632841
+Test: atest TelephonyRegistryTest
+Flag: EXEMPT bugfix
+Change-Id: I772a8f22936695d5a79abc2978bb5d5f1b3f34d9
+
+(cherry picked from commit 7afbc249e2b0462e1cb5908c041e01d28b7e801d)
+Change-Id: I92a6ce8f43f5108da727c27238ee36aaad5e79ed
+---
+ services/core/java/com/android/server/TelephonyRegistry.java | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/services/core/java/com/android/server/TelephonyRegistry.java b/services/core/java/com/android/server/TelephonyRegistry.java
+index bd7a0ac55117..7a1fc2465f9d 100644
+--- a/services/core/java/com/android/server/TelephonyRegistry.java
++++ b/services/core/java/com/android/server/TelephonyRegistry.java
+@@ -3873,6 +3873,10 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
+      */
+     public void notifyCarrierRoamingNtnSignalStrengthChanged(int subId,
+             @NonNull NtnSignalStrength ntnSignalStrength) {
++        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
++            log("notifyCarrierRoamingNtnSignalStrengthChanged: invalid subscription id");
++            return;
++        }
+         if (!checkNotifyPermission("notifyCarrierRoamingNtnSignalStrengthChanged")) {
+             log("notifyCarrierRoamingNtnSignalStrengthChanged: caller does not have required "
+                     + "permissions.");
+-- 
+2.53.0
+

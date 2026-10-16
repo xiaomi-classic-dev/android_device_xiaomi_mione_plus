@@ -1,0 +1,58 @@
+From d5c1861e04636c5cd58be098a15f7620ca12a31b Mon Sep 17 00:00:00 2001
+From: William Escande <wescande@google.com>
+Date: Tue, 3 Mar 2026 13:01:40 -0800
+Subject: [PATCH] StatsCollector: Silence stack trace when expected
+
+When Bluetooth is off, it is impossible to request the activity info.
+BluetoothAdapter return an asynchronous error '9' in this case.
+Ideally, this should be fixed by returning false from the API, but the
+API is returning void and can only return error in the callback.
+
+When error '9' is sent to the callback, this generated a
+RuntimeException in the logs and I stopped counting the number of time
+this got triaged in "Bluetooth is crashing". So to avoid this in the
+future, let's downgrade the Error to Info, and let's remove entirely the
+stack trace dump, by having an explicit message.
+
+Bug: 429950117
+Test: m .
+Flag: EXEMPT BUGFIX
+Change-Id: I8d65143e9e7c386d548119df7a9209b5bfafa3be
+
+(cherry picked from commit 06775778daf750972149143839c462a26402cb0c)
+Change-Id: I797c215be2d1ec11298fa00e1697b7fd34d7403c
+---
+ .../power/stats/BluetoothPowerStatsCollector.java      | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/power/stats/BluetoothPowerStatsCollector.java b/services/core/java/com/android/server/power/stats/BluetoothPowerStatsCollector.java
+index d7aa9876fe0d..1b886f6ed7a2 100644
+--- a/services/core/java/com/android/server/power/stats/BluetoothPowerStatsCollector.java
++++ b/services/core/java/com/android/server/power/stats/BluetoothPowerStatsCollector.java
+@@ -17,6 +17,7 @@ package com.android.server.power.stats;
+ 
+ import android.bluetooth.BluetoothActivityEnergyInfo;
+ import android.bluetooth.BluetoothAdapter;
++import android.bluetooth.BluetoothStatusCodes;
+ import android.bluetooth.UidTraffic;
+ import android.content.pm.PackageManager;
+ import android.hardware.power.stats.EnergyConsumerType;
+@@ -167,8 +168,13 @@ public class BluetoothPowerStatsCollector extends PowerStatsCollector {
+ 
+                     @Override
+                     public void onBluetoothActivityEnergyInfoError(int error) {
+-                        immediateFuture.completeExceptionally(
+-                                new RuntimeException("error: " + error));
++                        if (error == BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND) {
++                            Slog.i(TAG, "Bluetooth is off, skipping activity info request.");
++                            immediateFuture.complete(null);
++                        } else {
++                            immediateFuture.completeExceptionally(
++                                    new RuntimeException("error: " + error));
++                        }
+                     }
+                 });
+ 
+-- 
+2.53.0
+

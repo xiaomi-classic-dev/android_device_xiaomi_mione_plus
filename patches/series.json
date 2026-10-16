@@ -98,8 +98,51 @@
       "path": "frameworks/base",
       "base_commit": "251a63d84347899d2b9a0ba1091499f23e315f2a",
       "baseline_tree": "94b7c41d4463991473d31953dc5ba23a9d0f6c09",
-      "patches": [],
-      "source_head": "251a63d84347899d2b9a0ba1091499f23e315f2a"
+      "patches": [
+        {
+          "file": "frameworks-base/0001-Add-a-service-for-AppSearch-maintenance-service-for-.patch",
+          "source_commit": "7823b7915b5a52557b6a4512c30f85ffd4d9816e",
+          "source_author": "Terry Wang <tytytyww@google.com>",
+          "patch_id": "1862239e5288a0957c6f7cab6ca43f3028b56033",
+          "sha256": "bee9bc7f6c61383dfa28194d4323a8ce1d05c1d30275aa7335b021133c791c8c"
+        },
+        {
+          "file": "frameworks-base/0002-Avoid-crash-on-invalid-subid.patch",
+          "source_commit": "841135df685b40033f75baa4df3cef848eecdc66",
+          "source_author": "Tomasz Wasilczyk <twasilczyk@google.com>",
+          "patch_id": "56b3c4da1b2fb8d782ba406d3ed50109e965e4ee",
+          "sha256": "0ebb5a37b3210e16d3318520d3d022b0cf86e9eb8dfb0d60c218ed7c47ca4ddd"
+        },
+        {
+          "file": "frameworks-base/0003-StatsCollector-Silence-stack-trace-when-expected.patch",
+          "source_commit": "d5c1861e04636c5cd58be098a15f7620ca12a31b",
+          "source_author": "William Escande <wescande@google.com>",
+          "patch_id": "66d14a50ec67ace2e5fefd2b55a7cc59ebde24ee",
+          "sha256": "cffb8a941e267d22415cdcc2d7be7c9d57baeccb27d4fd6aa976c5aaab66d263"
+        },
+        {
+          "file": "frameworks-base/0004-StatsCollector-Handle-FEATURE_NOT_SUPPORTED-error-in.patch",
+          "source_commit": "a36c1ff69a4a5b64f54aa5832ac343f97abd42f8",
+          "source_author": "Miwei Shi <shimiwei@google.com>",
+          "patch_id": "9b96fa81032c7330b5f1a76b80eeb80dc6c7b9ed",
+          "sha256": "95ba89dcec09b40527d3f26664702fe6ac4cbe1e7c9443c2e9831f0ab0214122"
+        },
+        {
+          "file": "frameworks-base/0005-TelephonyRegistry-Check-mapped-phone-id-before-updat.patch",
+          "source_commit": "1cff1c6c58726e2d885ae552f5c83f3d05537af0",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "451d67b0caaf989d0f1d98bb24b889d5e96ea603",
+          "sha256": "055853feb85636ef5b785fe81431693546ba6fd247f2fa9ff26e5abd163cd9f5"
+        },
+        {
+          "file": "frameworks-base/0006-BluetoothPowerStatsCollector-Cover-service-unbound-a.patch",
+          "source_commit": "d3c4a9ac5ee6fad370825c94c21ec21f609c7273",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "c93a249e3153b6a1fee7d36bd20a2f94e927c61e",
+          "sha256": "0bec7c6ea75147955acf4e11c0b04826f151759905e57291c203ee41696cbc2f"
+        }
+      ],
+      "source_head": "d3c4a9ac5ee6fad370825c94c21ec21f609c7273"
     },
     {
       "path": "frameworks/native",
@@ -361,11 +404,18 @@
           "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
           "patch_id": "d063d36414cf6897f42549b279d428e12ee0b3a2",
           "sha256": "591bfa20f74911268c65450d2899dd5b46ca648eb05b75bb67907a9a466b192a"
+        },
+        {
+          "file": "hardware-broadcom-wlan/0002-bcmdhd-Normalize-successful-legacy-BTCOEXMODE-replie.patch",
+          "source_commit": "bc31d42890ff8b7d55eee7b8002e5d0c61e601ad",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "1cf4d1a92bbb6595d75b9c53a10fe260b2ddc5a8",
+          "sha256": "b7eed6d649a76ec64f15691756898d0c44960e3153eddbf30d2a9538578befc9"
         }
       ],
-      "source_head": "494c8845648bb6cbea1493dfa4d899da032eb677"
+      "source_head": "bc31d42890ff8b7d55eee7b8002e5d0c61e601ad"
     }
   ],
-  "mione_platform_increment_count": 10,
+  "mione_platform_increment_count": 17,
   "additional_upstream_pin_count": 9
 }
