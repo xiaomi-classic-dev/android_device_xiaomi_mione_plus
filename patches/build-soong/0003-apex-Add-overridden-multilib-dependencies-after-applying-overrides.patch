@@ -1,0 +1,103 @@
+From afda03cfc7a370be04d5c9e9097cc39d5bf07f94 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Fri, 16 Oct 2026 16:44:34 +0800
+Subject: [PATCH] apex: Add overridden multilib dependencies after applying
+ overrides
+
+Override processing runs after DepsMutator. Keep ordinary native dependencies in DepsMutator and resolve only the overridable multilib groups in OverridablePropertiesDepsMutator. Preserve ABI and prefer32 selection.
+
+Change-Id: I6300cefb14e2ff33cf9c46160c0c6d5c61adfc29
+---
+ apex/apex.go | 50 ++++++++++++++++++++++++++++----------------------
+ 1 file changed, 28 insertions(+), 22 deletions(-)
+
+diff --git a/apex/apex.go b/apex/apex.go
+index 0e7acbc62..82be9c702 100644
+--- a/apex/apex.go
++++ b/apex/apex.go
+@@ -807,20 +807,11 @@ func (a *apexBundle) DepsMutator(ctx android.BottomUpMutatorContext) {
+ 	targets := ctx.MultiTargets()
+ 	imageVariation := a.getImageVariation()
+ 
+-	a.combineProperties(ctx)
+-
+-	has32BitTarget := false
+-	for _, target := range targets {
+-		if target.Arch.ArchType.Multilib == "lib32" {
+-			has32BitTarget = true
+-		}
+-	}
+ 	for i, target := range targets {
+ 		var deps ResolvedApexNativeDependencies
+ 
+ 		// Add native modules targeting both ABIs. When multilib.* is omitted for
+ 		// native_shared_libs/jni_libs/tests, it implies multilib.both
+-		deps.Merge(ctx, a.overridableProperties.Multilib.Both)
+ 		deps.Merge(ctx, ApexNativeDependencies{
+ 			Native_shared_libs: a.properties.Native_shared_libs,
+ 			Rust_dyn_libs:      a.properties.Rust_dyn_libs,
+@@ -832,7 +823,6 @@ func (a *apexBundle) DepsMutator(ctx android.BottomUpMutatorContext) {
+ 		// binaries, it implies multilib.first
+ 		isPrimaryAbi := i == 0
+ 		if isPrimaryAbi {
+-			deps.Merge(ctx, a.overridableProperties.Multilib.First)
+ 			deps.Merge(ctx, ApexNativeDependencies{
+ 				Native_shared_libs: proptools.NewConfigurable[[]string](nil, nil),
+ 				Tests:              nil,
+@@ -841,18 +831,6 @@ func (a *apexBundle) DepsMutator(ctx android.BottomUpMutatorContext) {
+ 			})
+ 		}
+ 
+-		// Add native modules targeting either 32-bit or 64-bit ABI
+-		switch target.Arch.ArchType.Multilib {
+-		case "lib32":
+-			deps.Merge(ctx, a.overridableProperties.Multilib.Lib32)
+-			deps.Merge(ctx, a.overridableProperties.Multilib.Prefer32)
+-		case "lib64":
+-			deps.Merge(ctx, a.overridableProperties.Multilib.Lib64)
+-			if !has32BitTarget {
+-				deps.Merge(ctx, a.overridableProperties.Multilib.Prefer32)
+-			}
+-		}
+-
+ 		// Add native modules targeting a specific arch variant
+ 		switch target.Arch.ArchType {
+ 		case android.Arm:
+@@ -890,6 +868,34 @@ func (a *apexBundle) DepsMutator(ctx android.BottomUpMutatorContext) {
+ 
+ // DepsMutator for the overridden properties.
+ func (a *apexBundle) OverridablePropertiesDepsMutator(ctx android.BottomUpMutatorContext) {
++	// Overrides are applied after DepsMutator. Resolve multilib entries here so
++	// override_apex dependencies use the final property values.
++	a.combineProperties(ctx)
++	targets := ctx.MultiTargets()
++	has32BitTarget := false
++	for _, target := range targets {
++		if target.Arch.ArchType.Multilib == "lib32" {
++			has32BitTarget = true
++		}
++	}
++	for i, target := range targets {
++		var deps ResolvedApexNativeDependencies
++		deps.Merge(ctx, a.overridableProperties.Multilib.Both)
++		if i == 0 {
++			deps.Merge(ctx, a.overridableProperties.Multilib.First)
++		}
++		switch target.Arch.ArchType.Multilib {
++		case "lib32":
++			deps.Merge(ctx, a.overridableProperties.Multilib.Lib32)
++			deps.Merge(ctx, a.overridableProperties.Multilib.Prefer32)
++		case "lib64":
++			deps.Merge(ctx, a.overridableProperties.Multilib.Lib64)
++			if !has32BitTarget {
++				deps.Merge(ctx, a.overridableProperties.Multilib.Prefer32)
++			}
++		}
++		addDependenciesForNativeModules(ctx, deps, target, a.getImageVariation())
++	}
+ 	if a.overridableProperties.Allowed_files != nil {
+ 		android.ExtractSourceDeps(ctx, a.overridableProperties.Allowed_files)
+ 	}
+-- 
+2.53.0
+
