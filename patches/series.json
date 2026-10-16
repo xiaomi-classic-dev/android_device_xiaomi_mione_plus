@@ -41,9 +41,16 @@
           "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
           "patch_id": "f5c998837d83537619ca824a78006135d40e4dea",
           "sha256": "b1b8a07e1c355b68a2827caeb4c19ae3cd4dd15e442d6206846dde5be62684ad"
+        },
+        {
+          "file": "build-soong/0002-apex-Resolve-multilib-dependencies-from-overridable-properties.patch",
+          "source_commit": "5c42b7f54f50ed7d6c3ce4a31f6edb57932e349c",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "15fbd838ed852913c6fdc1c9cbd95cb1ffc494a2",
+          "sha256": "71574810729a7fccd32934a2eeba9acf637a303d8ce9aed7708a02c8f44c48a7"
         }
       ],
-      "source_head": "9ba2585e79da909fa35ec7341d5f8dca7f2f2b76"
+      "source_head": "5c42b7f54f50ed7d6c3ce4a31f6edb57932e349c"
     },
     {
       "path": "device/lineage/sepolicy",
@@ -352,6 +359,6 @@
       "source_head": "494c8845648bb6cbea1493dfa4d899da032eb677"
     }
   ],
-  "mione_platform_increment_count": 8,
+  "mione_platform_increment_count": 9,
   "additional_upstream_pin_count": 9
 }
