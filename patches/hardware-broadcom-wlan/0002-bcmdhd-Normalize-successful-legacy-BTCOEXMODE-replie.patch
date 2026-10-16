@@ -44,6 +44,3 @@ index 56504f6..f0557de 100644
  			wpa_driver_notify_country_change(drv->ctx, cmd);
  			wpa_printf(MSG_DEBUG, "%s %s len = %d, %zu", __func__, buf, ret, strlen(buf));
  		}
--- 
-2.53.0
-

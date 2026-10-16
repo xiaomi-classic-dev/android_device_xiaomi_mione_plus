@@ -102,6 +102,3 @@ index f65f82d5b..29583d26c 100644
      __linker_error("error: %s: Android only supports position-independent "
                     "executables (-fPIE)", exe_info.path.c_str());
    }
--- 
-2.53.0
-

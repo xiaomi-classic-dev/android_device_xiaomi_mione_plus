@@ -75,7 +75,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true",
                         help="validate without changing branches or worktrees")
-    parser.add_argument("--top", type=Path, default=PATCH_ROOT.parents[3],
+    parser.add_argument("--top", type=Path, default=next((p for p in PATCH_ROOT.parents if (p / "build/envsetup.sh").is_file()), Path.cwd()),
                         help="Android source root")
     args = parser.parse_args()
     series = json.loads((PATCH_ROOT / "series.json").read_text())

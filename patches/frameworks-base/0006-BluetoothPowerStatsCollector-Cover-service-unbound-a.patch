@@ -41,6 +41,3 @@ index 8c3cb53292e7..ee46c0c3944a 100644
      @Test
      public void dump() throws Throwable {
          PowerStats powerStats = collectPowerStats();
--- 
-2.53.0
-

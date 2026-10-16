@@ -29,6 +29,3 @@ index 7a1fc2465f9d..0c080c4cb30e 100644
              mCarrierRoamingNtnSignalStrength[phoneId] = ntnSignalStrength;
              for (Record r : mRecords) {
                  if (r.matchTelephonyCallbackEvent(
--- 
-2.53.0
-
