@@ -2501,7 +2501,7 @@ int QCameraHardwareInterface::cache_ops(int ion_fd,
   if (rc < 0)
     ALOGE("%s: Cache Invalidate failed\n", __func__);
   else
-    ALOGV("%s: Cache OPs type(%d) success", __func__);
+    ALOGV("%s: Cache OPs type(%d) success", __func__, type);
 
   return rc;
 }
