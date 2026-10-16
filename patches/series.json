@@ -1,7 +1,7 @@
 {
   "android_version": 15,
   "lineage_branch": "lineage-22.2",
-  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) first. Nine additional upstream repositories are pinned, including the two scoped linker build-visibility increments. Only actual platform increments beyond these exact heads/trees are exported. MiOne device/vendor/kernel/MSM8660 changes remain in their own Git histories. Android14 patches are preserved on backup/mione21-input-20261016-013923; never apply that old series to Android15. The ninth additional pin is hardware/broadcom/wlan at its original Android 15 source; its RTT registration increment preserves the port_docs ultra-legacy HAL table ABI.",
+  "prerequisite": "Apply the Android15 LineageOS22.2 port_docs baseline (31 repositories, 123 commits) plus nine exact upstream pins. The 40 baseline commits/trees are unchanged. Only actual increments are exported. MiOne device/vendor/kernel/MSM8660 history remains separate. Standard ARM Bionic linker now admits the device exact-path legacy allowlist under a MiOne-only build flag. Dedicated interpreter/APEX override and its Soong/liblog/libc++ visibility increments are removed. Never apply the preserved Android14 series to Android15.",
   "android15_prerequisite_repository_count": 31,
   "android15_prerequisite_commit_count": 123,
   "upstream_already_contains": {
@@ -20,8 +20,16 @@
       "path": "bionic",
       "base_commit": "f2c50f309cc756f65cf0a87b7bd5749e79ca3d9e",
       "baseline_tree": "e97daef96222f20cb2910d73d50a40682a27a051",
-      "patches": [],
-      "source_head": "f2c50f309cc756f65cf0a87b7bd5749e79ca3d9e"
+      "patches": [
+        {
+          "file": "bionic/0001-linker-Admit-scoped-MiOne-non-PIE-daemons-in-the-sta.patch",
+          "source_commit": "1011990f4809c82d081f1549f6ce1003da510d3e",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "8b237944a21086635ee725dbb3a66a47b465c29e",
+          "sha256": "007745794aa6aafa2365bd54823f29e0a6c624b00fff7c3d787121b132156bf4"
+        }
+      ],
+      "source_head": "1011990f4809c82d081f1549f6ce1003da510d3e"
     },
     {
       "path": "build/make",
@@ -34,30 +42,8 @@
       "path": "build/soong",
       "base_commit": "8de4749aeeffc7cc55c94e56268dec1fcca0409f",
       "baseline_tree": "768266d3537fed4358e030a95f74a003c1e63870",
-      "patches": [
-        {
-          "file": "build-soong/0001-apex-Preserve-runtime-interpreter-rules-for-device-overrides.patch",
-          "source_commit": "9ba2585e79da909fa35ec7341d5f8dca7f2f2b76",
-          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
-          "patch_id": "f5c998837d83537619ca824a78006135d40e4dea",
-          "sha256": "b1b8a07e1c355b68a2827caeb4c19ae3cd4dd15e442d6206846dde5be62684ad"
-        },
-        {
-          "file": "build-soong/0002-apex-Resolve-multilib-dependencies-from-overridable-properties.patch",
-          "source_commit": "5c42b7f54f50ed7d6c3ce4a31f6edb57932e349c",
-          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
-          "patch_id": "15fbd838ed852913c6fdc1c9cbd95cb1ffc494a2",
-          "sha256": "71574810729a7fccd32934a2eeba9acf637a303d8ce9aed7708a02c8f44c48a7"
-        },
-        {
-          "file": "build-soong/0003-apex-Add-overridden-multilib-dependencies-after-applying-overrides.patch",
-          "source_commit": "afda03cfc7a370be04d5c9e9097cc39d5bf07f94",
-          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
-          "patch_id": "d3e854e72ca051ebb1190557216638cdc0f82620",
-          "sha256": "8b6c7e1034584e670637858c548e0629d3682f0253ccf0cd6afea8bdb3b98aac"
-        }
-      ],
-      "source_head": "afda03cfc7a370be04d5c9e9097cc39d5bf07f94"
+      "patches": [],
+      "source_head": "db23f11332dcfc1433ad1bb5155373a56017cccc"
     },
     {
       "path": "device/lineage/sepolicy",
@@ -367,31 +353,15 @@
       "path": "prebuilts/clang/host/linux-x86",
       "base_commit": "96266255abde668f1bf100bf2c47363b96b7a21e",
       "baseline_tree": "0e56d142f1ac60a26f61c9c422655ca179dd1031",
-      "patches": [
-        {
-          "file": "prebuilts-clang-host-linux-x86/0001-libc-Allow-the-scoped-MiOne-legacy-vendor-interpreter.patch",
-          "source_commit": "73c44645147db2730976c9003b20ace61c3a5f3d",
-          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
-          "patch_id": "0b441cd380352dc3a260e35ed2ba41f0022b999d",
-          "sha256": "f0cb79da0f56b19f1ba7a61127e809881410fd6688d6bb69fe957d1e9a5ce384"
-        }
-      ],
-      "source_head": "73c44645147db2730976c9003b20ace61c3a5f3d"
+      "patches": [],
+      "source_head": "3f2d91137e8ab135c55fc6fc5001a29c22c32ef8"
     },
     {
       "path": "system/logging",
       "base_commit": "0a02c4d13e882ec9b67dcb2cb3b135f08656593a",
       "baseline_tree": "23a26fe1d2127bda332b454d60b046e4c3a790a4",
-      "patches": [
-        {
-          "file": "system-logging/0001-liblog-Allow-the-scoped-MiOne-vendor-interpreter-to-use-linker-d.patch",
-          "source_commit": "fff981f6409077eefe676d3aa4f7cc4d80f7fe6d",
-          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
-          "patch_id": "25dc3aae5519dba93af11559c197a35c90a94ffc",
-          "sha256": "355a68334848eebb3bedd7ef9e981bafff3ddc2bbf7679ab40b683d6933fa448"
-        }
-      ],
-      "source_head": "fff981f6409077eefe676d3aa4f7cc4d80f7fe6d"
+      "patches": [],
+      "source_head": "321c989ef72a030bd5258ea8d72603d37d8f83be"
     },
     {
       "path": "hardware/broadcom/wlan",
@@ -416,6 +386,6 @@
       "source_head": "bc31d42890ff8b7d55eee7b8002e5d0c61e601ad"
     }
   ],
-  "mione_platform_increment_count": 17,
+  "mione_platform_increment_count": 13,
   "additional_upstream_pin_count": 9
 }

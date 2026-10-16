@@ -47,6 +47,7 @@ TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_SMP := true
 ARCH_ARM_HAVE_TLS_REGISTER := true
 TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
+$(call soong_config_set,bionic,mione_legacy_non_pie,true)
 
 # QCOM hardware
 BOARD_USES_QCOM_HARDWARE := true

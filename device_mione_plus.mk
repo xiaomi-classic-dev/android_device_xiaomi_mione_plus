@@ -413,8 +413,3 @@ PRODUCT_SYSTEM_PROPERTIES += \
     bluetooth.profile.pbap.server.enabled=true \
     bluetooth.profile.sap.server.enabled=true
 
-# Fixed-address vendor daemons use the MiOne interpreter in the Bionic APEX.
-PRODUCT_PACKAGES += \
-    com.android.runtime.mione \
-    mione_legacy_linker_path \
-    mione_legacy_interpreter_path
