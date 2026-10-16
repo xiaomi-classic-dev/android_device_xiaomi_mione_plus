@@ -207,6 +207,8 @@ BOARD_HAVE_NFC := false
 
 # Radio
 TARGET_RIL_VARIANT := caf
+# Legacy RIL and its declared IOemHook/slot1 service are still required.
+DISABLE_RILD_OEM_HOOK := false
 
 # Filesystem
 TARGET_FS_CONFIG_GEN := $(MIONE_PATH)/config.fs
