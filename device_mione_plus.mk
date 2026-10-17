@@ -358,7 +358,7 @@ PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
     android.hardware.sensors@1.0-service \
     vibrator.default \
-    android.hardware.vibrator@1.0-impl \
+    android.hardware.vibrator-service.legacy \
     android.hardware.wifi@1.0-service.legacy \
     android.hardware.wifi.supplicant@1.2 \
     libbt-vendor \
@@ -413,3 +413,6 @@ PRODUCT_SYSTEM_PROPERTIES += \
     bluetooth.profile.pbap.server.enabled=true \
     bluetooth.profile.sap.server.enabled=true
 
+
+# Explicit ARM32 opt-in; keep the actual kernel release for ELF selection.
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.bpf.allow_32bit=true

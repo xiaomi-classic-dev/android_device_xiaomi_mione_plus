@@ -292,3 +292,6 @@ AB_OTA_UPDATER := false
 
 # Legacy proprietary ELF modules are installed through device copy rules.
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+
+# Admit only this product to the real Linux 3.4 BPF loader backport.
+$(call soong_config_set,netbpfload,legacy_kernel,true)

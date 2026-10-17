@@ -27,3 +27,6 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     DeviceProduct=mione_plus \
     SystemDevice=mione_plus \
     SystemName=mione_plus
+
+# The real Linux 3.4 kernels mount ext4 APEX payloads, not EROFS.
+PRODUCT_DEFAULT_APEX_PAYLOAD_TYPE := ext4
