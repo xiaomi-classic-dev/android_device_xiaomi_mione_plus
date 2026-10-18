@@ -28,6 +28,9 @@ PRODUCT_SOONG_NAMESPACES += \
 # Install the vendor permission table alongside the embedded vendor files.
 PRODUCT_PACKAGES += fs_config_files_vendor
 
+# Install ordinary BoringSSL rc imports for init's O_NOFOLLOW reads.
+PRODUCT_PACKAGES += mione_boringssl_init_configs
+
 # MiOne Plus originally shipped Android 2.3, before Treble and FBE.
 PRODUCT_SHIPPING_API_LEVEL := 10
 
