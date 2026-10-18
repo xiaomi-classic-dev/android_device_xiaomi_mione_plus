@@ -99,7 +99,7 @@ PRODUCT_PACKAGES += \
     gralloc.msm8660 \
     hwcomposer.msm8660 \
     memtrack.msm8660 \
-    android.hardware.light@2.0-service.mione \
+    android.hardware.light-service.mione \
     libgenlock \
     libmemalloc \
     liboverlay \
@@ -355,7 +355,7 @@ PRODUCT_PACKAGES += \
     android.hardware.graphics.composer@2.1-service \
     android.hardware.keymaster@3.0-impl \
     android.hardware.keymaster@3.0-service \
-    android.hardware.memtrack@1.0-impl \
+    android.hardware.memtrack-service.legacy \
     sensors.msm8660 \
     android.hardware.sensors@1.0-impl \
     android.hardware.sensors@1.0-service \
@@ -430,3 +430,6 @@ PRODUCT_COPY_FILES += \
 
 # Let off-mode USB enumerate using the standard early adbd APEX.
 PRODUCT_VENDOR_PROPERTIES += ro.boot.apex.early_adbd=true
+
+# Preserve the complete framework contract matching the device FCM level.
+PRODUCT_PACKAGES += framework_compatibility_matrix.6.xml

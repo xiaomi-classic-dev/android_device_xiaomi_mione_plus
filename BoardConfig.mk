@@ -78,6 +78,8 @@ BOARD_EGL_NEEDS_LEGACY_FB := true
 BOARD_USE_MHEAP_SCREENSHOT := true
 USE_OPENGL_RENDERER := true
 TARGET_USES_ION := true
+# Retain the actual mapper2 backend through the Android17 libui switch.
+$(call soong_config_set_bool,libui,legacy_gralloc,true)
 TARGET_USES_C2D_COMPOSITION := true
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 TARGET_DISPLAY_INSECURE_MM_HEAP := true

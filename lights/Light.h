@@ -2,12 +2,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #pragma once
-#include <android/hardware/light/2.0/ILight.h>
+#include <aidl/android/hardware/light/BnLights.h>
+#include <vector>
 
-namespace android { namespace hardware { namespace light { namespace V2_0 { namespace implementation {
-class Light : public ILight {
+namespace aidl::android::hardware::light::implementation {
+using LightState = HwLightState;
+using Type = LightType;
+using Flash = FlashMode;
+using Brightness = BrightnessMode;
+class Light : public BnLights {
 public:
-    Return<Status> setLight(Type type, const LightState& state) override;
-    Return<void> getSupportedTypes(getSupportedTypes_cb cb) override;
+    ndk::ScopedAStatus setLightState(int32_t id, const HwLightState& state) override;
+    ndk::ScopedAStatus getLights(std::vector<HwLight>* lights) override;
 };
-}}}}}
+}

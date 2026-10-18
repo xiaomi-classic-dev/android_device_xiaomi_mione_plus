@@ -62,15 +62,6 @@
         </interface>
     </hal>
     <hal format="hidl">
-        <name>android.hardware.configstore</name>
-        <transport>hwbinder</transport>
-        <version>1.1</version>
-        <interface>
-            <name>ISurfaceFlingerConfigs</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
         <name>android.hardware.audio</name>
         <transport arch="32">passthrough</transport>
         <version>4.0</version>
@@ -115,23 +106,10 @@
             <instance>default</instance>
         </interface>
     </hal>
-    <hal format="hidl">
-        <name>android.hardware.light</name>
-        <transport>hwbinder</transport>
-        <version>2.0</version>
-        <interface>
-            <name>ILight</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
+    <hal format="aidl">
         <name>android.hardware.memtrack</name>
-        <transport arch="32">passthrough</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IMemtrack</name>
-            <instance>default</instance>
-        </interface>
+        <version>1</version>
+        <fqname>IMemtrack/default</fqname>
     </hal>
     <hal format="hidl">
         <name>android.hardware.thermal</name>

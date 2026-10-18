@@ -32,7 +32,7 @@
 #define LED_PATH(name, attr) "/sys/class/leds/" name "/" attr
 #define BACKLIGHT_MAX 127
 
-namespace android { namespace hardware { namespace light { namespace V2_0 { namespace implementation {
+namespace aidl::android::hardware::light::implementation {
 
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 static LightState g_battery;
@@ -128,7 +128,7 @@ static int stop_blink_locked(void)
 static int set_rgb_locked(const LightState *state)
 {
     int i, error, channels[3], freq = 0, pwm = 0;
-    unsigned int alpha = state->color >> 24;
+    unsigned int alpha = static_cast<uint32_t>(state->color) >> 24;
     int timed = state->flashMode == Flash::TIMED &&
                 state->flashOnMs > 0 && state->flashOffMs > 0;
 
@@ -209,12 +209,13 @@ static int set_shared_light(LightState *saved,
     return error;
 }
 
-Return<Status> Light::setLight(Type type, const LightState& state) {
+ndk::ScopedAStatus Light::setLightState(int32_t id, const HwLightState& state) {
+    const Type type = static_cast<Type>(id);
     int error;
     switch (type) {
     case Type::BACKLIGHT:
         if (state.brightnessMode == Brightness::LOW_PERSISTENCE)
-            return Status::BRIGHTNESS_NOT_SUPPORTED;
+            return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
         error = set_light_backlight(&state);
         break;
     case Type::BUTTONS:
@@ -227,20 +228,23 @@ Return<Status> Light::setLight(Type type, const LightState& state) {
         error = set_shared_light(&g_notification, &state);
         break;
     default:
-        return Status::LIGHT_NOT_SUPPORTED;
+        return ndk::ScopedAStatus::fromExceptionCode(EX_UNSUPPORTED_OPERATION);
     }
-    return error == 0 ? Status::SUCCESS : Status::UNKNOWN;
+    return error == 0 ? ndk::ScopedAStatus::ok()
+                      : ndk::ScopedAStatus::fromServiceSpecificError(-error);
 }
 
-Return<void> Light::getSupportedTypes(getSupportedTypes_cb cb) {
-    hidl_vec<Type> types;
-    types.resize(4);
-    types[0] = Type::BACKLIGHT;
-    types[1] = Type::BUTTONS;
-    types[2] = Type::BATTERY;
-    types[3] = Type::NOTIFICATIONS;
-    cb(types);
-    return Void();
+ndk::ScopedAStatus Light::getLights(std::vector<HwLight>* lights) {
+    lights->clear();
+    for (const Type type : {Type::BACKLIGHT, Type::BUTTONS,
+                            Type::BATTERY, Type::NOTIFICATIONS}) {
+        HwLight light;
+        light.id = static_cast<int32_t>(type);
+        light.ordinal = 0;
+        light.type = type;
+        lights->push_back(light);
+    }
+    return ndk::ScopedAStatus::ok();
 }
 
-}}}}}  // android::hardware::light::V2_0::implementation
+}  // namespace aidl::android::hardware::light::implementation
