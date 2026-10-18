@@ -38,6 +38,11 @@ on fs
     # Activate and validate before mount_all; never mount LVM PVs as ext4.
     exec -- /system/bin/mione-lvm prepare /system/etc/fstab.mione_lvm /dev/mione-lvm/fstab.qcom
     mount_all /dev/mione-lvm/fstab.qcom
+    # Android 16 aconfig storage must exist before post-fs. Cache is physical,
+    # independent of the validated System/Data LVs activated above.
+    mkdir /cache/metadata 0771 root system
+    mount none /cache/metadata /metadata bind
+    restorecon_recursive /metadata
     # Optional calibration storage; a failed mount must not block Android.
     mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persist /persist wait nosuid nodev barrier=1,data=ordered,nodelalloc
     #Setting permissons for misc partition

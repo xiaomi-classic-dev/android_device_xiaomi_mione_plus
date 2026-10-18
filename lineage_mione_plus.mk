@@ -33,3 +33,6 @@ PRODUCT_DEFAULT_APEX_PAYLOAD_TYPE := ext4
 
 # Clear the inherited disable flag: any nonempty value, including false, is true.
 PRODUCT_NOT_DEBUGGABLE_IN_USERDEBUG :=
+
+# Linux 3.4 has no userfaultfd; keep this final value after product inheritance.
+PRODUCT_ENABLE_UFFD_GC := false

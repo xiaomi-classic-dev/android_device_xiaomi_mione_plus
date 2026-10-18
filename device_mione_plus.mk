@@ -31,8 +31,6 @@ PRODUCT_PACKAGES += fs_config_files_vendor
 # MiOne Plus originally shipped Android 2.3, before Treble and FBE.
 PRODUCT_SHIPPING_API_LEVEL := 10
 
-# Linux 3.4 has no userfaultfd; precompile with the runtime's supported GC.
-PRODUCT_ENABLE_UFFD_GC := false
 
 # Enable Android networking with the backported BPF kernel support.
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.kernel.ebpf.supported=1

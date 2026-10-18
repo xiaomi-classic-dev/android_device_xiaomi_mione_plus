@@ -280,7 +280,7 @@ USE_REDUCED_CJK_FONT_WEIGHTS := true
 TARGET_USES_MKE2FS := true
 
 # Non-Treble ramdisk mount points, available before vendor init is parsed.
-BOARD_ROOT_EXTRA_FOLDERS += firmware persist
+BOARD_ROOT_EXTRA_FOLDERS += firmware persist metadata
 
 # BCM4329 firmware cannot reconfigure its SoftAP MAC at runtime.
 WIFI_HIDL_FEATURE_DISABLE_AP_MAC_RANDOMIZATION := true
