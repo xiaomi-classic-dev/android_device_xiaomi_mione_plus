@@ -229,8 +229,16 @@
       "path": "packages/apps/Launcher3",
       "base_commit": "e3f4473fa3713d636a7062af9ffddfba07eff20f",
       "baseline_tree": "b0093148b37263342a94d258de85c60c288bb645",
-      "patches": [],
-      "source_head": "e3f4473fa3713d636a7062af9ffddfba07eff20f"
+      "patches": [
+        {
+          "file": "packages-apps-Launcher3/0001-Quickstep-honor-hardware-Home-while-overview-is-visible.patch",
+          "source_commit": "a165d89adae62a50a7441436df8b6e1ed48255b3",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "6080f5cc9e0a734901cdbc8d61daf8e96203b9fd",
+          "sha256": "8e2a197eb9f76a8d81736fce2f1fdd2ff9df1c5d498771a4b17ed57976c788da"
+        }
+      ],
+      "source_head": "a165d89adae62a50a7441436df8b6e1ed48255b3"
     },
     {
       "path": "packages/modules/Bluetooth",
@@ -358,9 +366,30 @@
           "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
           "patch_id": "aeb297fbc59e0225a6f96d4e89c54bcb82456e66",
           "sha256": "37a4e00418b5e27467dc9702aa541c3abb9d19fca411fa2c2cf0b6d9aa7d59d9"
+        },
+        {
+          "file": "system-linkerconfig/0002-linkerconfig-Resolve-MiOne-CND-bridge-and-ICU-APEX-dependencies.patch",
+          "source_commit": "f91c1143a7af5e1caad561e8aa2c78c57e0b5c99",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "8b476e8907875eca17701ff1f6095157cc8e6457",
+          "sha256": "353da5860344dbd4e7f030e73e791a1bc410f7d701a3ac8ce1f3b7dc16e3ea26"
+        },
+        {
+          "file": "system-linkerconfig/0003-linkerconfig-Include-MiOne-CND-SQLite-runtime-dependency.patch",
+          "source_commit": "37718984b0aace99df128dee158f1720a9372c80",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "50b5a547bd5cc2945bcd733f1d23337b4e53c66c",
+          "sha256": "0b08f1d3a2d7b801d656ca90af64df3bd3100122926065e12e7109b31f2d712c"
+        },
+        {
+          "file": "system-linkerconfig/0004-linkerconfig-Link-MiOne-ICU-after-section-dependency-resolution.patch",
+          "source_commit": "d64b88c78308098a5bc99a59f97916e113cfa911",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "8325460eb8615e42263060a3d9a7142e515685a5",
+          "sha256": "3d2e6d65701610ef7dd0070cc65f10a66222f62cf73a9bd9c73cd6ffda0ae632"
         }
       ],
-      "source_head": "0cec287dd1b7f8cfb4d4c16299ddcb46a579dd01"
+      "source_head": "d64b88c78308098a5bc99a59f97916e113cfa911"
     },
     {
       "path": "system/logging",
@@ -420,5 +449,5 @@
       "source_head": "200473174b7653cf2675e82b195f56a0ed7dfb66"
     }
   ],
-  "mione_platform_increment_count": 14
+  "mione_platform_increment_count": 18
 }

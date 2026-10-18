@@ -1,0 +1,33 @@
+From a165d89adae62a50a7441436df8b6e1ed48255b3 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sun, 18 Oct 2026 23:39:15 +0800
+Subject: [PATCH] Quickstep: honor hardware Home while overview is visible
+
+Change-Id: I101159a257755a3e40de9975b7ab352f52745960
+---
+ .../android/quickstep/TouchInteractionService.java   | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/quickstep/src/com/android/quickstep/TouchInteractionService.java b/quickstep/src/com/android/quickstep/TouchInteractionService.java
+index 1cebd811f9..b4e4707a62 100644
+--- a/quickstep/src/com/android/quickstep/TouchInteractionService.java
++++ b/quickstep/src/com/android/quickstep/TouchInteractionService.java
+@@ -290,7 +290,17 @@ public class TouchInteractionService extends Service {
+         @Override
+         public void onOverviewHidden(boolean triggeredFromAltTab, boolean triggeredFromHomeKey) {
+             executeForTouchInteractionService(tis -> {
+-                if (triggeredFromAltTab && !triggeredFromHomeKey) {
++                if (triggeredFromHomeKey) {
++                    int displayId = tis.focusedDisplayIdForOverviewOnConnectedDisplays();
++                    RecentsAnimationDeviceState deviceState = tis.mDeviceStateRepository.get(
++                            displayId);
++                    if (deviceState != null && !deviceState.canStartOverviewCommand()) {
++                        Log.d(TAG, "onOverviewHidden ignored for display " + displayId
++                                + " because the command is blocked");
++                        return;
++                    }
++                    tis.mOverviewCommandHelper.addCommand(CommandType.HOME, displayId);
++                } else if (triggeredFromAltTab) {
+                     // onOverviewShownFromAltTab hides the overview and ends at the target app
+                     int displayId = tis.focusedDisplayIdForAltTabKqsOnConnectedDisplays();
+                     RecentsAnimationDeviceState deviceState = tis.mDeviceStateRepository.get(

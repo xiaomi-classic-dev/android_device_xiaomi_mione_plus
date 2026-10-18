@@ -1,0 +1,26 @@
+From d64b88c78308098a5bc99a59f97916e113cfa911 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sun, 18 Oct 2026 23:01:47 +0800
+Subject: [PATCH] linkerconfig: Link MiOne ICU after section dependency
+ resolution
+
+Change-Id: I8e1f508657dc45f9fed0b85dd5149a5dfe6f7bee
+---
+ contents/common/system_links.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/contents/common/system_links.cc b/contents/common/system_links.cc
+index af147db..b7676c9 100644
+--- a/contents/common/system_links.cc
++++ b/contents/common/system_links.cc
+@@ -69,7 +69,9 @@ void AddStandardSystemLinks(const Context& ctx, Section* section) {
+       // Resolve its ICU dependencies in the existing i18n APEX namespace.
+       ns.GetLink(system_ns_name).AddSharedLib(
+           std::vector<std::string>{"libmione_cnd_shim.so", "libsqlite.so"});
+-      ns.AddRequires(std::vector<std::string>{"libicui18n.so", "libicuuc.so"});
++      // Section requirements are already resolved before this hook runs.
++      ns.GetLink("com_android_i18n").AddSharedLib(
++          std::vector<std::string>{"libicui18n.so", "libicuuc.so"});
+     }
+     if (ns.GetName() != system_ns_name) {
+       ns.GetLink(system_ns_name).AddSharedLib(kBionicLibs);

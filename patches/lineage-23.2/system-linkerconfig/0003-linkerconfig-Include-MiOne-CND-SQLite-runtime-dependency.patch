@@ -1,0 +1,24 @@
+From 37718984b0aace99df128dee158f1720a9372c80 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sun, 18 Oct 2026 22:44:11 +0800
+Subject: [PATCH] linkerconfig: Include MiOne CND SQLite runtime dependency
+
+Change-Id: I195919548b14968804becc5041328fdef749cf7d
+---
+ contents/common/system_links.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/contents/common/system_links.cc b/contents/common/system_links.cc
+index 7226279..af147db 100644
+--- a/contents/common/system_links.cc
++++ b/contents/common/system_links.cc
+@@ -67,7 +67,8 @@ void AddStandardSystemLinks(const Context& ctx, Section* section) {
+         ns.GetName() == "default") {
+       // The original CND-family binaries preload this system-owned ABI bridge.
+       // Resolve its ICU dependencies in the existing i18n APEX namespace.
+-      ns.GetLink(system_ns_name).AddSharedLib("libmione_cnd_shim.so");
++      ns.GetLink(system_ns_name).AddSharedLib(
++          std::vector<std::string>{"libmione_cnd_shim.so", "libsqlite.so"});
+       ns.AddRequires(std::vector<std::string>{"libicui18n.so", "libicuuc.so"});
+     }
+     if (ns.GetName() != system_ns_name) {
