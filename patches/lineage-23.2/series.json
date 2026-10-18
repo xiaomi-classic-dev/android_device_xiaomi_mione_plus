@@ -229,16 +229,8 @@
       "path": "packages/apps/Launcher3",
       "base_commit": "e3f4473fa3713d636a7062af9ffddfba07eff20f",
       "baseline_tree": "b0093148b37263342a94d258de85c60c288bb645",
-      "patches": [
-        {
-          "file": "packages-apps-Launcher3/0001-Quickstep-honor-hardware-Home-while-overview-is-visible.patch",
-          "source_commit": "a165d89adae62a50a7441436df8b6e1ed48255b3",
-          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
-          "patch_id": "6080f5cc9e0a734901cdbc8d61daf8e96203b9fd",
-          "sha256": "8e2a197eb9f76a8d81736fce2f1fdd2ff9df1c5d498771a4b17ed57976c788da"
-        }
-      ],
-      "source_head": "a165d89adae62a50a7441436df8b6e1ed48255b3"
+      "patches": [],
+      "source_head": "e3f4473fa3713d636a7062af9ffddfba07eff20f"
     },
     {
       "path": "packages/modules/Bluetooth",
@@ -449,5 +441,5 @@
       "source_head": "200473174b7653cf2675e82b195f56a0ed7dfb66"
     }
   ],
-  "mione_platform_increment_count": 18
+  "mione_platform_increment_count": 17
 }
