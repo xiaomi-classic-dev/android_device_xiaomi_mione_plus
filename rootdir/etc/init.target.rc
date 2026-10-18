@@ -111,8 +111,7 @@ on charger
     setprop sys.usb.config adb
 
 
-service chargeonlymode /charger
-    class charger
+# Charger UI is provided by the single charger service in init.qcom.rc.
 
 service mione-bdaddr /vendor/bin/mione_bdaddr
     class core

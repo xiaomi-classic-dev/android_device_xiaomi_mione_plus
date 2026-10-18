@@ -427,3 +427,6 @@ PRODUCT_VENDOR_PROPERTIES += ro.vendor.mione.legacy_linker=true
 # Touchscreen virtual navigation keys, with Aries-compatible App switch behavior.
 PRODUCT_COPY_FILES += \
     device/xiaomi/mione_plus/keylayout/sensor00fn11.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/sensor00fn11.kl
+
+# Let off-mode USB enumerate using the standard early adbd APEX.
+PRODUCT_VENDOR_PROPERTIES += ro.boot.apex.early_adbd=true
