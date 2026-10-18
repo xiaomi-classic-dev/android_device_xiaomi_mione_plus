@@ -4,6 +4,10 @@ PRODUCT_RELEASE_NAME := mione_plus
 
 TARGET_BOOTANIMATION_NAME := vertical-480x854
 
+# Use the explicitly installed AOSP Camera2 instead of the optional Aperture app.
+# The common product only consults this flag when adding Aperture.
+PRODUCT_NO_CAMERA := true
+
 # Inherit some common LineageOS stuff.
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
