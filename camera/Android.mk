@@ -25,7 +25,7 @@ LOCAL_CFLAGS := -DUSE_ION -DHW_ENCODE -D_ANDROID_ \
     -DCAMERA_GRALLOC_CACHING_ID=0 \
     -include bionic/libc/include/sys/socket.h
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include $(LOCAL_PATH) $(LOCAL_PATH)/mm-camera-interface \
-    $(LOCAL_PATH)/inc $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+    $(LOCAL_PATH)/inc  \
     system/media/camera/include \
     $(call project-path-for,qcom-display)/libgralloc \
     $(call project-path-for,qcom-display)/libgenlock \
@@ -35,6 +35,7 @@ LOCAL_SHARED_LIBRARIES := libutils libui libcamera_metadata liblog libcutils \
     libmmcamera_interface2 libgenlock libbinder libdl libnativewindow
 LOCAL_HEADER_LIBRARIES := libaudiofoundation_headers libmedia_headers libutils_headers framework-permission-aidl-cpp
 LOCAL_STATIC_LIBRARIES := framework-permission-aidl-cpp
+LOCAL_CFLAGS += -idirafter $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 include $(BUILD_SHARED_LIBRARY)
 include $(MIONE_DEVICE_CAMERA_PATH)/mm-camera-interface/Android.mk
 include $(MIONE_DEVICE_CAMERA_PATH)/hal3on1/Android.mk

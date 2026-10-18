@@ -21,7 +21,7 @@ LOCAL_C_INCLUDES+= $(LOCAL_PATH)/..
 LOCAL_C_INCLUDES+= $(LOCAL_PATH)/../inc
 
 LOCAL_C_INCLUDES+= $(call project-path-for,qcom-media)/mm-core/inc
-LOCAL_C_INCLUDES+= $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+LOCAL_C_INCLUDES+= 
 LOCAL_CFLAGS+= -DMSM_CAMERA_BIONIC -DMSM_CAMERA_GCC
 LOCAL_CFLAGS += -include bionic/libc/include/sys/socket.h
 LOCAL_CFLAGS += -include bionic/libc/include/sys/un.h
@@ -38,4 +38,5 @@ LOCAL_SHARED_LIBRARIES := libdl libcutils liblog
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_HEADER_LIBRARIES := camera_common_headers
+LOCAL_CFLAGS += -idirafter $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 include $(BUILD_SHARED_LIBRARY)
