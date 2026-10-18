@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Home, Back, Menu, Camera and Volume rocker. -->
-    <integer name="config_deviceHardwareKeys">103</integer>
+    <!-- Home, Back, App switch, Camera and Volume rocker. -->
+    <integer name="config_deviceHardwareKeys">115</integer>
+
+    <!-- Match Aries: long press App switch sends Menu; Home launches assist. -->
+    <integer name="config_longPressOnAppSwitchBehavior">1</integer>
+    <integer name="config_longPressOnHomeBehavior">3</integer>
 
     <!-- Dedicated camera and volume keys have WAKE_DROPPED key mappings. -->
     <integer name="config_deviceHardwareWakeKeys">96</integer>

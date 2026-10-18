@@ -422,3 +422,7 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.bpf.allow_32bit=true
 PRODUCT_PACKAGES += msm8960_libstdcxx_vendor_link libnetutils.vendor
 # Share only the existing CND bridge and its real ICU APEX dependencies.
 PRODUCT_VENDOR_PROPERTIES += ro.vendor.mione.legacy_linker=true
+
+# Touchscreen virtual navigation keys, with Aries-compatible App switch behavior.
+PRODUCT_COPY_FILES += \
+    device/xiaomi/mione_plus/keylayout/sensor00fn11.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/sensor00fn11.kl
