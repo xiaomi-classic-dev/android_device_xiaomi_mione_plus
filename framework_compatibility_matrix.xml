@@ -36,6 +36,15 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <!-- MemtrackProxy retains the HIDL fallback for the legacy KGSL HAL. -->
+    <hal format="hidl" optional="true">
+        <name>android.hardware.memtrack</name>
+        <version>1.0</version>
+        <interface>
+            <name>IMemtrack</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
     <!-- The legacy single-SIM RIL still registers its Qualcomm OEM hook. -->
     <hal format="hidl" optional="true">
         <name>android.hardware.radio.deprecated</name>
