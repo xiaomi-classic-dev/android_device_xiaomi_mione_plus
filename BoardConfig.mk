@@ -218,6 +218,8 @@ TARGET_USERIMAGES_USE_EXT4 := true
 BUILD_BROKEN_NINJA_USES_ENV_VARS += MKE2FS_CONFIG
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 20971520
+# Keep all LVM recovery contents within the existing physical partitions.
+BOARD_RAMDISK_USE_XZ := true
 # Android 15 retains the requested 1900 MiB System image.
 # The OTA checker verifies the actual active LV capacity before any writes.
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1992294400
