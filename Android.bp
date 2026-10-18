@@ -1,0 +1,8 @@
+// Original Qualcomm binaries request the bionic C++ compatibility soname.
+install_symlink {
+    name: "mione_libstdcxx_vendor_link",
+    soc_specific: true,
+    installed_location: "lib/libstdc++.so",
+    symlink_target: "libstdc++_vendor.so",
+    required: ["libstdc++_vendor"],
+}

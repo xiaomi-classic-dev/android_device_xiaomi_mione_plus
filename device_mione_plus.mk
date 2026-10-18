@@ -417,3 +417,8 @@ PRODUCT_SYSTEM_PROPERTIES += \
 
 # Explicit ARM32 opt-in; keep the actual kernel release for ELF selection.
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.bpf.allow_32bit=true
+
+# Preserve the original pre-Treble daemons' runtime dependencies.
+PRODUCT_PACKAGES += mione_libstdcxx_vendor_link libnetutils.vendor
+# Share only the existing CND bridge and its real ICU APEX dependencies.
+PRODUCT_VENDOR_PROPERTIES += ro.vendor.mione.legacy_linker=true
