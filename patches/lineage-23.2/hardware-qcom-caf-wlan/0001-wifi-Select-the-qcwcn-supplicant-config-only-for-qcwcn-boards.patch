@@ -1,0 +1,28 @@
+From e096c8a4b04419834e9c5dd7bfb68058aad81f24 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Sun, 18 Oct 2026 20:43:31 +0800
+Subject: [PATCH] wifi: Select the qcwcn supplicant config only for qcwcn
+ boards
+
+Match the Android 16 Broadcom prebuilt selection using the existing board_wlan_device Soong setting. MiOne bcmdhd retains the Broadcom configuration; qcwcn boards retain their original provider without duplicate Make exports.
+
+Change-Id: I1d7e3f27000555ac73d2a5dc8cbdea5eea208ae3
+---
+ qcwcn/config/Android.bp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/qcwcn/config/Android.bp b/qcwcn/config/Android.bp
+index a0f4eb5..81a4b27 100644
+--- a/qcwcn/config/Android.bp
++++ b/qcwcn/config/Android.bp
+@@ -17,6 +17,10 @@ prebuilt_etc {
+     src: ":wpa_supplicant_conf_gen",
+     sub_dir: "wifi",
+     vendor: true,
++    enabled: select(soong_config_variable("wpa_supplicant_8", "board_wlan_device"), {
++        "qcwcn": true,
++        default: false,
++    }),
+     licenses: [
+         "external_wpa_supplicant_8_license",
+     ],

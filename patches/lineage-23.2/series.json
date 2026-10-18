@@ -200,8 +200,16 @@
       "path": "hardware/qcom-caf/wlan",
       "base_commit": "80f4e5682a036bcf14e3407cbdb3a504f2e05483",
       "baseline_tree": "4545baf4bfc092e38b51d629a978b725bf295dec",
-      "patches": [],
-      "source_head": "80f4e5682a036bcf14e3407cbdb3a504f2e05483"
+      "patches": [
+        {
+          "file": "hardware-qcom-caf-wlan/0001-wifi-Select-the-qcwcn-supplicant-config-only-for-qcwcn-boards.patch",
+          "source_commit": "e096c8a4b04419834e9c5dd7bfb68058aad81f24",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "ed149cbe4cc5fa7ec5828f514b3d2cb089806a53",
+          "sha256": "28f45bf0f54ca87ce1edbcdbe1c3c5c2549547e501f2e4fe83ed2369fec7c566"
+        }
+      ],
+      "source_head": "e096c8a4b04419834e9c5dd7bfb68058aad81f24"
     },
     {
       "path": "hardware/ril",
@@ -412,5 +420,5 @@
       "source_head": "200473174b7653cf2675e82b195f56a0ed7dfb66"
     }
   ],
-  "mione_platform_increment_count": 13
+  "mione_platform_increment_count": 14
 }

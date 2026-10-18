@@ -4,6 +4,7 @@ frameworks-base/0001-BluetoothPowerStatsCollector-Retain-service-unbound-regress
 frameworks-base/0002-TelephonyRegistry-Check-mapped-phone-id-before-updating-NTN-sign.patch
 hardware-broadcom-wlan/0001-bcmdhd-Register-RTT-v4-only-with-a-compatible-HAL-table.patch
 hardware-broadcom-wlan/0002-bcmdhd-Normalize-successful-legacy-BTCOEXMODE-replies.patch
+hardware-qcom-caf-wlan/0001-wifi-Select-the-qcwcn-supplicant-config-only-for-qcwcn-boards.patch
 packages-modules-Bluetooth/0001-Bluetooth-Retain-classic-only-controllers-with-Android-16-manage.patch
 packages-modules-Bluetooth/0002-Bluetooth-Bind-LE-feature-completion-promise-before-the-HCI-even.patch
 packages-modules-Connectivity/0001-NetBpfLoad-Admit-opted-in-Aries-and-MiOne-Linux-3.4-BPF-backport.patch
