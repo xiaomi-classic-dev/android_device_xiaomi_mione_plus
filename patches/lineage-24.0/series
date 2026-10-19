@@ -1,6 +1,7 @@
 bionic/0001-linker-Retain-the-scoped-MiOne-vendor-non-PIE-contract-on-Android-17.patch
 build-make/0001-build-Generate-canonical-ramdisk-metadata-before-recovery-resources-on-Android-17.patch
 frameworks-base/0001-TelephonyRegistry-Validate-the-mapped-phone-before-writing-NTN-strength.patch
+frameworks-native/0001-surfaceflinger-Honor-device-background-blur-support.patch
 hardware-broadcom-wlan/0001-bcmdhd-Register-RTT-v4-only-when-the-current-HAL-table-has-the-slots.patch
 hardware-broadcom-wlan/0002-bcmdhd-Retain-exact-legacy-BTCOEXMODE-setter-success-semantics.patch
 hardware-interfaces/0001-vintf-Retain-the-complete-FCM-6-contract-for-legacy-products.patch

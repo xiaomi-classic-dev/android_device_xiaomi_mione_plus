@@ -55,6 +55,22 @@
       ]
     },
     {
+      "path": "frameworks/native",
+      "base_commit": "acca583cc05d76f2c5c14a9e5e8fbea649e5803c",
+      "baseline_tree": "94efb8aa22e63d6c70889d6f8e136e24bdd5fa5b",
+      "source_head": "855a20f8ca27819da7119cc2d2397deb69680e06",
+      "patched_tree": "0039898eb03e85b018f81430d6905198dc1e108a",
+      "patches": [
+        {
+          "file": "frameworks-native/0001-surfaceflinger-Honor-device-background-blur-support.patch",
+          "source_commit": "855a20f8ca27819da7119cc2d2397deb69680e06",
+          "source_author": "GuaiYiHu <guaiyihu@foxmail.com>",
+          "patch_id": "205ae679995df2ccdbe0388e7839809af3527575",
+          "sha256": "f9a3032812b4ed50e8a237c3c6b69ff95d0c4c82e27cfda06c875f7660896dc5"
+        }
+      ]
+    },
+    {
       "path": "hardware/broadcom/wlan",
       "base_commit": "0e0536bfdf7098633e31eec2c66786629fa9daa4",
       "baseline_tree": "9e60f756f4d971424ebd6aba48c651bdea7498d8",
@@ -236,5 +252,5 @@
       ]
     }
   ],
-  "local_increment_count": 16
+  "local_increment_count": 17
 }

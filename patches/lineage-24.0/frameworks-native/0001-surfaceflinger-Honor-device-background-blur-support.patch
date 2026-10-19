@@ -1,0 +1,29 @@
+From 855a20f8ca27819da7119cc2d2397deb69680e06 Mon Sep 17 00:00:00 2001
+From: GuaiYiHu <guaiyihu@foxmail.com>
+Date: Mon, 19 Oct 2026 18:08:25 +0800
+Subject: [PATCH] surfaceflinger: honor background blur support during
+ RenderEngine setup
+
+Use the detected device blur capability instead of enabling blur unconditionally. Restored GLES rendering on ES 2.0 devices aborts when handed a blur algorithm requiring ES 3.0. Preserve the selected blur algorithm for devices that advertise support.
+
+Change-Id: Id007012a4ce81d4bd7b79621775302338bdb6cea
+---
+ services/surfaceflinger/SurfaceFlinger.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index d1b1e282ed..75d7e16f57 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -999,7 +999,7 @@ void SurfaceFlinger::init() FTL_FAKE_GUARD(kMainThreadContext) {
+                            .setImageCacheSize(maxFrameBufferAcquiredBuffers)
+                            .setEnableProtectedContext(enable_protected_contents(false))
+                            .setPrecacheToneMapperShaderOnly(false)
+-                           .setBlurAlgorithm(chooseBlurAlgorithm(true))
++                           .setBlurAlgorithm(chooseBlurAlgorithm(mSupportsBlur))
+                            .setContextPriority(
+                                    useContextPriority
+                                            ? renderengine::RenderEngine::ContextPriority::Realtime
+-- 
+2.53.0
+

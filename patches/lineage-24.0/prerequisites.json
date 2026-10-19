@@ -18,6 +18,11 @@
       "baseline_tree": "8470c90f883e8df8a3e387163032fc20cf6ea5ca"
     },
     {
+      "path": "frameworks/native",
+      "base_commit": "acca583cc05d76f2c5c14a9e5e8fbea649e5803c",
+      "baseline_tree": "94efb8aa22e63d6c70889d6f8e136e24bdd5fa5b"
+    },
+    {
       "path": "hardware/broadcom/wlan",
       "base_commit": "0e0536bfdf7098633e31eec2c66786629fa9daa4",
       "baseline_tree": "9e60f756f4d971424ebd6aba48c651bdea7498d8"
