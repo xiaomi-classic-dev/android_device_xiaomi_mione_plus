@@ -132,6 +132,11 @@ BOARD_USES_LEGACY_MMAP := true
 
 # SELinux
 -include device/qcom/sepolicy-legacy/sepolicy.mk
+# MSM8660 has no Soter HAL or Soter attributes in its legacy public policy.
+# Do not import the optional Soter client rules into this device's system_ext.
+SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS := $(filter-out \
+    device/lineage/sepolicy/qcom/private-soter, \
+    $(SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS))
 # Keep the legacy perf executable type aligned with Lineage's domain alias.
 BOARD_SEPOLICY_M4DEFS += hal_perf_default_exec=vendor_hal_perf_default_exec
 
