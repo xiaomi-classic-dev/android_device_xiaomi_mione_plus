@@ -131,14 +131,15 @@ LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := $(MIONE_PATH)/include
 BOARD_USES_LEGACY_MMAP := true
 
 # SELinux
+# MSM8660 uses the CAF legacy type names, not the newer vendor_* namespace.
+# Select Lineage's existing legacy policy path before its QCOM alias setup.
+BOARD_VENDOR_SEPOLICY_DIRS += device/lineage/sepolicy/qcom/legacy-vendor
 -include device/qcom/sepolicy-legacy/sepolicy.mk
 # MSM8660 has no Soter HAL or Soter attributes in its legacy public policy.
 # Do not import the optional Soter client rules into this device's system_ext.
 SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS := $(filter-out \
     device/lineage/sepolicy/qcom/private-soter, \
     $(SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS))
-# Keep the legacy perf executable type aligned with Lineage's domain alias.
-BOARD_SEPOLICY_M4DEFS += hal_perf_default_exec=vendor_hal_perf_default_exec
 
 # Legacy vendor baseline: stock MIUI 4.12.5 (Android 4.1.2).
 # Stock has no SPL metadata; use its 2014-12-05 build date as the reference.
