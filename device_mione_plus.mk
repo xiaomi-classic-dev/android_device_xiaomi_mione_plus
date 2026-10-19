@@ -331,6 +331,13 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_SYSTEM_PROPERTIES += \
     ro.config.per_app_memcg=false
 
+# Keep the real kernel LMK when Android 17 sends LMK_START_MONITORING.
+# As on Aries, zero thresholds avoid PSI triggers absent from Linux 3.4.
+PRODUCT_SYSTEM_PROPERTIES += \
+    ro.lmk.use_new_strategy=true \
+    ro.lmk.psi_partial_stall_ms=0 \
+    ro.lmk.psi_complete_stall_ms=0
+
 # Concurrent-copying GC reserves twice dex2oat's heap capacity. A 512 MiB
 # compiler heap cannot reserve a contiguous 1 GiB region on this ARM32 layout.
 # Product properties load after the platform defaults in system/build.prop.
