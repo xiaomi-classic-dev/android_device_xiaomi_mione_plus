@@ -16,7 +16,7 @@
  */
 
 #define LOG_TAG "mione_lights"
-#include <cutils/log.h>
+#include <log/log.h>
 #include "Light.h"
 
 #include <errno.h>
