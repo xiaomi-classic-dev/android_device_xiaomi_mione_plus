@@ -1,2 +1,0 @@
-type mione_firmware_file, file_type, vendor_file_type, contextmount_type;
-type mione_persist_file, file_type, vendor_file_type;

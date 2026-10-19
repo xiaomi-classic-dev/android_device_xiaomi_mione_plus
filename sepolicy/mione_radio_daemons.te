@@ -1,19 +1,3 @@
-# Each retained modem daemon leaves init through its own executable type.
-type mione_cnd, domain;
-type mione_cnd_exec, exec_type, vendor_file_type, file_type;
-init_daemon_domain(mione_cnd)
-
-type mione_netmgrd, domain;
-type mione_netmgrd_exec, exec_type, vendor_file_type, file_type;
-init_daemon_domain(mione_netmgrd)
-
-type mione_qmuxd, domain;
-type mione_qmuxd_exec, exec_type, vendor_file_type, file_type;
-init_daemon_domain(mione_qmuxd)
-
-type mione_rmt_storage, domain;
-type mione_rmt_storage_exec, exec_type, vendor_file_type, file_type;
-init_daemon_domain(mione_rmt_storage)
-
+# CAF already declares each retained daemon's executable type and init transition.
 # Stock Android 4.1 RPC libraries generate executable anonymous trampolines.
-allow { mione_cnd mione_netmgrd mione_qmuxd mione_rmt_storage } self:process execmem;
+allow { cnd netmgrd qmuxd rmt_storage } self:process execmem;
