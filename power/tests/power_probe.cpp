@@ -3,11 +3,22 @@
 #include <string.h>
 #include <unistd.h>
 #include <cutils/properties.h>
-#include <android/hardware/power/1.0/IPower.h>
+#include <aidl/android/hardware/power/IPower.h>
+#include <android/binder_manager.h>
+#include <memory>
+#include <string>
 #include <healthd/healthd.h>
 #include "../battery_policy.h"
 static int checks, failures;
 #define CHECK(expr) do { ++checks; if (!(expr)) { ++failures; printf("FAIL line %d: %s\n", __LINE__, #expr); } } while (0)
+using aidl::android::hardware::power::IPower;
+using aidl::android::hardware::power::Mode;
+static void setInteractive(const std::shared_ptr<IPower>& power, bool interactive)
+{
+    CHECK(power->setMode(Mode::INTERACTIVE, interactive).isOk());
+    // AIDL setMode is oneway; allow the service to update sysfs before reading it.
+    usleep(200000);
+}
 static unsigned int frequency(int cpu)
 {
     char path[128]; unsigned int value=0;
@@ -32,24 +43,25 @@ static void sample(android::BatteryProperties *p,int level,bool present,int expe
 int main(void)
 {
     android::BatteryProperties p;
-    auto power = android::hardware::power::V1_0::IPower::getService();
+    const std::string instance = std::string(IPower::descriptor) + "/default";
+    auto power = IPower::fromBinder(ndk::SpAIBinder(AServiceManager_checkService(instance.c_str())));
     unsigned int original[2]={frequency(0),frequency(1)};
     CHECK(original[0]>=972000 && original[1]>=972000);
     if(failures) { puts("Run with screen awake and cool CPU policies before stopping zygote."); return 1; }
     CHECK(power != nullptr);
     if(power == nullptr) return 1;
     property_set(MIONE_BATTERY_LOW_PROPERTY,"0");
-    healthd_board_init(NULL); power->setInteractive(true); usleep(200000);
+    healthd_board_init(NULL); setInteractive(power, true);
     sample(&p,97,true,0);
     sample(&p,10,true,1); CHECK(frequency(0)==972000 && frequency(1)==594000);
-    power->setInteractive(false); CHECK(frequency(0)==918000 && frequency(1)==594000);
-    power->setInteractive(false); CHECK(frequency(0)==918000 && frequency(1)==594000);
+    setInteractive(power, false); CHECK(frequency(0)==918000 && frequency(1)==594000);
+    setInteractive(power, false); CHECK(frequency(0)==918000 && frequency(1)==594000);
     sample(&p,12,true,1); sample(&p,-1,true,1); sample(&p,97,false,1);
     sample(&p,15,true,0); CHECK(frequency(0)==918000 && frequency(1)==918000);
-    power->setInteractive(true); CHECK(frequency(0)==original[0] && frequency(1)==original[1]);
-    power->setInteractive(false);
+    setInteractive(power, true); CHECK(frequency(0)==original[0] && frequency(1)==original[1]);
+    setInteractive(power, false);
     CHECK(write_cap(0,594000)==0 && write_cap(1,540000)==0);
-    power->setInteractive(true); CHECK(frequency(0)==594000 && frequency(1)==540000);
+    setInteractive(power, true); CHECK(frequency(0)==594000 && frequency(1)==540000);
     sample(&p,9,true,1); CHECK(frequency(0)==594000 && frequency(1)==540000);
     sample(&p,15,true,0); CHECK(frequency(0)==594000 && frequency(1)==540000);
     CHECK(write_cap(0,original[0])==0 && write_cap(1,original[1])==0);
