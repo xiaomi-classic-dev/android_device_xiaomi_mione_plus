@@ -180,23 +180,34 @@ case "$target" in
     ;;
 esac
 
-chown system /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-chown system /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-chown system /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
+# MiOne selects interactive above. The ondemand group only exists while
+# that governor is registered; keep permissions when its nodes are present.
+for node in sampling_rate sampling_down_factor io_is_busy; do
+    path=/sys/devices/system/cpu/cpufreq/ondemand/$node
+    if [ -e "$path" ]; then
+        chown system "$path"
+    fi
+done
 
 emmc_boot=`getprop ro.boot.emmc`
 case "$emmc_boot"
     in "true")
-        chown system /sys/devices/platform/rs300000a7.65536/force_sync
-        chown system /sys/devices/platform/rs300000a7.65536/sync_sts
-        chown system /sys/devices/platform/rs300100a7.65536/force_sync
-        chown system /sys/devices/platform/rs300100a7.65536/sync_sts
+        for controller in rs300000a7.65536 rs300100a7.65536; do
+            for node in force_sync sync_sts; do
+                path=/sys/devices/platform/$controller/$node
+                if [ -e "$path" ]; then
+                    chown system "$path"
+                fi
+            done
+        done
     ;;
 esac
 
 case "$target" in
     "msm8960" | "msm8660" | "msm7630_surf")
-        echo 10 > /sys/devices/platform/msm_sdcc.3/idle_timeout
+        if [ -e /sys/devices/platform/msm_sdcc.3/idle_timeout ]; then
+            echo 10 > /sys/devices/platform/msm_sdcc.3/idle_timeout
+        fi
         ;;
     "msm7627a")
         echo 10 > /sys/devices/platform/msm_sdcc.1/idle_timeout
@@ -250,7 +261,7 @@ esac
 # Change adj level and min_free_kbytes setting for lowmemory killer to kick in
 case "$target" in
      "msm8660")
-        start qosmgrd
+        # This product has no qosmgrd service; mpdecision starts above.
         # Android lmkd supplies oom_score_adj levels paired with its minfree
         # thresholds. Legacy oom_adj values overwrite that pairing on boot.
         echo 5120 > /proc/sys/vm/min_free_kbytes
